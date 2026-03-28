@@ -1,0 +1,155 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Str;
+use App\Traits\HasTranslations;
+
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class Product extends Model
+{
+    use HasFactory, HasTranslations, SoftDeletes;
+
+    // Fields có thể dịch đa ngôn ngữ
+    public array $translatableFields = ['name', 'short_description', 'description', 'meta_title', 'meta_description'];
+
+    protected $fillable = [
+        'name', 'slug', 'short_description', 'description',
+        'price', 'compare_price', 'cost_price', 'sku',
+        'stock', 'stock_status', 'has_variants', 'weight',
+        'status', 'is_featured', 'is_favorite', 'is_best_seller', 'sort_order',
+        'image', 'images',
+        'category_id',
+        'meta_title', 'meta_description', 'meta_keywords', 'canonical_url', 'seo_focus_keyword', 'robots_meta', 'schema_json',
+    ];
+
+    protected $casts = [
+        'price'         => 'decimal:0',
+        'compare_price' => 'decimal:0',
+        'cost_price'    => 'decimal:0',
+        'images'        => 'array',
+        'has_variants'  => 'boolean',
+        'is_featured'   => 'boolean',
+        'is_favorite'   => 'boolean',
+        'is_best_seller' => 'boolean',
+        'schema_json'   => 'array',
+        'robots_meta'   => 'array',
+    ];
+
+    protected static function boot()
+    {
+        parent::boot();
+        
+        static::creating(function ($product) {
+            if (empty($product->slug)) {
+                $product->slug = Str::slug($product->name);
+            }
+        });
+
+        static::updating(function ($product) {
+            if ($product->isDirty('name') && empty($product->slug)) {
+                $product->slug = Str::slug($product->name);
+            }
+        });
+    }
+
+    public function attributes()
+    {
+        return $this->belongsToMany(Attribute::class, 'product_attributes')
+                    ->withPivot('attribute_value_id')
+                    ->withTimestamps();
+    }
+
+    public function attributeValues()
+    {
+        return $this->belongsToMany(AttributeValue::class, 'product_attributes')
+                    ->withPivot('attribute_id')
+                    ->withTimestamps();
+    }
+
+    public function productAttributes()
+    {
+        return $this->hasMany(ProductAttribute::class);
+    }
+
+    public function variants()
+    {
+        return $this->hasMany(ProductVariant::class)->orderBy('sort_order');
+    }
+
+    public function activeVariants()
+    {
+        return $this->hasMany(ProductVariant::class)->where('is_active', true)->orderBy('sort_order');
+    }
+
+    public function categories()
+    {
+        return $this->belongsToMany(Category::class, 'category_product');
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where('status', 'active');
+    }
+
+    public function scopeInStock($query)
+    {
+        return $query->where('stock', '>', 0);
+    }
+
+    public function scopeWithFilters($query, array $filters = [])
+    {
+        if (empty($filters)) {
+            return $query;
+        }
+
+        return $query->whereHas('attributeValues', function ($q) use ($filters) {
+            $q->whereIn('attribute_values.slug', $filters);
+        });
+    }
+
+    public function getFormattedPriceAttribute()
+    {
+        return number_format((float)$this->price, 0, ',', '.') . ' ₫';
+    }
+
+    public function getDiscountPercentAttribute(): ?int
+    {
+        if ($this->compare_price && $this->compare_price > $this->price) {
+            return (int) round((1 - $this->price / $this->compare_price) * 100);
+        }
+        return null;
+    }
+
+    /**
+     * Lấy giá flash sale hiện tại (nếu có chiến dịch đang chạy).
+     * Trả về null nếu không có flash sale.
+     */
+    public function getFlashPriceAttribute(): ?float
+    {
+        $item = app(\App\Services\FlashSaleService::class)->getActiveItemForProduct($this);
+        if (!$item) return null;
+        return $item->calcFlashPrice((float) $this->price);
+    }
+
+    /**
+     * Giá hiển thị cuối cùng: flash sale > giá thường
+     */
+    public function getEffectivePriceAttribute(): float
+    {
+        return $this->flash_price ?? (float) $this->price;
+    }
+
+    /**
+     * Phần trăm giảm giá flash sale
+     */
+    public function getFlashDiscountPercentAttribute(): ?int
+    {
+        $flashPrice = $this->flash_price;
+        if ($flashPrice === null) return null;
+        return (int) round((1 - $flashPrice / $this->price) * 100);
+    }
+}
