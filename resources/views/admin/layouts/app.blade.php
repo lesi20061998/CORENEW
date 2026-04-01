@@ -1,565 +1,719 @@
 <!DOCTYPE html>
 <html lang="vi" class="h-full">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Quản trị') | {{ get_setting('site_name', 'Kalles Store') }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Ekomart standard plugins (includes FontAwesome 6 Pro) -->
+    <link rel="stylesheet" href="{{ asset('theme/css/plugins.css') }}">
+    <!-- Custom Admin Typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
     <style>
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        html, body { height: 100%; }
-        body { font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; font-size: 14px; background: #f0f2f5; color: #1a202c; }
+        [x-cloak] {
+            display: none !important;
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            font-family: 'Be Vietnam Pro', sans-serif;
+            font-size: 14px;
+            background: #f8fafc;
+            color: #0f172a;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            margin: 0;
+        }
+
+        input,
+        button,
+        select,
+        textarea {
+            font-family: inherit !important;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: inherit !important;
+            color: #0f172a;
+        }
 
         /* ════════════════════════════════
-           SIDEBAR
+           SIDEBAR (MODERN DARK)
         ════════════════════════════════ */
         #sidebar {
-            width: 260px;
-            min-width: 260px;
+            width: 290px;
+            min-width: 290px;
             background: #0f172a;
             display: flex;
             flex-direction: column;
             overflow-y: auto;
             overflow-x: hidden;
             flex-shrink: 0;
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
         }
-        #sidebar::-webkit-scrollbar { width: 3px; }
-        #sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,.08); }
+
+        #sidebar::-webkit-scrollbar {
+            width: 3px;
+        }
+
+        #sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, .08);
+        }
 
         .sb-logo {
-            padding: 20px 18px;
-            border-bottom: 1px solid rgba(255,255,255,.06);
+            padding: 24px 20px;
+            margin-bottom: 20px;
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 14px;
         }
-        .sb-logo-icon {
-            width: 42px; height: 42px;
-            border-radius: 12px;
-            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-            display: flex; align-items: center; justify-content: center;
-            flex-shrink: 0;
-            box-shadow: 0 6px 20px rgba(59,130,246,.4);
-        }
-        .sb-logo-icon i { color: #fff; font-size: 16px; }
-        .sb-logo-text { min-width: 0; }
-        .sb-logo-text p { font-size: 15px; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .sb-logo-text span { font-size: 11px; color: #475569; margin-top: 2px; display: block; }
 
-        /* Nav items */
+        .sb-logo-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            box-shadow: 0 8px 16px rgba(37, 99, 235, 0.3);
+        }
+
+        .sb-logo-icon i {
+            color: #fff;
+            font-size: 18px;
+        }
+
+        .sb-logo-text p {
+            font-size: 17px;
+            font-weight: 800;
+            color: #fff;
+            text-transform: uppercase;
+        }
+
+        .sb-logo-text span {
+            font-size: 10px;
+            color: #485b74;
+            font-weight: 800;
+            text-transform: uppercase;
+            margin-top: 2px;
+            display: block;
+        }
+
+        .nav-label {
+            padding: 24px 24px 10px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #334155;
+            opacity: 0.6;
+        }
+        
         .nav-item {
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 12px 18px;
+            gap: 14px;
+            padding: 12px 24px;
             font-size: 14px;
-            font-weight: 500;
+            font-weight: 600;
             color: #94a3b8;
             cursor: pointer;
-            transition: all .15s;
+            transition: all .2s;
             border: none;
             width: 100%;
             text-align: left;
             text-decoration: none;
             background: transparent;
+        }
+
+        .nav-item:hover {
+            color: #fff;
+        }
+
+        .nav-item.active {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.03);
             position: relative;
         }
-        .nav-item:hover { background: rgba(255,255,255,.04); color: #e2e8f0; }
-        .nav-item.active {
-            color: #60a5fa;
-            background: rgba(96,165,250,.08);
-        }
-        .nav-item.active::before {
+
+        .nav-item.active::after {
             content: '';
             position: absolute;
-            left: 0; top: 6px; bottom: 6px;
-            width: 3px;
+            right: 0;
+            top: 12px;
+            bottom: 12px;
+            width: 4px;
             background: #3b82f6;
-            border-radius: 0 3px 3px 0;
+            border-radius: 4px 0 0 4px;
+            box-shadow: -4px 0 12px rgba(59, 130, 246, 0.6);
         }
-        .nav-item.group-open { color: #fff; }
 
         .nav-icon {
-            width: 36px; height: 36px;
+            width: 32px;
+            height: 32px;
             border-radius: 10px;
-            display: flex; align-items: center; justify-content: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             flex-shrink: 0;
-            font-size: 15px;
-            background: rgba(255,255,255,.06);
+            font-size: 14px;
+            background: rgba(255, 255, 255, .04);
             color: #64748b;
-            transition: all .15s;
+            transition: all .2s;
         }
-        .nav-item:hover .nav-icon { color: #94a3b8; }
-        .nav-item.active .nav-icon { background: rgba(59,130,246,.2); color: #60a5fa; }
-        .nav-item.group-open .nav-icon { background: rgba(255,255,255,.1); color: #e2e8f0; }
 
-        /* Colored group icons */
-        .nav-item.grp-shop.group-open .nav-icon    { background: rgba(245,158,11,.2); color: #fbbf24; }
-        .nav-item.grp-content.group-open .nav-icon { background: rgba(16,185,129,.2); color: #34d399; }
-        .nav-item.grp-media.group-open .nav-icon   { background: rgba(139,92,246,.2); color: #a78bfa; }
-        .nav-item.grp-system.active .nav-icon      { background: rgba(239,68,68,.15); color: #f87171; }
-
-        .nav-chevron {
-            margin-left: auto;
-            font-size: 11px;
-            color: #334155;
-            transition: transform .2s;
+        .nav-item:hover .nav-icon {
+            background: rgba(255, 255, 255, 0.08);
+            color: #cbd5e1;
         }
-        .nav-chevron.open { transform: rotate(180deg); color: #64748b; }
 
-        /* Sub menu */
-        .sub-menu { background: rgba(0,0,0,.2); overflow: hidden; }
+        .nav-item.active .nav-icon {
+            background: #3b82f6;
+            color: #fff;
+            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+        }
+
+        .sub-menu {
+            background: rgba(15, 23, 42, 0.6);
+            padding: 4px 0;
+        }
+
         .sub-item {
             display: flex;
             align-items: center;
-            gap: 10px;
-            padding: 9px 18px 9px 66px;
-            font-size: 13.5px;
-            font-weight: 400;
+            gap: 12px;
+            padding: 8px 24px 8px 68px;
+            font-size: 13px;
+            font-weight: 500;
             color: #64748b;
             text-decoration: none;
-            transition: all .15s;
+            transition: all .2s;
         }
-        .sub-item:hover { color: #cbd5e1; background: rgba(255,255,255,.03); }
+
+        .sub-item:hover {
+            color: #cbd5e1;
+        }
+
         .sub-item.active {
-            color: #93c5fd;
-            font-weight: 600;
-            background: rgba(96,165,250,.06);
+            color: #fff;
+            font-weight: 700;
         }
+
         .sub-item .dot {
-            width: 5px; height: 5px;
+            width: 4px;
+            height: 4px;
             border-radius: 50%;
             background: #334155;
-            flex-shrink: 0;
-            transition: background .15s;
         }
-        .sub-item.active .dot { background: #3b82f6; }
-        .sub-item:hover .dot { background: #64748b; }
 
-        .nav-sep {
-            height: 1px;
-            background: rgba(255,255,255,.05);
-            margin: 6px 18px;
-        }
-        .nav-label {
-            padding: 14px 18px 6px;
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: .1em;
-            color: #1e3a5f;
+        .sub-item.active .dot {
+            background: #3b82f6;
+            box-shadow: 0 0 8px #3b82f6;
         }
 
         /* ════════════════════════════════
-           TOPBAR
+           TOPBAR (PREMIUM)
         ════════════════════════════════ */
         #topbar {
             background: #fff;
-            border-bottom: 1px solid #e8ecf0;
-            padding: 0 28px;
-            height: 60px;
+            border-bottom: 1px solid #f1f5f9;
+            padding: 0 40px;
+            height: 72px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            flex-shrink: 0;
-            box-shadow: 0 1px 3px rgba(0,0,0,.05);
+            position: sticky;
+            top: 0;
+            z-index: 50;
         }
-        .topbar-title { font-size: 18px; font-weight: 700; color: #0f172a; }
-        .topbar-sub { font-size: 12.5px; color: #94a3b8; margin-top: 1px; }
+
+        .topbar-title {
+            font-size: 20px;
+            font-weight: 800;
+            color: #0f172a;
+            letter-spacing: -0.04em;
+            text-transform: uppercase;
+
+        }
+
+        .topbar-sub {
+            font-size: 10px;
+            text-transform: uppercase;
+            font-weight: 800;
+            color: #94a3b8;
+            margin-top: 4px;
+        }
 
         /* ════════════════════════════════
-           REUSABLE COMPONENTS
+           PREMIUM COMPONENTS
         ════════════════════════════════ */
         .btn {
-            display: inline-flex; align-items: center; gap: 8px;
-            padding: 9px 18px; border-radius: 9px; border: none;
-            font-size: 13.5px; font-weight: 600; cursor: pointer;
-            transition: all .15s; text-decoration: none; white-space: nowrap;
-            font-family: inherit;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 28px;
+            border-radius: 12px;
+            border: none;
+            font-size: 11.5px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all .2s;
+            text-decoration: none;
+            white-space: nowrap;
+            text-transform: uppercase;
         }
-        .btn-primary { background: #2563eb; color: #fff; }
-        .btn-primary:hover { background: #1d4ed8; box-shadow: 0 4px 12px rgba(37,99,235,.35); }
-        .btn-secondary { background: #f1f5f9; color: #475569; }
-        .btn-secondary:hover { background: #e2e8f0; }
-        .btn-danger { background: #dc2626; color: #fff; }
-        .btn-danger:hover { background: #b91c1c; }
-        .btn-ghost { background: transparent; color: #64748b; border: 1.5px solid #e2e8f0; }
-        .btn-ghost:hover { background: #f8fafc; border-color: #cbd5e1; }
-        .btn-sm { padding: 6px 12px; font-size: 12.5px; border-radius: 7px; }
 
-        .form-input, .form-select, .form-textarea {
-            width: 100%;
-            border: 1.5px solid #e2e8f0;
-            border-radius: 9px;
-            padding: 10px 14px;
-            font-size: 14px;
-            color: #1e293b;
-            outline: none;
-            transition: border-color .15s, box-shadow .15s;
-            background: #fff;
-            font-family: inherit;
+        .btn-primary {
+            background: #2563eb;
+            color: #fff;
+            box-shadow: 0 10px 20px rgba(37, 99, 235, 0.15);
         }
-        .form-input:focus, .form-select:focus, .form-textarea:focus {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59,130,246,.1);
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(37, 99, 235, 0.25);
         }
-        .form-input.error { border-color: #f87171; }
-        .form-select { cursor: pointer; }
-        .form-textarea { resize: vertical; }
-        .form-label { display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 7px; }
-        .form-hint { font-size: 12px; color: #94a3b8; margin-top: 5px; }
+
+        .btn-secondary {
+            background: #f8fafc;
+            color: #475569;
+            border: 1.5px solid #f1f5f9;
+        }
+
+        .btn-secondary:hover {
+            background: #f1f5f9;
+            border-color: #e2e8f0;
+        }
 
         .card {
             background: #fff;
-            border-radius: 16px;
-            border: 1px solid #e8ecf0;
-            box-shadow: 0 1px 4px rgba(0,0,0,.04);
+            border-radius: 40px;
+            border: 1px solid #f1f5f9;
+            box-shadow: 0 20px 40px rgba(15, 23, 42, 0.03);
+            overflow: hidden;
         }
+
         .card-header {
-            padding: 18px 22px;
-            border-bottom: 1px solid #f1f5f9;
+            padding: 32px 40px 16px;
             display: flex;
             align-items: center;
             justify-content: space-between;
         }
-        .card-title { font-size: 14px; font-weight: 700; color: #0f172a; }
-        .card-body { padding: 22px; }
+
+        .card-title {
+            font-size: 12px;
+            font-weight: 800;
+            color: #64748b;
+            text-transform: uppercase;
+        }
+
+        .card-body {
+            padding: 0 40px 40px;
+        }
+
+        /* Premium Table */
+        .tbl-th {
+            padding: 16px 24px;
+            font-size: 10px;
+            font-weight: 700;
+            color: #94a3b8;
+            text-transform: uppercase;
+            text-align: left;
+            border-bottom: 2px solid #f8fafc;
+        }
+
+        .tbl-td {
+            padding: 18px 24px;
+            font-size: 13.5px;
+            font-weight: 600;
+            color: #1e293b;
+            vertical-align: middle;
+            border-bottom: 1px solid #f8fafc;
+        }
+
+        tr:hover .tbl-td {
+            background: #fafbfc;
+        }
+
+        .form-input,
+        .form-select {
+            width: 100%;
+            border: 1.5px solid #f1f5f9;
+            border-radius: 12px;
+            padding: 12px 16px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #0f172a;
+            outline: none;
+            transition: all .2s;
+            background: #fff;
+        }
+
+        .form-input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+            background: #fff;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 10px;
+            font-weight: 700;
+            color: #94a3b8;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            padding-left: 2px;
+        }
 
         .badge {
-            display: inline-flex; align-items: center; gap: 5px;
-            padding: 4px 10px; border-radius: 20px;
-            font-size: 12px; font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
         }
-        .badge-green  { background: #dcfce7; color: #15803d; }
-        .badge-yellow { background: #fef9c3; color: #a16207; }
-        .badge-red    { background: #fee2e2; color: #b91c1c; }
-        .badge-blue   { background: #dbeafe; color: #1d4ed8; }
-        .badge-gray   { background: #f1f5f9; color: #64748b; }
-        .badge-purple { background: #ede9fe; color: #6d28d9; }
-        .badge-orange { background: #ffedd5; color: #c2410c; }
 
-        .tbl-wrap { overflow: hidden; border-radius: 16px; border: 1px solid #e8ecf0; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.04); }
-        .tbl-head { background: #f8fafc; border-bottom: 1px solid #f1f5f9; }
-        .tbl-th { padding: 13px 18px; font-size: 11.5px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: .06em; text-align: left; }
-        .tbl-td { padding: 15px 18px; font-size: 14px; vertical-align: middle; border-bottom: 1px solid #f8fafc; }
-        .tbl-tr:last-child .tbl-td { border-bottom: none; }
-        .tbl-tr:hover .tbl-td { background: #fafbfc; }
-
-        .act-btn {
-            width: 32px; height: 32px; border-radius: 8px; border: none;
-            display: inline-flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: all .15s; color: #94a3b8;
-            background: transparent; text-decoration: none; font-size: 13px;
+        .badge-green {
+            background: #dcfce7;
+            color: #15803d;
         }
-        .act-btn:hover { background: #f1f5f9; color: #475569; }
-        .act-btn.edit:hover { background: #dbeafe; color: #2563eb; }
-        .act-btn.view:hover { background: #dcfce7; color: #16a34a; }
-        .act-btn.del:hover  { background: #fee2e2; color: #dc2626; }
 
-        /* Flash */
-        .flash { display: flex; align-items: center; gap: 12px; padding: 13px 18px; border-radius: 10px; font-size: 14px; }
-        .flash-success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #15803d; }
-        .flash-error   { background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; }
+        .badge-rose {
+            background: #fee2e2;
+            color: #be123c;
+        }
 
-        [x-cloak] { display: none !important; }
+        [x-cloak] {
+            display: none !important;
+        }
 
-        /* Scrollbar main */
-        #main-scroll::-webkit-scrollbar { width: 6px; }
-        #main-scroll::-webkit-scrollbar-track { background: transparent; }
-        #main-scroll::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 6px; }
-    </style>
-    <style>
-        .seo-tab{display:flex;align-items:center;gap:6px;padding:10px 14px;font-size:12.5px;font-weight:500;color:#6b7280;border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap}
-        .seo-tab:hover{color:#374151;background:#f9fafb}
-        .seo-tab.active{color:#2563eb;border-bottom-color:#2563eb;background:#fff}
-        .seo-tab i{font-size:11px}
-        .seo-check-item{display:flex;align-items:flex-start;gap:8px;padding:5px 0;font-size:13px;color:#374151;line-height:1.5}
-        .seo-check-icon{flex-shrink:0;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;margin-top:1px}
-        .seo-check-icon.fail{background:#fee2e2;color:#ef4444}
-        .seo-check-icon.pass{background:#dcfce7;color:#16a34a}
+        .seo-tab {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            font-size: 11px;
+            font-weight: 800;
+            color: #94a3b8;
+            text-transform: uppercase;
+            border-bottom: 3px solid transparent;
+            transition: all .2s;
+            background: transparent;
+            cursor: pointer;
+        }
+
+        .seo-tab.active {
+            color: #3b82f6;
+            border-bottom-color: #3b82f6;
+        }
+
+        .seo-check-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 10px 0;
+            font-size: 14px;
+            font-weight: 500;
+            color: #334155;
+        }
+        .custom-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .custom-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #e2e8f0;
+            border-radius: 10px;
+        }
     </style>
     @stack('styles')
 </head>
+
 <body>
 
-@php
-$inShop     = request()->routeIs('admin.products.*') || request()->routeIs('admin.attributes.*') || (request()->routeIs('admin.categories.*') && request()->get('type','product') === 'product');
-$inContent  = request()->routeIs('admin.posts.*') || request()->routeIs('admin.pages.*') || (request()->routeIs('admin.categories.*') && request()->get('type') === 'post');
-$inMedia    = request()->routeIs('admin.media.*') || request()->routeIs('admin.widgets.*');
-$inSettings = request()->routeIs('admin.settings.*') || request()->routeIs('admin.languages.*') || request()->routeIs('admin.translations.*');
-@endphp
+    @php
+        $inShop = request()->routeIs('admin.products.*') || request()->routeIs('admin.attributes.*') || (request()->routeIs('admin.categories.*') && request()->get('type', 'product') === 'product');
+        $inContent = request()->routeIs('admin.posts.*') || request()->routeIs('admin.pages.*') || (request()->routeIs('admin.categories.*') && request()->get('type') === 'post');
+        $inMedia = request()->routeIs('admin.media.*') || request()->routeIs('admin.widgets.*');
+        $inSettings = request()->routeIs('admin.settings.*') || request()->routeIs('admin.languages.*') || request()->routeIs('admin.translations.*');
+    @endphp
 
-<div style="display:flex;height:100vh;overflow:hidden;"
-     x-data="{ open: '{{ $inShop ? 'shop' : ($inContent ? 'content' : ($inMedia ? 'media' : ($inSettings ? 'settings' : ''))) }}' }">
+    <div style="display:flex;height:100vh;overflow:hidden;"
+        x-data="{ open: '{{ $inShop ? 'shop' : ($inContent ? 'content' : ($inMedia ? 'media' : ($inSettings ? 'settings' : ''))) }}' }">
 
-    {{-- ══════════════════════════════════════════
-         SIDEBAR
-    ══════════════════════════════════════════ --}}
-    <aside id="sidebar">
-
-        {{-- Logo --}}
-        <div class="sb-logo">
-            <div class="sb-logo-icon">
-                <i class="fa-solid fa-store"></i>
-            </div>
-            <div class="sb-logo-text">
-                <p>{{ get_setting('site_name', 'Kalles Store') }}</p>
-                <span>Trang quản trị</span>
-            </div>
-        </div>
-
-        {{-- Navigation --}}
-        <nav style="flex:1;padding:10px 0;">
-
-            <p class="nav-label">Tổng quan</p>
-
-            <a href="{{ route('admin.dashboard') }}"
-               class="nav-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
-                <span class="nav-icon"><i class="fa-solid fa-gauge-high"></i></span>
-                Dashboard
-            </a>
-
-            <div class="nav-sep"></div>
-            <p class="nav-label">Cửa hàng</p>
-
-            {{-- Sản phẩm --}}
-            <button @click="open = open === 'shop' ? '' : 'shop'"
-                    class="nav-item grp-shop {{ $inShop ? 'group-open' : '' }}">
-                <span class="nav-icon"><i class="fa-solid fa-box-open"></i></span>
-                <span style="flex:1;">Sản Phẩm</span>
-                <i class="fa-solid fa-chevron-down nav-chevron" :class="open==='shop' ? 'open' : ''"></i>
-            </button>
-            <div class="sub-menu" x-show="open==='shop'" x-cloak
-                 x-transition:enter="transition ease-out duration-200"
-                 x-transition:enter-start="opacity-0 -translate-y-2"
-                 x-transition:enter-end="opacity-100 translate-y-0">
-                <a href="{{ route('admin.products.index') }}"
-                   class="sub-item {{ request()->routeIs('admin.products.index') || (request()->routeIs('admin.products.*') && !request()->routeIs('admin.products.create')) ? 'active' : '' }}">
-                    <span class="dot"></span> Danh sách sản phẩm
-                </a>
-                <a href="{{ route('admin.products.create') }}"
-                   class="sub-item {{ request()->routeIs('admin.products.create') ? 'active' : '' }}">
-                    <span class="dot"></span> Thêm sản phẩm mới
-                </a>
-                <a href="{{ route('admin.categories.index', ['type' => 'product']) }}"
-                   class="sub-item {{ request()->routeIs('admin.categories.*') && request()->get('type','product') === 'product' ? 'active' : '' }}">
-                    <span class="dot"></span> Danh mục sản phẩm
-                </a>
-                <a href="{{ route('admin.attributes.index') }}"
-                   class="sub-item {{ request()->routeIs('admin.attributes.*') ? 'active' : '' }}">
-                    <span class="dot"></span> Thuộc tính sản phẩm
-                </a>
-            </div>
-
-            <a href="{{ route('admin.orders.index') }}"
-               class="nav-item {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}"
-               style="margin-top:2px;">
-                <span class="nav-icon" style="{{ request()->routeIs('admin.orders.*') ? '' : '' }}"><i class="fa-solid fa-bag-shopping"></i></span>
-                Đơn Hàng
-            </a>
-
-            <a href="{{ route('admin.flash-sales.index') }}"
-               class="nav-item {{ request()->routeIs('admin.flash-sales.*') ? 'active' : '' }}">
-                <span class="nav-icon" style="{{ request()->routeIs('admin.flash-sales.*') ? 'background:rgba(249,115,22,.2);color:#fb923c;' : '' }}">
+        {{-- ══════════════════════════════════════════
+        SIDEBAR
+        ══════════════════════════════════════════ --}}
+        <aside id="sidebar" class="custom-scroll">
+            <div class="sb-logo">
+                <div class="sb-logo-icon">
                     <i class="fa-solid fa-bolt"></i>
-                </span>
-                Flash Sale
-            </a>
-
-            <a href="{{ route('admin.users.index') }}"
-               class="nav-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
-                <span class="nav-icon"><i class="fa-solid fa-users"></i></span>
-                Khách Hàng
-            </a>
-
-            <div class="nav-sep"></div>
-            <p class="nav-label">Nội dung</p>
-
-            {{-- Bài viết --}}
-            <button @click="open = open === 'content' ? '' : 'content'"
-                    class="nav-item grp-content {{ $inContent ? 'group-open' : '' }}">
-                <span class="nav-icon"><i class="fa-solid fa-newspaper"></i></span>
-                <span style="flex:1;">Bài Viết</span>
-                <i class="fa-solid fa-chevron-down nav-chevron" :class="open==='content' ? 'open' : ''"></i>
-            </button>
-            <div class="sub-menu" x-show="open==='content'" x-cloak
-                 x-transition:enter="transition ease-out duration-200"
-                 x-transition:enter-start="opacity-0 -translate-y-2"
-                 x-transition:enter-end="opacity-100 translate-y-0">
-                <a href="{{ route('admin.posts.index') }}"
-                   class="sub-item {{ request()->routeIs('admin.posts.*') ? 'active' : '' }}">
-                    <span class="dot"></span> Danh sách bài viết
-                </a>
-                <a href="{{ route('admin.posts.create') }}"
-                   class="sub-item {{ request()->routeIs('admin.posts.create') ? 'active' : '' }}">
-                    <span class="dot"></span> Thêm bài viết mới
-                </a>
-                <a href="{{ route('admin.categories.index', ['type' => 'post']) }}"
-                   class="sub-item {{ request()->routeIs('admin.categories.*') && request()->get('type') === 'post' ? 'active' : '' }}">
-                    <span class="dot"></span> Danh mục bài viết
-                </a>
+                </div>
+                <div class="sb-logo-text">
+                    <p>VietTin Mart</p>
+                    <span>Premium Admin</span>
+                </div>
             </div>
 
-            {{-- Trang tĩnh --}}
-            <a href="{{ route('admin.pages.index') }}"
-               class="nav-item {{ request()->routeIs('admin.pages.*') ? 'active' : '' }}">
-                <span class="nav-icon"><i class="fa-solid fa-file-lines"></i></span>
-                Trang Tĩnh
-            </a>
-
-            {{-- Thư viện --}}
-            <button @click="open = open === 'media' ? '' : 'media'"
-                    class="nav-item grp-media {{ $inMedia ? 'group-open' : '' }}">
-                <span class="nav-icon"><i class="fa-solid fa-photo-film"></i></span>
-                <span style="flex:1;">Thư Viện & Widget</span>
-                <i class="fa-solid fa-chevron-down nav-chevron" :class="open==='media' ? 'open' : ''"></i>
-            </button>
-            <div class="sub-menu" x-show="open==='media'" x-cloak
-                 x-transition:enter="transition ease-out duration-200"
-                 x-transition:enter-start="opacity-0 -translate-y-2"
-                 x-transition:enter-end="opacity-100 translate-y-0">
-                <a href="{{ route('admin.media.index') }}"
-                   class="sub-item {{ request()->routeIs('admin.media.*') ? 'active' : '' }}">
-                    <span class="dot"></span> Quản lý Media
+            {{-- Navigation --}}
+            <nav class="flex-1 py-4">
+                <p class="nav-label">General Overview</p>
+                <a href="{{ route('admin.dashboard') }}"
+                    class="nav-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+                    <span class="nav-icon"><i class="fa-solid fa-gauge-high"></i></span>
+                    Dashboards
                 </a>
-                <a href="{{ route('admin.widgets.index') }}"
-                   class="sub-item {{ request()->routeIs('admin.widgets.*') ? 'active' : '' }}">
-                    <span class="dot"></span> Widget
+
+                <p class="nav-label">Shop Management</p>
+                <button @click="open = open === 'shop' ? '' : 'shop'" class="nav-item {{ $inShop ? 'active' : '' }}">
+                    <span class="nav-icon"><i class="fa-solid fa-box"></i></span>
+                    <span class="flex-1">Quản lý Kho</span>
+                    <i class="fa-solid fa-chevron-down nav-chevron text-[10px]"
+                        :class="open==='shop' ? 'rotate-180' : ''"></i>
+                </button>
+                <div class="sub-menu shadow-inner bg-slate-900/40" x-show="open==='shop'" x-cloak x-collapse>
+                    <a href="{{ route('admin.products.index') }}"
+                        class="sub-item {{ request()->routeIs('admin.products.index') ? 'active' : '' }}">
+                        <span class="dot"></span> Danh sách sản phẩm
+                    </a>
+                    <a href="{{ route('admin.products.create') }}"
+                        class="sub-item {{ request()->routeIs('admin.products.create') ? 'active' : '' }}">
+                        <span class="dot"></span> Thêm sản phẩm
+                    </a>
+                    <a href="{{ route('admin.categories.index', ['type' => 'product']) }}"
+                        class="sub-item {{ request()->routeIs('admin.categories.*') && request()->get('type', 'product') === 'product' ? 'active' : '' }}">
+                        <span class="dot"></span> Chuyên mục
+                    </a>
+                    <a href="{{ route('admin.attributes.index') }}"
+                        class="sub-item {{ request()->routeIs('admin.attributes.*') ? 'active' : '' }}">
+                        <span class="dot"></span> Thuộc tính
+                    </a>
+                </div>
+
+                <a href="{{ route('admin.orders.index') }}"
+                    class="nav-item {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}">
+                    <span class="nav-icon"><i class="fa-solid fa-shopping-cart"></i></span>
+                    Đơn Hàng
                 </a>
-            </div>
 
-            <div class="nav-sep"></div>
-            <p class="nav-label">Hệ thống</p>
+                <a href="{{ route('admin.flash-sales.index') }}"
+                    class="nav-item {{ request()->routeIs('admin.flash-sales.*') ? 'active' : '' }}">
+                    <span class="nav-icon"><i class="fa-solid fa-bolt-lightning text-orange-400"></i></span>
+                    Flash Sales
+                </a>
 
-            {{-- Cài đặt (bao gồm ngôn ngữ & dịch) --}}
-            <button @click="open = open === 'settings' ? '' : 'settings'"
-                    class="nav-item grp-system {{ $inSettings ? 'group-open' : '' }}">
-                <span class="nav-icon"><i class="fa-solid fa-gear"></i></span>
-                <span style="flex:1;">Cài Đặt</span>
-                <i class="fa-solid fa-chevron-down nav-chevron" :class="open==='settings' ? 'open' : ''"></i>
-            </button>
-            <div class="sub-menu" x-show="open==='settings'" x-cloak
-                 x-transition:enter="transition ease-out duration-200"
-                 x-transition:enter-start="opacity-0 -translate-y-2"
-                 x-transition:enter-end="opacity-100 translate-y-0">
+                <p class="nav-label">Content & UX</p>
+                <button @click="open = open === 'content' ? '' : 'content'"
+                    class="nav-item {{ $inContent ? 'active' : '' }}">
+                    <span class="nav-icon"><i class="fa-solid fa-file-signature"></i></span>
+                    <span class="flex-1">Bài Viết & Trang</span>
+                    <i class="fa-solid fa-chevron-down nav-chevron text-[10px]"
+                        :class="open==='content' ? 'rotate-180' : ''"></i>
+                </button>
+                <div class="sub-menu shadow-inner bg-slate-900/40" x-show="open==='content'" x-cloak x-collapse>
+                    <a href="{{ route('admin.posts.index') }}"
+                        class="sub-item {{ request()->routeIs('admin.posts.*') ? 'active' : '' }}">
+                        <span class="dot"></span> Blog Posts
+                    </a>
+                    <a href="{{ route('admin.pages.index') }}"
+                        class="sub-item {{ request()->routeIs('admin.pages.*') ? 'active' : '' }}">
+                        <span class="dot"></span> Static Pages
+                    </a>
+                    <a href="{{ route('admin.categories.index', ['type' => 'post']) }}"
+                        class="sub-item {{ request()->routeIs('admin.categories.*') && request()->get('type') === 'post' ? 'active' : '' }}">
+                        <span class="dot"></span> Chuyên mục tin
+                    </a>
+                </div>
+
+                <button @click="open = open === 'appearance' ? '' : 'appearance'"
+                    class="nav-item {{ $inMedia ? 'active' : '' }}">
+                    <span class="nav-icon"><i class="fa-solid fa-palette"></i></span>
+                    <span class="flex-1">Giao Diện</span>
+                    <i class="fa-solid fa-chevron-down nav-chevron text-[10px]"
+                        :class="open==='appearance' ? 'rotate-180' : ''"></i>
+                </button>
+                <div class="sub-menu shadow-inner bg-slate-900/40" x-show="open==='appearance'" x-cloak x-collapse>
+                    <a href="{{ route('admin.settings.group', 'appearance') }}"
+                        class="sub-item {{ request()->is('admin/settings/group/appearance') ? 'active' : '' }}">
+                        <span class="dot"></span> Cấu hình UX
+                    </a>
+                    <a href="{{ route('admin.menus.index') }}"
+                        class="sub-item {{ request()->routeIs('admin.menus.*') ? 'active' : '' }}">
+                        <span class="dot"></span> Menu Builder
+                    </a>
+                    <a href="{{ route('admin.widgets.index') }}"
+                        class="sub-item {{ request()->routeIs('admin.widgets.*') ? 'active' : '' }}">
+                        <span class="dot"></span> Widgets H.Page
+                    </a>
+                    <a href="{{ route('admin.media.index') }}"
+                        class="sub-item {{ request()->routeIs('admin.media.*') ? 'active' : '' }}">
+                        <span class="dot"></span> Media Assets
+                    </a>
+                </div>
+
+                <p class="nav-label">System Config</p>
                 <a href="{{ route('admin.settings.index') }}"
-                   class="sub-item {{ request()->routeIs('admin.settings.index') || request()->routeIs('admin.settings.group') ? 'active' : '' }}">
-                    <span class="dot"></span> Cài đặt hệ thống
+                    class="nav-item {{ request()->routeIs('admin.settings.index') ? 'active' : '' }}">
+                    <span class="nav-icon"><i class="fa-solid fa-sliders"></i></span>
+                    Cài Đặt Tổng Thể
                 </a>
                 <a href="{{ route('admin.languages.index') }}"
-                   class="sub-item {{ request()->routeIs('admin.languages.*') ? 'active' : '' }}">
-                    <span class="dot"></span> Ngôn ngữ
+                    class="nav-item {{ request()->routeIs('admin.languages.*') ? 'active' : '' }}">
+                    <span class="nav-icon"><i class="fa-solid fa-language"></i></span>
+                    Languages
                 </a>
-                <a href="{{ route('admin.translations.index') }}"
-                   class="sub-item {{ request()->routeIs('admin.translations.*') ? 'active' : '' }}">
-                    <span class="dot"></span> Quản lý bản dịch
-                </a>
-            </div>
+            </nav>
 
-        </nav>
-
-        {{-- User block --}}
-        <div style="padding:14px 16px;border-top:1px solid rgba(255,255,255,.06);">
-            <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;background:rgba(255,255,255,.04);">
-                <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0;">
-                    {{ strtoupper(substr(auth()->user()->name ?? 'A', 0, 1)) }}
+            {{-- User block --}}
+            <div class="p-6 border-t border-white/5">
+                <div class="flex items-center gap-4 bg-white/5 p-4 rounded-3xl">
+                    <div
+                        class="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center font-black text-white shrink-0">
+                        {{ strtoupper(substr(auth()->user()->name ?? 'A', 0, 1)) }}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-xs font-black text-white tracking-tight truncate">
+                            {{ auth()->user()->name ?? 'Admin' }}
+                        </p>
+                        <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest mt-0.5">Admin Level</p>
+                    </div>
+                    <form action="{{ route('admin.logout') }}" method="POST">
+                        @csrf
+                        <button type="submit"
+                            class="w-8 h-8 rounded-xl bg-orange-500/10 text-orange-500 hover:bg-orange-500 hover:text-white transition-all">
+                            <i class="fa-solid fa-power-off text-[10px]"></i>
+                        </button>
+                    </form>
                 </div>
-                <div style="flex:1;min-width:0;">
-                    <p style="font-size:13.5px;font-weight:600;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ auth()->user()->name ?? 'Admin' }}</p>
-                    <p style="font-size:11px;color:#475569;margin-top:1px;">
-                        <a href="{{ route('admin.account') }}" style="color:#475569;text-decoration:none;" onmouseover="this.style.color='#93c5fd'" onmouseout="this.style.color='#475569'">Quản trị viên</a>
-                    </p>
+            </div>
+        </aside>
+
+        {{-- ══════════════════════════════════════════
+        MAIN CONTENT
+        ══════════════════════════════════════════ --}}
+        <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+            <header id="topbar">
+                <div>
+                    <h1 class="topbar-title">@yield('page-title', 'Dashboard')</h1>
+                    @hasSection('page-subtitle')
+                        <div class="topbar-sub">@yield('page-subtitle')</div>
+                    @endif
                 </div>
-                <form action="{{ route('admin.logout') }}" method="POST">
-                    @csrf
-                    <button type="submit" title="Đăng xuất"
-                        style="width:30px;height:30px;border-radius:8px;background:rgba(239,68,68,.1);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#f87171;transition:all .15s;flex-shrink:0;"
-                        onmouseover="this.style.background='rgba(239,68,68,.2)'"
-                        onmouseout="this.style.background='rgba(239,68,68,.1)'">
-                        <i class="fa-solid fa-right-from-bracket" style="font-size:12px;"></i>
-                    </button>
-                </form>
-            </div>
-        </div>
-    </aside>
+                <div class="flex items-center gap-4">
+                    @yield('page-actions')
+                    <a href="@yield('preview-url', url('/shop'))" target="_blank" class="btn btn-secondary border-none">
+                        <i class="fa-solid fa-external-link text-[10px]"></i> Live Site
+                    </a>
+                </div>
+            </header>
 
-    {{-- ══════════════════════════════════════════
-         MAIN CONTENT
-    ══════════════════════════════════════════ --}}
-    <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;">
-
-        {{-- Topbar --}}
-        <div id="topbar">
-            <div>
-                <div class="topbar-title">@yield('page-title', 'Bảng điều khiển')</div>
-                @hasSection('page-subtitle')
-                    <div class="topbar-sub">@yield('page-subtitle')</div>
-                @endif
-            </div>
-            <div style="display:flex;align-items:center;gap:10px;">
-                @yield('page-actions')
-                <a href="@yield('preview-url', url('/shop'))" target="_blank" class="btn btn-ghost btn-sm">
-                    <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:11px;"></i> Xem trang
-                </a>
-            </div>
+            <main id="main-scroll" class="flex-1 overflow-y-auto p-10 bg-[#f8fafc] custom-scroll">
+                @yield('content')
+            </main>
         </div>
 
-        {{-- Flash messages --}}
-        @if(session('success') || session('error') || $errors->any())
-        <div style="padding:16px 28px 0;flex-shrink:0;display:flex;flex-direction:column;gap:8px;">
+        {{-- Global Toast Component --}}
+        <div x-data x-cloak>
+            <template x-if="$store.toast.show">
+                <div x-show="$store.toast.show" x-transition:enter="transition ease-out duration-300 transform"
+                    x-transition:enter-start="translate-y-[-100%] opacity-0"
+                    x-transition:enter-end="translate-y-0 opacity-100"
+                    x-transition:leave="transition ease-in duration-200 transform"
+                    x-transition:leave-start="translate-y-0 opacity-100"
+                    x-transition:leave-end="translate-y-[-100%] opacity-0"
+                    class="fixed top-5 right-5 z-[9999] flex items-center gap-3 px-6 py-3 rounded-xl shadow-2xl min-w-[300px]"
+                    :class="$store.toast.type === 'error' ? 'bg-rose-600 text-white shadow-rose-500/20' : 'bg-emerald-600 text-white shadow-emerald-500/20'">
+                    <div class="flex-shrink-0">
+                        <template x-if="$store.toast.type === 'error'">
+                            <i class="fa-solid fa-triangle-exclamation text-xl"></i>
+                        </template>
+                        <template x-if="$store.toast.type !== 'error'">
+                            <i class="fa-solid fa-circle-check text-xl"></i>
+                        </template>
+                    </div>
+                    <div>
+                        <p class="font-black text-[11px] uppercase tracking-widest leading-none mb-1"
+                            x-text="$store.toast.title"></p>
+                        <p class="text-[10px] opacity-90 font-medium" x-text="$store.toast.message"></p>
+                    </div>
+                </div>
+            </template>
+        </div>
+
+        <script>
+            document.addEventListener('alpine:init', () => {
+                Alpine.store('toast', {
+                    show: false,
+                    title: '',
+                    message: '',
+                    type: 'success',
+                    fire(title, message, type = 'success') {
+                        this.title = title;
+                        this.message = message;
+                        this.type = type;
+                        this.show = true;
+                        setTimeout(() => { this.show = false; }, 4000);
+                    }
+                });
+            });
+
+            window.adminToast = (title, message, type = 'success') => {
+                if (window.Alpine) {
+                    Alpine.store('toast').fire(title, message, type);
+                }
+            };
+
             @if(session('success'))
-                <div class="flash flash-success">
-                    <i class="fa-solid fa-circle-check" style="color:#22c55e;font-size:16px;flex-shrink:0;"></i>
-                    <span>{{ session('success') }}</span>
-                </div>
+                window.addEventListener('load', () => adminToast('Thành công', "{{ session('success') }}", 'success'));
             @endif
             @if(session('error'))
-                <div class="flash flash-error">
-                    <i class="fa-solid fa-circle-xmark" style="color:#ef4444;font-size:16px;flex-shrink:0;"></i>
-                    <span>{{ session('error') }}</span>
-                </div>
+                window.addEventListener('load', () => adminToast('Có lỗi xảy ra', "{{ session('error') }}", 'error'));
             @endif
             @if($errors->any())
-                <div class="flash flash-error" style="flex-direction:column;align-items:flex-start;">
-                    <p style="font-weight:700;display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-                        <i class="fa-solid fa-triangle-exclamation" style="color:#ef4444;"></i> Vui lòng kiểm tra lại:
-                    </p>
-                    <ul style="list-style:disc;padding-left:22px;display:flex;flex-direction:column;gap:3px;font-size:13.5px;">
-                        @foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach
-                    </ul>
-                </div>
+                window.addEventListener('load', () => adminToast('Thông tin chưa đúng', "{{ $errors->first() }}", 'error'));
             @endif
-        </div>
-        @endif
+        </script>
 
-        {{-- Page content --}}
-        <main id="main-scroll" style="flex:1;overflow-y:auto;padding:24px 28px;">
-            @yield('content')
-        </main>
-    </div>
-</div>
+        <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+        <script src="{{ asset('js/admin/seo-checklist.js') }}"></script>
+        @include('components.admin.media-picker')
 
-<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-<script src="{{ asset('js/admin/seo-checklist.js') }}"></script>
-@include('admin.components.media-picker')
-
-@stack('modals')
-@stack('scripts')
-<script>
-// Global helper: cập nhật preview ảnh
-function updateImgPreview(previewId, url) {
-    const el = document.getElementById(previewId);
-    if (!el) return;
-    if (url) {
-        el.innerHTML = `<img src="${url}" style="height:80px;border-radius:8px;object-fit:cover;border:1px solid #e2e8f0;max-width:100%;" onerror="this.style.display='none'">`;
-    } else {
-        el.innerHTML = '';
-    }
-}
-</script>
+        @stack('modals')
+        @stack('scripts')
+        <script>
+            function updateImgPreview(previewId, url) {
+                const el = document.getElementById(previewId);
+                if (!el) return;
+                if (url) {
+                    el.innerHTML = `<img src="${url}" style="height:80px;border-radius:8px;object-fit:cover;border:1px solid #e2e8f0;max-width:100%;" onerror="this.style.display='none'">`;
+                } else {
+                    el.innerHTML = '';
+                }
+            }
+        </script>
 </body>
+
 </html>

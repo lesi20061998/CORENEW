@@ -90,6 +90,18 @@ class Product extends Model
         return $this->belongsToMany(Category::class, 'category_product');
     }
 
+    public function combos()
+    {
+        return $this->belongsToMany(Product::class, 'product_combos', 'product_id', 'combo_product_id')
+                    ->withPivot('combo_price', 'discount_type', 'discount_value', 'sort_order', 'is_active')
+                    ->withTimestamps();
+    }
+
+    public function activeCombos()
+    {
+        return $this->combos()->wherePivot('is_active', true)->orderByPivot('sort_order');
+    }
+
     public function scopeActive($query)
     {
         return $query->where('status', 'active');
@@ -111,17 +123,33 @@ class Product extends Model
         });
     }
 
+    public function getThumbnailUrlAttribute(): ?string
+    {
+        if (!$this->image) return null;
+        if (str_starts_with($this->image, 'http')) return $this->image;
+        return asset($this->image);
+    }
+
     public function getFormattedPriceAttribute()
     {
+        if ($this->price <= 0) {
+            return 'Giá liên hệ';
+        }
         return number_format((float)$this->price, 0, ',', '.') . ' ₫';
     }
 
     public function getDiscountPercentAttribute(): ?int
     {
+        if ($this->price <= 0) return null;
         if ($this->compare_price && $this->compare_price > $this->price) {
             return (int) round((1 - $this->price / $this->compare_price) * 100);
         }
         return null;
+    }
+
+    public function getHasContactPriceAttribute(): bool
+    {
+        return $this->price <= 0;
     }
 
     /**

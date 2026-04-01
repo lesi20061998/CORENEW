@@ -21,7 +21,7 @@ class ProductController extends Controller
 
     public function index(Request $request)
     {
-        $products = $this->productService->getPaginatedProducts(20, $request->only(['category_id', 'search', 'status']));
+        $products = $this->productService->getPaginatedProducts(20, $request->only(['category_id', 'category_ids', 'search', 'status']));
         $categories = $this->categoryService->getCategoryTree('product');
         $counts = $this->productService->getCounts();
         return view('admin.products.index', compact('products', 'categories', 'counts'));
@@ -32,7 +32,8 @@ class ProductController extends Controller
         $attributes = $this->attributeService->getAllAttributes();
         $categories = $this->categoryService->getCategoryTree('product');
         $languages  = Language::active()->get();
-        return view('admin.products.create', compact('attributes', 'categories', 'languages'));
+        $allProducts = \App\Models\Product::active()->orderBy('name')->get(['id', 'name', 'price', 'image']);
+        return view('admin.products.create', compact('attributes', 'categories', 'languages', 'allProducts'));
     }
 
     public function store(Request $request)
@@ -66,6 +67,13 @@ class ProductController extends Controller
             'attributes'        => 'nullable|array',
             'variants'          => 'nullable|array',
             'translations'      => 'nullable|array',
+            'combos'            => 'nullable|array',
+            'combos.*.id'       => 'required|exists:products,id',
+            'combos.*.price'    => 'nullable|numeric|min:0',
+            'combos.*.discount_type'=> 'nullable|in:fixed,percent',
+            'combos.*.discount_value'=> 'nullable|numeric|min:0',
+            'combos.*.is_active'=> 'nullable|boolean',
+            'combos.*.sort_order'=> 'nullable|integer',
         ]);
 
         $data['status'] = $data['status'] ?? 'active';
@@ -83,7 +91,7 @@ class ProductController extends Controller
 
         // Loại bỏ các key không phải cột DB (Relationship hoặc Form data không thuộc schema)
         $productData = array_diff_key($data, array_flip([
-            'attributes', 'variants', 'translations', 'category_ids'
+            'attributes', 'variants', 'translations', 'category_ids', 'combos', 'images'
         ]));
 
         $product = $this->productService->createProduct($productData);
@@ -102,6 +110,21 @@ class ProductController extends Controller
 
         if ($request->filled('translations')) {
             $product->saveTranslations($request->input('translations'));
+        }
+
+        // Sync Combos
+        if ($request->has('combos')) {
+            $comboData = [];
+            foreach ($request->input('combos') as $c) {
+                $comboData[$c['id']] = [
+                    'combo_price' => $c['price'] ?? 0,
+                    'discount_type' => $c['discount_type'] ?? 'fixed',
+                    'discount_value' => $c['discount_value'] ?? 0,
+                    'is_active'   => $c['is_active'] ?? true,
+                    'sort_order'  => $c['sort_order'] ?? 0
+                ];
+            }
+            $product->combos()->sync($comboData);
         }
 
         return redirect()->route('admin.products.index')
@@ -125,13 +148,14 @@ class ProductController extends Controller
         $attributes = $this->attributeService->getAllAttributes();
         $categories = $this->categoryService->getCategoryTree('product');
         $languages  = Language::active()->get();
+        $allProducts = \App\Models\Product::active()->where('id', '!=', $id)->orderBy('name')->get(['id', 'name', 'price', 'image']);
 
         $currentAttributes = [];
         foreach ($product->productAttributes as $pa) {
             $currentAttributes[$pa->attribute_id][] = $pa->attribute_value_id;
         }
 
-        return view('admin.products.edit', compact('product', 'attributes', 'categories', 'languages', 'currentAttributes'));
+        return view('admin.products.edit', compact('product', 'attributes', 'categories', 'languages', 'currentAttributes', 'allProducts'));
     }
 
     public function update(Request $request, $id)
@@ -165,6 +189,13 @@ class ProductController extends Controller
             'attributes'        => 'nullable|array',
             'variants'          => 'nullable|array',
             'translations'      => 'nullable|array',
+            'combos'            => 'nullable|array',
+            'combos.*.id'       => 'required|exists:products,id',
+            'combos.*.price'    => 'nullable|numeric|min:0',
+            'combos.*.discount_type'=> 'nullable|in:fixed,percent',
+            'combos.*.discount_value'=> 'nullable|numeric|min:0',
+            'combos.*.is_active'=> 'nullable|boolean',
+            'combos.*.sort_order'=> 'nullable|integer',
         ]);
 
         $data['status'] = $data['status'] ?? 'active';
@@ -181,7 +212,7 @@ class ProductController extends Controller
 
         // Loại bỏ các key không phải cột DB (Relationship hoặc Form data không thuộc schema)
         $productData = array_diff_key($data, array_flip([
-            'attributes', 'variants', 'translations', 'category_ids'
+            'attributes', 'variants', 'translations', 'category_ids', 'combos', 'images'
         ]));
 
         $this->productService->updateProduct($id, $productData);
@@ -202,6 +233,21 @@ class ProductController extends Controller
         if ($request->filled('translations')) {
             $product->saveTranslations($request->input('translations'));
         }
+
+        // Sync Combos
+        $comboData = [];
+        if ($request->has('combos')) {
+            foreach ($request->input('combos') as $c) {
+                $comboData[$c['id']] = [
+                    'combo_price' => $c['price'] ?? 0,
+                    'discount_type' => $c['discount_type'] ?? 'fixed',
+                    'discount_value' => $c['discount_value'] ?? 0,
+                    'is_active'   => $c['is_active'] ?? true,
+                    'sort_order'  => $c['sort_order'] ?? 0
+                ];
+            }
+        }
+        $product->combos()->sync($comboData);
 
         return redirect()->route('admin.products.index')
                          ->with('success', 'Đã cập nhật sản phẩm.');
@@ -225,6 +271,7 @@ class ProductController extends Controller
         ]);
 
         $this->productService->updateProduct($id, $data);
+        session()->flash('success', 'Cập nhật nhanh thành công!');
 
         return response()->json([
             'success' => true,
@@ -267,11 +314,11 @@ class ProductController extends Controller
             if ($priceVal !== null && $priceVal !== '') {
                 $currentPrice = (float)$p->price;
                 switch ($priceRule) {
-                    case 'fixed':       $p->price = (string) $priceVal; break;
-                    case 'inc_amount':  $p->price = (string) ($currentPrice + (float)$priceVal); break;
-                    case 'dec_amount':  $p->price = (string) max(0, $currentPrice - (float)$priceVal); break;
-                    case 'inc_percent': $p->price = (string) ($currentPrice * (1 + (float)$priceVal / 100)); break;
-                    case 'dec_percent': $p->price = (string) max(0, $currentPrice * (1 - (float)$priceVal / 100)); break;
+                    case 'fixed':       $p->price = (float)$priceVal; break;
+                    case 'inc_amount':  $p->price = $currentPrice + (float)$priceVal; break;
+                    case 'dec_amount':  $p->price = max(0, $currentPrice - (float)$priceVal); break;
+                    case 'inc_percent': $p->price = $currentPrice * (1 + (float)$priceVal / 100); break;
+                    case 'dec_percent': $p->price = max(0, $currentPrice * (1 - (float)$priceVal / 100)); break;
                 }
             }
 
@@ -300,9 +347,12 @@ class ProductController extends Controller
             }
         }
 
+        $message = 'Đã cập nhật đồng loạt ' . count($ids) . ' sản phẩm.';
+        session()->flash('success', $message);
+
         return response()->json([
             'success' => true,
-            'message' => 'Đã cập nhật đồng loạt ' . count($ids) . ' sản phẩm.'
+            'message' => $message
         ]);
     }
 

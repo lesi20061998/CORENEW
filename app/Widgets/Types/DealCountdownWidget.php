@@ -6,50 +6,62 @@ use App\Models\Widget as WidgetModel;
 use App\Models\Product;
 use App\Widgets\BaseWidget;
 
-/**
- * Widget: Deal Countdown - Sản phẩm khuyến mãi có đồng hồ đếm ngược
- * Map từ: .rts-grocery-feature-area (phần countdown + .product-with-discount)
- */
 class DealCountdownWidget extends BaseWidget
 {
-    public static string $label       = 'Deal đếm ngược';
-    public static string $description = 'Sản phẩm giảm giá kèm đồng hồ đếm ngược thời gian';
-    public static string $icon        = 'fa-solid fa-fire-flame-curved';
+    public static string $label       = 'Flash Sale (Giảm giá)';
+    public static string $description = 'Hiển thị sản phẩm Big Sale với đồng hồ đếm ngược';
+    public static string $icon        = 'fa-solid fa-bolt';
 
     public static function fields(): array
     {
         return [
-            ['key' => 'title',        'label' => 'Tiêu đề',              'type' => 'text',   'default' => 'Sản phẩm khuyến mãi'],
-            ['key' => 'countdown_to', 'label' => 'Đếm ngược đến (MM/DD/YYYY HH:MM:SS)', 'type' => 'text', 'default' => '12/31/2025 23:59:59'],
-            ['key' => 'limit',        'label' => 'Số sản phẩm hiển thị', 'type' => 'number', 'default' => 4],
-            ['key' => 'category_id',  'label' => 'Danh mục (tùy chọn)', 'type' => 'number', 'default' => null],
-            ['key' => 'promo_cards',  'label' => 'Banner phụ bên trái',  'type' => 'repeater', 'default' => [],
-                'fields' => [
-                    ['key' => 'title',    'label' => 'Tiêu đề',   'type' => 'text'],
-                    ['key' => 'price',    'label' => 'Giá',        'type' => 'text'],
-                    ['key' => 'bg_class', 'label' => 'CSS class',  'type' => 'text', 'default' => 'bg-1'],
-                    ['key' => 'link',     'label' => 'Link',       'type' => 'text', 'default' => '/shop'],
+            ['key' => 'title', 'label' => 'Tiêu đề section', 'type' => 'text', 'default' => 'Products With Discounts'],
+            ['key' => 'end_date', 'label' => 'Thời gian kết thúc', 'type' => 'text', 'default' => '12/31/2026 23:59:59'],
+            
+            ['key' => 'promo_cards', 'label' => 'Banners Khuyến mãi (Bên trái)', 'type' => 'repeater', 
+                'default' => [
+                    [
+                        'title'    => "Alpro Organic Flavored\nFresh Juice",
+                        'price'    => '$15.00',
+                        'bg_class' => 'bg-1',
+                        'link'     => '/shop',
+                    ],
+                    [
+                        'title'    => "Alpro Organic Flavored\nFresh Juice",
+                        'price'    => '$15.00',
+                        'bg_class' => 'bg-2',
+                        'link'     => '/shop',
+                    ],
                 ],
+                'fields' => [
+                    ['key' => 'title', 'label' => 'Tiêu đề banner', 'type' => 'text'],
+                    ['key' => 'price', 'label' => 'Giá hiển thị', 'type' => 'text', 'col' => 'col-md-6'],
+                    ['key' => 'bg_class', 'label' => 'CSS class (bg-1, bg-2)', 'type' => 'text', 'col' => 'col-md-6'],
+                    ['key' => 'image', 'label' => 'Ảnh nền (nếu có)', 'type' => 'image'],
+                    ['key' => 'link',  'label' => 'Link', 'type' => 'text'],
+                ]
             ],
+
+            ['key' => 'category_id', 'label' => 'Lấy sản phẩm từ danh mục', 'type' => 'category_select', 'default' => []],
+            ['key' => 'limit', 'label' => 'Số sản phẩm bên phải', 'type' => 'number', 'default' => 4],
         ];
     }
 
     public static function render(array $config, WidgetModel $widget): string
     {
-        $query = Product::where('status', 'active')
+        $categoryIds = array_filter((array)($config['category_id'] ?? []));
+        $products = Product::where('status', 'active')
+            ->when(!empty($categoryIds), fn($q) => $q->whereIn('category_id', $categoryIds))
             ->whereNotNull('compare_price')
-            ->whereColumn('price', '<', 'compare_price');
+            ->whereColumn('price', '<', 'compare_price')
+            ->latest()
+            ->limit((int)($config['limit'] ?? 4))
+            ->get();
 
-        if (!empty($config['category_id'])) {
-            $query->where('category_id', $config['category_id']);
-        }
-
-        $products = $query->limit((int)($config['limit'] ?? 4))->get();
-
-        return static::view('widgets.types.deal_countdown', [
+        return static::view('widgets.types.deal_flash', [
             'config'   => $config,
             'widget'   => $widget,
-            'products' => $products,
+            'products' => $products
         ]);
     }
 }

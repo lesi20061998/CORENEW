@@ -6,54 +6,43 @@ use App\Models\Widget as WidgetModel;
 use App\Models\Category;
 use App\Widgets\BaseWidget;
 
-/**
- * Widget: Category Slider - Danh mục dạng slider
- * Map từ: .rts-caregory-area-one (index.html)
- */
 class CategorySliderWidget extends BaseWidget
 {
-    public static string $label       = 'Danh mục slider';
-    public static string $description = 'Hiển thị danh mục dạng slider cuộn ngang';
-    public static string $icon        = 'fa-solid fa-layer-group';
+    public static string $label       = 'Thanh trượt Danh mục';
+    public static string $description = 'Hiển thị icon các danh mục sản phẩm nổi bật';
+    public static string $icon        = 'fa-solid fa-list';
 
     public static function fields(): array
     {
         return [
-            ['key' => 'title',        'label' => 'Tiêu đề section',  'type' => 'text',   'default' => ''],
-            ['key' => 'limit',        'label' => 'Số danh mục',      'type' => 'number', 'default' => 10],
-            ['key' => 'slides_per_view','label' => 'Số cột desktop', 'type' => 'number', 'default' => 10],
-            ['key' => 'style',        'label' => 'Kiểu hiển thị',    'type' => 'select',
-                'options' => ['circle' => 'Tròn (style 1)', 'card' => 'Card (style 2)'],
+            ['key' => 'title', 'label' => 'Tiêu đề Section', 'type' => 'text', 'default' => ''],
+            ['key' => 'category_id', 'label' => 'Chọn danh mục', 'type' => 'category_select', 'default' => []],
+            ['key' => 'style', 'label' => 'Kiểu hiển thị', 'type' => 'select', 
+                'options' => ['circle' => 'Hình tròn (V1)', 'card' => 'Thẻ vuông (V2)'],
                 'default' => 'circle'],
-            ['key' => 'show_count',   'label' => 'Hiện số sản phẩm', 'type' => 'toggle', 'default' => false],
-            ['key' => 'source',       'label' => 'Nguồn dữ liệu',    'type' => 'select',
-                'options' => ['db' => 'Từ database', 'manual' => 'Nhập tay'],
-                'default' => 'db'],
-            ['key' => 'items',        'label' => 'Danh mục (nhập tay)', 'type' => 'repeater', 'default' => [],
-                'fields' => [
-                    ['key' => 'name',  'label' => 'Tên danh mục', 'type' => 'text'],
-                    ['key' => 'image', 'label' => 'Ảnh',          'type' => 'image'],
-                    ['key' => 'link',  'label' => 'Link',          'type' => 'text'],
-                    ['key' => 'count', 'label' => 'Số sản phẩm',  'type' => 'text'],
-                ],
-            ],
+            ['key' => 'slidesPerView', 'label' => 'Số icon hiển thị', 'type' => 'number', 'default' => 10],
+            ['key' => 'show_count',    'label' => 'Hiện số lượng SP', 'type' => 'toggle', 'default' => false],
+            ['key' => 'loop', 'label' => 'Chạy vòng lặp', 'type' => 'toggle', 'default' => true],
         ];
     }
 
     public static function render(array $config, WidgetModel $widget): string
     {
-        $categories = collect();
-        if (($config['source'] ?? 'db') === 'db') {
-            $categories = Category::where('is_active', true)
-                ->withCount('products')
-                ->limit((int)($config['limit'] ?? 10))
-                ->get();
+        $categoryIds = array_filter((array)($config['category_id'] ?? []));
+        $query       = Category::where('is_active', true);
+
+        if (!empty($categoryIds)) {
+            $query->whereIn('id', $categoryIds);
+        } else {
+            $query->whereHas('products')->limit((int)($config['slidesPerView'] ?? 10));
         }
 
-        return static::view('widgets.types.category_slider', [
+        $categories = $query->get();
+
+        return static::view('widgets.types.cat_swiper', [
             'config'     => $config,
             'widget'     => $widget,
-            'categories' => $categories,
+            'categories' => $categories
         ]);
     }
 }

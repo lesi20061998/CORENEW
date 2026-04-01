@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Language;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class LanguageController extends Controller
 {
@@ -20,7 +21,7 @@ class LanguageController extends Controller
             'code'        => 'required|string|max:10|unique:languages,code',
             'name'        => 'required|string|max:100',
             'native_name' => 'required|string|max:100',
-            'flag'        => 'nullable|string|max:10',
+            'flag'        => 'nullable|string|max:255',
             'is_active'   => 'boolean',
         ]);
 
@@ -30,6 +31,8 @@ class LanguageController extends Controller
         }
 
         Language::create($data);
+        Cache::forget('active_language_codes');
+        Cache::forget('default_language_code');
 
         return back()->with('success', 'Đã thêm ngôn ngữ.');
     }
@@ -39,12 +42,16 @@ class LanguageController extends Controller
         $data = $request->validate([
             'name'        => 'required|string|max:100',
             'native_name' => 'required|string|max:100',
-            'flag'        => 'nullable|string|max:10',
-            'is_active'   => 'boolean',
+            'flag'        => 'nullable|string|max:255',
+            'is_active'   => 'nullable',
             'sort_order'  => 'integer|min:0',
         ]);
 
+        $data['is_active'] = $request->has('is_active');
+
         $language->update($data);
+        Cache::forget('active_language_codes');
+        Cache::forget('default_language_code');
 
         return back()->with('success', 'Đã cập nhật ngôn ngữ.');
     }
@@ -53,6 +60,8 @@ class LanguageController extends Controller
     {
         Language::query()->update(['is_default' => false]);
         $language->update(['is_default' => true, 'is_active' => true]);
+        Cache::forget('active_language_codes');
+        Cache::forget('default_language_code');
 
         return back()->with('success', '"' . $language->name . '" đã được đặt làm ngôn ngữ mặc định.');
     }
@@ -64,6 +73,8 @@ class LanguageController extends Controller
         }
 
         $language->delete();
+        Cache::forget('active_language_codes');
+        Cache::forget('default_language_code');
 
         return back()->with('success', 'Đã xóa ngôn ngữ.');
     }

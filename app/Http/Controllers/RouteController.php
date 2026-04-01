@@ -9,12 +9,16 @@ use Illuminate\Http\Request;
 
 class RouteController extends Controller
 {
-    public function index(Request $request, string $any)
+    public function index(Request $request, $param1, $param2 = null)
     {
+        // Nếu $param2 có giá trị, nghĩa là route là {locale}/{slug} -> $param2 là slug
+        // Nếu $param2 là null, nghĩa là route là {slug} -> $param1 là slug
+        $slug = $param2 ?: $param1;
+
         // 1. Thử tìm sản phẩm
-        $product = Product::where('slug', $any)
+        $product = Product::where('slug', $slug)
             ->where('status', 'active')
-            ->with(['categories', 'productAttributes', 'variants'])
+            ->with(['categories', 'productAttributes', 'variants', 'activeCombos'])
             ->first();
 
         if ($product) {
@@ -29,7 +33,7 @@ class RouteController extends Controller
         }
 
         // 2. Thử tìm bài viết
-        $post = Post::where('slug', $any)->where('status', 'published')
+        $post = Post::where('slug', $slug)->where('status', 'published')
             ->with('author')->first();
 
         if ($post) {
@@ -41,7 +45,7 @@ class RouteController extends Controller
         }
 
         // 3. Thử tìm page
-        $page = Page::where('slug', $any)->where('status', 'published')->first();
+        $page = Page::where('slug', $slug)->where('status', 'published')->first();
 
         if ($page) {
             return view('pages.show', compact('page'));

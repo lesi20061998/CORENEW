@@ -16,16 +16,16 @@
                 {{-- Slug moved to SEO sidebar --}}
                 <div>
                     <label class="form-label">Nội dung</label>
-                    @include('admin.components.editor', ['name' => 'content', 'value' => old('content', $post?->content), 'height' => 420])
+                    @include('components.admin.editor', ['name' => 'content', 'value' => old('content', $post?->content), 'height' => 420])
                 </div>
                 <div>
                     <label class="form-label">Tóm tắt</label>
-                    @include('admin.components.editor', ['name' => 'excerpt', 'value' => old('excerpt', $post?->getRawOriginal('excerpt')), 'height' => 180])
+                    @include('components.admin.editor', ['name' => 'excerpt', 'value' => old('excerpt', $post?->getRawOriginal('excerpt')), 'height' => 180])
                 </div>
             </div>
         </div>
 
-        @include('admin.components.seo-checklist', ['context' => 'post', 'model' => $post])
+        @include('components.admin.seo-checklist', ['context' => 'post', 'model' => $post])
     </div>
 
     <div class="space-y-5">

@@ -157,6 +157,8 @@ class WidgetService
                 $config[$key] = filter_var($val, FILTER_VALIDATE_BOOLEAN);
             } elseif ($field['type'] === 'number') {
                 $config[$key] = $val !== null ? (int)$val : null;
+            } elseif ($field['type'] === 'box_model' && is_array($val)) {
+                $config[$key] = array_map(fn($v) => is_numeric($v) ? (int)$v : $v, $val);
             } else {
                 $config[$key] = $val;
             }

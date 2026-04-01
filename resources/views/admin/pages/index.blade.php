@@ -38,6 +38,13 @@
                 </td>
                 <td class="tbl-td" style="text-align:right;">
                     <div style="display:flex;align-items:center;justify-content:flex-end;gap:4px;">
+                        <form action="{{ route('admin.duplicate.item', ['type' => 'page', 'id' => $page->id]) }}" method="POST" style="display:inline;">
+                            @csrf
+                            <input type="hidden" name="locale" value="en">
+                            <button type="submit" class="act-btn" title="Sao chép sang EN" style="background-color:#eff6ff;color:#3b82f6;border:0;width:34px;height:34px;border-radius:10px;justify-content:center;align-items:center;font-size:10px;font-weight:900;display:flex;">
+                                EN
+                            </button>
+                        </form>
                         <a href="{{ route('admin.pages.edit', $page) }}" class="act-btn edit" title="Chỉnh sửa">
                             <i class="fa-solid fa-pencil"></i>
                         </a>

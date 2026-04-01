@@ -1,57 +1,43 @@
-@php
-    $title    = $config['title']    ?? 'Khách hàng nói gì về chúng tôi';
-    $subtitle = $config['subtitle'] ?? '';
-    $items    = $config['items']    ?? [];
-@endphp
-
-@if(count($items))
-<div class="rts-testimonial-area rts-section-gap bg_light-1">
+<div class="rts-testimonial-area rts-section-gapBottom" {!! $sectionStyles !!}>
     <div class="container">
-        <div class="row">
+        <div class="row align-items-center">
             <div class="col-lg-12">
                 <div class="title-area-between mb--40">
-                    <h2 class="title-left">{{ $title }}</h2>
-                    @if($subtitle)
-                    <p>{{ $subtitle }}</p>
-                    @endif
+                    <div class="title-area-left">
+                        <h2 class="title">{{ $config['title'] ?? 'Đánh giá khách hàng' }}</h2>
+                        @if(!empty($config['subtitle']))
+                            <p class="disc">{{ $config['subtitle'] }}</p>
+                        @endif
+                    </div>
                 </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-lg-12">
-                <div class="swiper mySwiper-testimonial swiper-data" data-swiper='{
-                    "spaceBetween": 24,
-                    "slidesPerView": 3,
-                    "loop": true,
-                    "autoplay": {"delay": 4000},
-                    "breakpoints": {
-                        "0":    {"slidesPerView": 1},
-                        "768":  {"slidesPerView": 2},
-                        "1140": {"slidesPerView": 3}
-                    }
-                }'>
+                <div class="swiper mySwiper-testimonial-1 swiper-data" data-swiper='{"spaceBetween":30,"slidesPerView":3,"loop": true,"speed": 1000,"autoplay":{"delay":5000},"breakpoints":{"320":{"slidesPerView":1},"768":{"slidesPerView":2},"992":{"slidesPerView":3}}}'>
                     <div class="swiper-wrapper">
-                        @foreach($items as $item)
+                        @foreach($config['items'] ?? [] as $item)
                         <div class="swiper-slide">
-                            <div class="single-testimonial-area">
-                                <div class="stars">
-                                    @for($s = 1; $s <= 5; $s++)
-                                    <i class="fa-{{ $s <= ($item['stars'] ?? 5) ? 'solid' : 'regular' }} fa-star" style="color: #f5a623;"></i>
+                            <div class="testimonial-one-wrapper">
+                                <div class="rating-area">
+                                    @for($i=1; $i<=5; $i++)
+                                        <i class="fa-solid fa-star {{ $i <= ($item['stars'] ?? 5) ? 'active' : '' }}"></i>
                                     @endfor
                                 </div>
-                                <p class="disc">{{ $item['content'] ?? '' }}</p>
-                                <div class="author-area">
+                                <div class="testi-content">
+                                    <p class="disc">{{ $item['content'] ?? '' }}</p>
+                                </div>
+                                <div class="testi-author-area">
                                     @if(!empty($item['avatar']))
-                                    <div class="thumbnail">
-                                        <img src="{{ asset('storage/' . $item['avatar']) }}" alt="{{ $item['name'] ?? '' }}">
-                                    </div>
+                                        <div class="author-img">
+                                            <img src="{{ $item['avatar'] }}" alt="author">
+                                        </div>
                                     @endif
-                                    <div class="info">
-                                        <h5 class="title">{{ $item['name'] ?? '' }}</h5>
+                                    <div class="author-info">
+                                        <h6 class="name">{{ $item['name'] ?? 'Khách hàng' }}</h6>
                                         @if(!empty($item['position']))
-                                        <span>{{ $item['position'] }}</span>
+                                            <span class="designation">{{ $item['position'] }}</span>
                                         @endif
                                     </div>
+                                </div>
+                                <div class="quote-icon">
+                                    <i class="fa-solid fa-quote-right"></i>
                                 </div>
                             </div>
                         </div>
@@ -62,4 +48,3 @@
         </div>
     </div>
 </div>
-@endif

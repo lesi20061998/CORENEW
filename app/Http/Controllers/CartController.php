@@ -11,7 +11,7 @@ class CartController extends Controller
     {
         $cart  = session('cart', []);
         $total = collect($cart)->sum(fn($i) => ($i['price'] ?? 0) * ($i['qty'] ?? 1));
-        return view('cart.index', compact('cart', 'total'));
+        return view('shop.cart', compact('cart', 'total'));
     }
 
     public function add(Request $request)
@@ -40,7 +40,7 @@ class CartController extends Controller
                 'name'          => $product->name,
                 'variant_label' => $variant?->label,
                 'price'         => $variant ? ($variant->price ?? $product->price) : $product->price,
-                'image'         => $variant->image ?? $product->image,
+                'image'         => $this->normalizeImagePath($variant?->image ?? $product->image),
                 'slug'          => $product->slug,
                 'qty'           => $request->qty ?? 1,
             ];
@@ -81,6 +81,16 @@ class CartController extends Controller
         return response()->json(['count' => array_sum(array_column($cart, 'qty'))]);
     }
 
+    public function total()
+    {
+        $cart  = session('cart', []);
+        $total = collect($cart)->sum(fn($i) => ($i['price'] ?? 0) * ($i['qty'] ?? 1));
+        return response()->json([
+            'total'           => $total,
+            'total_formatted' => number_format($total, 0, ',', '.') . 'đ',
+        ]);
+    }
+
     public function clear()
     {
         session()->forget('cart');
@@ -90,5 +100,15 @@ class CartController extends Controller
     public function dropdown()
     {
         return response(view('layouts.partials.cart-dropdown')->render());
+    }
+
+    private function normalizeImagePath(?string $image): ?string
+    {
+        if (!$image) return null;
+        // Strip full URL, keep only the path after /storage/
+        if (str_contains($image, '/storage/')) {
+            return preg_replace('#^.*/storage/#', '', $image);
+        }
+        return $image;
     }
 }

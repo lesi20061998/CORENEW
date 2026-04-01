@@ -1,59 +1,35 @@
-@php
-    $cartItems   = session('cart', []);
-    $cartCount   = array_sum(array_column($cartItems, 'qty'));
-    $cartTotal   = collect($cartItems)->sum(fn($i) => ($i['price'] ?? 0) * ($i['qty'] ?? 1));
-    $freeShipMin = 500000;
-    $remaining   = max(0, $freeShipMin - $cartTotal);
-    $progress    = $freeShipMin > 0 ? min(100, round($cartTotal / $freeShipMin * 100)) : 0;
+<h5 class="shopping-cart-number">Shopping Cart ({{ count(session('cart', [])) }})</h5>
+@php 
+    $cart = session('cart', []);
+    $total = collect($cart)->sum(fn($i) => ($i['price'] ?? 0) * ($i['qty'] ?? 1));
 @endphp
 
-<h5 class="shopping-cart-number">Giỏ hàng ({{ $cartCount }})</h5>
-
-@forelse($cartItems as $key => $item)
-<div class="cart-item-1 {{ $loop->first ? 'border-top' : '' }}">
-    <div class="img-name">
-        <div class="thumbanil">
-            <img src="{{ asset($item['image'] ?? 'theme/images/shop/cart-1.png') }}" alt="{{ $item['name'] ?? '' }}">
-        </div>
-        <div class="details">
-            <a href="{{ route('slug.show', $item['slug'] ?? '#') }}">
-                <h5 class="title">{{ $item['name'] ?? '' }}</h5>
+<div class="cart-items-mini-list" style="max-height: 300px; overflow-y: auto;">
+    @foreach($cart as $key => $item)
+    <div class="single-shop-list" style="padding: 10px 0; border-bottom: 1px dashed #eee; display: flex; gap: 10px;">
+        <div class="left-area">
+            <a href="{{ route('shop.show', ['slug' => $item['slug']]) }}" class="thumbnail">
+                <img src="{{ asset($item['image']) }}" alt="{{ $item['name'] }}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px;">
             </a>
-            <div class="number">
-                {{ $item['qty'] }} <i class="fa-regular fa-x"></i>
-                <span>{{ number_format($item['price'] ?? 0) }}đ</span>
-            </div>
+        </div>
+        <div class="info" style="flex: 1;">
+            <a href="{{ route('shop.show', ['slug' => $item['slug']]) }}" class="title" style="font-size: 13px; font-weight: 600; display: block; line-height: 1.2;">{{ $item['name'] }}</a>
+            <span class="qty" style="font-size: 11px; color: #777;">{{ $item['qty'] }} x {{ number_format($item['price']) }}đ</span>
+        </div>
+        <div class="right-area">
+            <button onclick="cart.remove('{{ $key }}')" class="remove-btn" style="border: none; background: none; color: #ccc;"><i class="fa-regular fa-times text-sm"></i></button>
         </div>
     </div>
-    <div class="close-c1 dropdown-cart-remove" data-id="{{ $key }}" style="cursor:pointer;">
-        <i class="fa-regular fa-x"></i>
-    </div>
+    @endforeach
 </div>
-@empty
-<p class="text-center py-3 text-muted">Giỏ hàng trống</p>
-@endforelse
 
-<div class="sub-total-cart-balance">
-    <div class="bottom-content-deals mt--10">
-        <div class="top">
-            <span>Tạm tính:</span>
-            <span class="number-c">{{ number_format($cartTotal) }}đ</span>
-        </div>
-        <div class="single-progress-area-incard">
-            <div class="progress">
-                <div class="progress-bar wow fadeInLeft" role="progressbar"
-                    style="width: {{ $progress }}%"
-                    aria-valuenow="{{ $progress }}" aria-valuemin="0" aria-valuemax="100"></div>
-            </div>
-        </div>
-        @if($remaining > 0)
-        <p>Mua thêm <span>{{ number_format($remaining) }}đ</span> để được <span>Miễn phí giao hàng</span></p>
-        @else
-        <p class="text-success">Bạn được <span>Miễn phí giao hàng</span>!</p>
-        @endif
+<div class="sub-total-cart-balance mt--20">
+    <div class="top-wrapper d-flex justify-content-between mb--15">
+        <span class="text" style="font-weight: 600;">Sub Total:</span>
+        <span class="price" style="font-weight: 700; color: var(--color-primary);">{{ number_format($total) }}đ</span>
     </div>
-    <div class="button-wrapper d-flex align-items-center justify-content-between">
-        <a href="{{ route('cart.page') }}" class="rts-btn btn-primary">Xem giỏ hàng</a>
-        <a href="{{ route('checkout.index') }}" class="rts-btn btn-primary border-only">Thanh toán</a>
+    <div class="button-wrapper d-flex align-items-center justify-content-between gap-2">
+        <a href="{{ route('cart.page') }}" class="rts-btn btn-primary" style="flex: 1; text-align: center; font-size: 12px; padding: 10px;">View Cart</a>
+        <a href="{{ route('checkout.index') }}" class="rts-btn btn-primary border-only" style="flex: 1; text-align: center; font-size: 12px; padding: 10px;">Checkout</a>
     </div>
 </div>

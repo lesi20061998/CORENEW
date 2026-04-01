@@ -46,7 +46,7 @@
         {{-- Mô tả ngắn --}}
         <div>
             <label class="form-label">Mô tả ngắn</label>
-            @include('admin.components.editor', [
+            @include('components.admin.editor', [
                 'name'   => 'description',
                 'value'  => '',
                 'height' => 140,
@@ -125,7 +125,7 @@
             Nội dung danh mục
             <span style="font-size:11px;color:#94a3b8;font-weight:400;">(hỗ trợ HTML, hình ảnh)</span>
         </label>
-        @include('admin.components.editor', ['name' => 'content', 'value' => '', 'height' => 320])
+        @include('components.admin.editor', ['name' => 'content', 'value' => '', 'height' => 320])
     </div>
 
     {{-- Tab: SEO --}}

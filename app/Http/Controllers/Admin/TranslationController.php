@@ -40,4 +40,23 @@ class TranslationController extends Controller
         }
         return back()->with('success', 'Đã lưu bản dịch.');
     }
+    public function duplicate($type, $id, Request $request)
+    {
+        $locale = $request->input('locale', 'en');
+        $models = [
+            'page'     => \App\Models\Page::class,
+            'post'     => \App\Models\Post::class,
+            'product'  => \App\Models\Product::class,
+            'category' => \App\Models\Category::class,
+        ];
+
+        if (!isset($models[$type])) {
+            return back()->with('error', 'Loại nội dung không hợp lệ.');
+        }
+
+        $item = $models[$type]::findOrFail($id);
+        $item->duplicateToLocale($locale);
+
+        return back()->with('success', 'Đã sao chép nội dung sang bản dịch ' . strtoupper($locale));
+    }
 }

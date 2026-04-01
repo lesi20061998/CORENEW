@@ -11,6 +11,13 @@ class SettingController extends Controller
     // Định nghĩa các module settings hiển thị trên trang chủ settings
     protected array $modules = [
         [
+            'group'       => 'appearance',
+            'title'       => 'Giao diện',
+            'description' => 'Màu sắc, Header, Footer, Topbar, Mobile Layout',
+            'icon'        => 'fa-solid fa-palette',
+            'hidden'      => true,
+        ],
+        [
             'group'       => 'contact',
             'title'       => 'Thông tin liên hệ',
             'description' => 'Quản lý thông tin liên hệ email, số điện thoại, địa chỉ',
@@ -108,7 +115,7 @@ class SettingController extends Controller
 
     public function index()
     {
-        $modules = $this->modules;
+        $modules = collect($this->modules)->where('hidden', '!=', true)->all();
         return view('admin.settings.index', compact('modules'));
     }
 
@@ -131,6 +138,12 @@ class SettingController extends Controller
         // SEO group gets its own dedicated view
         if ($group === 'seo') {
             return view('admin.settings.seo', compact('module', 'settings'));
+        }
+
+        // Appearance group gets its own dedicated view
+        if ($group === 'appearance') {
+            $settingsMap = $settings->pluck('value', 'key');
+            return view('admin.settings.appearance', compact('module', 'settings', 'settingsMap'));
         }
 
         return view('admin.settings.group', compact('module', 'settings'));
@@ -157,7 +170,7 @@ class SettingController extends Controller
             $settings['price_presets'] = json_encode($decoded, JSON_UNESCAPED_UNICODE);
         }
 
-        $this->settingService->updateSettings($settings);
+        $this->settingService->updateSettings($settings, $group);
 
         return redirect()->route('admin.settings.group', $group)
                          ->with('success', 'Đã lưu cài đặt "' . $module['title'] . '" thành công.');

@@ -31,9 +31,9 @@ class SettingService
         return $this->repository->set($key, $value, $group, $type);
     }
 
-    public function updateSettings(array $settings): void
+    public function updateSettings(array $settings, string $group = 'general'): void
     {
-        $this->repository->updateMultiple($settings);
+        $this->repository->updateMultiple($settings, $group);
     }
 
     public function initializeDefaultSettings(): void

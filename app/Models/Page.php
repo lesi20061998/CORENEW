@@ -5,8 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
+use App\Traits\HasTranslations;
+
 class Page extends Model
 {
+    use HasTranslations;
+
+    public array $translatableFields = ['title', 'content', 'meta_title', 'meta_description'];
     protected $fillable = [
         'title', 'slug', 'content', 'template', 'status', 'sort_order',
         'meta_title', 'meta_description', 'meta_keywords', 'canonical_url', 'seo_focus_keyword', 'robots_meta', 'schema_json',

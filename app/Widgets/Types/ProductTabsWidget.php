@@ -19,17 +19,23 @@ class ProductTabsWidget extends BaseWidget
     public static function fields(): array
     {
         return [
-            ['key' => 'title',   'label' => 'Tiêu đề section', 'type' => 'text',   'default' => 'Bán chạy trong tuần'],
+            ['key' => 'title',   'label' => 'Tiêu đề section', 'type' => 'text',   'default' => 'Weekly Best Selling Groceries'],
             ['key' => 'columns', 'label' => 'Số cột',          'type' => 'select',
                 'options' => ['4' => '4 cột', '5' => '5 cột', '6' => '6 cột'],
                 'default' => '6'],
             ['key' => 'limit',   'label' => 'Số SP mỗi tab',   'type' => 'number', 'default' => 12],
             ['key' => 'bg_light','label' => 'Nền sáng',        'type' => 'toggle', 'default' => true],
-            ['key' => 'tabs',    'label' => 'Tabs',             'type' => 'repeater', 'default' => [],
+            ['key' => 'tabs',    'label' => 'Tabs lọc danh mục', 'type' => 'repeater',
+                'default' => [
+                    ['label' => 'Frozen Foods',   'filter' => 'best_selling'],
+                    ['label' => 'Diet Foods',      'filter' => 'new'],
+                    ['label' => 'Healthy Foods',   'filter' => 'sale'],
+                    ['label' => 'Vitamin Items',   'filter' => 'all'],
+                ],
                 'fields' => [
-                    ['key' => 'label',       'label' => 'Tên tab',     'type' => 'text'],
-                    ['key' => 'category_id', 'label' => 'ID danh mục (để trống = tất cả)', 'type' => 'number'],
-                    ['key' => 'filter',      'label' => 'Lọc',         'type' => 'select',
+                    ['key' => 'label',       'label' => 'Tên tab',     'type' => 'text', 'col' => 'col-md-4'],
+                    ['key' => 'category_id', 'label' => 'Danh mục',    'type' => 'category_select', 'single' => true, 'col' => 'col-md-4'],
+                    ['key' => 'filter',      'label' => 'Lọc theo',    'type' => 'select', 'col' => 'col-md-4',
                         'options' => ['best_selling' => 'Bán chạy', 'new' => 'Mới nhất', 'sale' => 'Giảm giá', 'all' => 'Tất cả']],
                 ],
             ],

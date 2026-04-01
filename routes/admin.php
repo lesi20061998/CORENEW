@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\LanguageController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\TranslationController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\MenuController;
 use App\Http\Controllers\Admin\FlashSaleController;
 use Illuminate\Support\Facades\Route;
 
@@ -33,7 +34,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     });
 
     // Authenticated admin routes
-    Route::middleware(['auth', 'admin'])->group(function () {
+    Route::middleware(['auth', 'admin', 'admin.cache'])->group(function () {
         Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
         // Dashboard
@@ -111,7 +112,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/media/move', [MediaController::class, 'moveFiles'])->name('media.move');
         Route::post('/media/bulk-delete', [MediaController::class, 'bulkDelete'])->name('media.bulk-delete');
         Route::get('/media/picker', [MediaController::class, 'picker'])->name('media.picker');
-        Route::post('/media/folder', [MediaController::class, 'createFolder'])->name('media.folder');
+        Route::post('/media/folder', [MediaController::class, 'createFolder'])->name('media.create-folder');
+        Route::delete('/media/folder/{id}', [MediaController::class, 'deleteFolder'])->name('media.delete-folder');
+        Route::get('/media/folder/{id}/parent', [MediaController::class, 'getFolderParent'])->name('media.folder-parent');
         Route::delete('/media/{id}', [MediaController::class, 'destroy'])->name('media.destroy');
 
         // Widgets — custom routes BEFORE resource to avoid conflicts
@@ -120,6 +123,16 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/widgets/{id}/clone', [WidgetController::class, 'clone'])->name('widgets.clone');
         Route::get('/widgets/{id}/data', [WidgetController::class, 'getData'])->name('widgets.data');
         Route::resource('widgets', WidgetController::class)->except(['show']);
+
+        // Menus (Giao diện) - Stored in widgets table
+        Route::prefix('menus')->name('menus.')->group(function () {
+            Route::get('/', [MenuController::class, 'index'])->name('index');
+            Route::post('/', [MenuController::class, 'store'])->name('store');
+            Route::get('/search-links', [MenuController::class, 'searchLinks'])->name('search-links');
+            Route::get('/{id}/edit', [MenuController::class, 'edit'])->name('edit');
+            Route::put('/{id}', [MenuController::class, 'update'])->name('update');
+            Route::delete('/{id}', [MenuController::class, 'destroy'])->name('destroy');
+        });
         // Orders
         Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
         Route::get('/orders/trash', [OrderController::class, 'trash'])->name('orders.trash');
@@ -151,5 +164,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // Admin own account
         Route::get('/account', [UserController::class, 'account'])->name('account');
         Route::put('/account', [UserController::class, 'updateAccount'])->name('account.update');
-    });
+        Route::post('duplicate/{type}/{id}', [TranslationController::class, 'duplicate'])->name('duplicate.item');
+});
 });

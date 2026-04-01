@@ -6,9 +6,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Str;
 
+use App\Traits\HasTranslations;
+
 class Category extends Model
 {
-    use HasFactory;
+    use HasFactory, HasTranslations;
+
+    public array $translatableFields = ['name', 'description', 'content', 'meta_title', 'meta_description'];
 
     protected $fillable = [
         'name', 'slug', 'description', 'content', 'image', 'icon',
@@ -41,7 +45,7 @@ class Category extends Model
 
     public function products()
     {
-        return $this->hasMany(Product::class);
+        return $this->belongsToMany(Product::class, 'category_product');
     }
 
     public function scopeActive($query)

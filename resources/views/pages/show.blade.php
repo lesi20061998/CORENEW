@@ -1,38 +1,50 @@
 @extends('layouts.app')
 
-@section('title', $page->meta_title ?? $page->title . ' - VietTinMart')
-@section('meta_description', $page->meta_description ?? setting('seo_meta_desc', ''))
-@section('meta_keywords', $page->meta_keywords ?? setting('seo_meta_keywords', ''))
-@section('canonical', $page->canonical_url ?? url()->current())
-@section('og_type', 'website')
-@section('og_image', setting('seo_og_image', asset('theme/images/fav.png')))
-
-@include('components.seo-schema', ['context' => 'page', 'model' => $page])
+@section('title', ($page->title ?? 'Page') . ' - Ekomart-Grocery-Store')
 
 @section('content')
-<!-- Breadcrumb -->
-<div class="breadcrumb-area">
+<!-- rts navigation bar area start -->
+<div class="rts-navigation-area-breadcrumb">
     <div class="container">
-        <div class="breadcrumb-content">
-            <ul class="breadcrumb-list">
-                <li><a href="{{ route('home') }}">Trang chủ</a></li>
-                <li class="active">{{ $page->title }}</li>
-            </ul>
-        </div>
-    </div>
-</div>
-
-<!-- Page Content -->
-<section class="page-area section-padding-tb">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-lg-10">
-                <h1 class="page-title mb-4">{{ $page->title }}</h1>
-                <div class="page-content">
-                    {!! $page->content !!}
+        <div class="row">
+            <div class="col-lg-12 text-center">
+                <div class="navigator-breadcrumb-wrapper text-center d-flex justify-content-center">
+                    <a href="{{ route('home') }}">Home</a>
+                    <i class="fa-regular fa-chevron-right"></i>
+                    <a class="current" href="#">{{ $page->title ?? 'Page' }}</a>
                 </div>
             </div>
         </div>
     </div>
-</section>
+</div>
+<!-- rts navigation bar area end -->
+
+<div class="rts-page-detail-area rts-section-gap">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="page-content-wrapper p-4 border rounded bg-white shadow-sm">
+                    <h1 class="title mb--30">{{ $page->title ?? 'Untitled Page' }}</h1>
+                    <div class="content entry-content">
+                        {!! $page->content ?? 'No content available for this page.' !!}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.entry-content p {
+    margin-bottom: 20px;
+}
+.entry-content ul, .entry-content ol {
+    margin-bottom: 20px;
+    padding-left: 20px;
+}
+.entry-content h2, .entry-content h3 {
+    margin-top: 30px;
+    margin-bottom: 15px;
+}
+</style>
 @endsection

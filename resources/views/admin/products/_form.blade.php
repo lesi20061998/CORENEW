@@ -15,6 +15,24 @@
             }
         }
     }
+    
+    // Chuẩn bị dữ liệu combo cho JS
+    $comboInitData = [];
+    if ($isEdit) {
+        $comboInitData = $product->combos->map(function($c) {
+            return [
+                'id' => $c->id,
+                'name' => $c->name,
+                'image' => $c->image ? (str_starts_with($c->image, 'http') ? $c->image : asset($c->image)) : null,
+                'original_price' => (float)$c->price,
+                'discount_type' => $c->pivot->discount_type ?? 'fixed',
+                'discount_value' => $c->pivot->discount_value ?? 0,
+                'combo_price' => $c->pivot->combo_price,
+                'is_active' => (bool)$c->pivot->is_active,
+                'sort_order' => $c->pivot->sort_order
+            ];
+        })->toArray();
+    }
 @endphp
 
 <script>
@@ -48,6 +66,11 @@ window.productFormManager = function(existingVariants, existingAttrMap) {
     return {
         productType: {{ (int)old('has_variants', $product?->has_variants ?? 0) }},
         activeDataTab: 'general',
+        
+        mainPriceStr: '{{ number_format((float)old('price', $product?->price ?? 0), 0, ',', ',') }}',
+        comparePriceStr: '{{ number_format((float)old('compare_price', $product?->compare_price ?? 0), 0, ',', ',') }}',
+        costPriceStr: '{{ number_format((float)old('cost_price', $product?->cost_price ?? 0), 0, ',', ',') }}',
+
         variants: existingVariants || [],
         selectedAttributes: Object.keys(existingAttrMap).map(Number),
         selectedValues: existingAttrMap || {},
@@ -57,6 +80,48 @@ window.productFormManager = function(existingVariants, existingAttrMap) {
         bulkEdit: false,
         bulkPrice: '',
         bulkStock: '',
+        combos: @json($comboInitData ?? [], JSON_UNESCAPED_UNICODE),
+        comboSearch: '',
+
+        addCombo(pId) {
+            const allP = @json($allProducts ?? [], JSON_UNESCAPED_UNICODE);
+            const p = allP.find(item => item.id == pId);
+            if (!p || this.combos.some(c => c.id == pId)) return;
+            this.combos.push({
+                id: p.id,
+                name: p.name,
+                image: p.image ? (p.image.startsWith('http') ? p.image : '/'+p.image) : null,
+                original_price: p.price,
+                discount_type: 'percent',
+                discount_value: 0,
+                combo_price: p.price,
+                is_active: true,
+                sort_order: this.combos.length
+            });
+            this.comboSearch = '';
+        },
+
+        formatMoney(val) {
+            if (!val && val !== 0) return '';
+            let s = String(val).replace(/\D/g, "");
+            return s.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        },
+
+        parseMoney(val) {
+            return parseFloat(String(val).replace(/,/g, "")) || 0;
+        },
+
+        calculateFinalPrice(c) {
+            let val = parseFloat(c.discount_value) || 0;
+            if (c.discount_type === 'percent') {
+                return Math.max(0, c.original_price * (1 - val / 100));
+            } else {
+                return Math.max(0, val); // Assume user enters the COMBO price
+            }
+        },
+        removeCombo(idx) {
+            this.combos.splice(idx, 1);
+        },
 
         addManualVariant() {
             if (this.selectedAttributes.length === 0) {
@@ -254,10 +319,15 @@ window.productInitData = {
                             class="w-full text-left px-5 py-3.5 flex items-center gap-3 text-sm font-bold transition-all border-b border-slate-50">
                         <i class="fa-solid fa-microchip opacity-60"></i> Thuộc tính
                     </button>
-                    <button type="button" x-show="productType == 1" x-cloak @click="activeDataTab = 'variants'" 
+                    <button type="button" @click="activeDataTab = 'variants'" x-show="productType == 1" x-cloak
                             :class="activeDataTab === 'variants' ? 'bg-blue-50 text-blue-600 border-r-2 border-blue-600' : 'text-slate-500 hover:bg-slate-50'"
                             class="w-full text-left px-5 py-3.5 flex items-center gap-3 text-sm font-bold transition-all border-b border-slate-50">
                         <i class="fa-solid fa-layer-group opacity-60"></i> Các biến thể
+                    </button>
+                    <button type="button" @click="activeDataTab = 'combos'" 
+                            :class="activeDataTab === 'combos' ? 'bg-blue-50 text-blue-600 border-r-2 border-blue-600' : 'text-slate-500 hover:bg-slate-50'"
+                            class="w-full text-left px-5 py-3.5 flex items-center gap-3 text-sm font-bold transition-all border-b border-slate-50">
+                        <i class="fa-solid fa-layer-group text-emerald-500 opacity-60"></i> Combo & Bán kèm
                     </button>
                     <button type="button" @click="activeDataTab = 'advanced'" 
                             :class="activeDataTab === 'advanced' ? 'bg-blue-50 text-blue-600 border-r-2 border-blue-600' : 'text-slate-500 hover:bg-slate-50'"
@@ -265,7 +335,6 @@ window.productInitData = {
                         <i class="fa-solid fa-sliders opacity-60"></i> Nâng cao
                     </button>
                 </div>
-
                 {{-- Nội dung tab bên phải --}}
                 <div class="flex-1 p-8 bg-white overflow-hidden">
                     
@@ -274,20 +343,21 @@ window.productInitData = {
                         <div class="grid grid-cols-1 md:grid-cols-[160px_1fr] items-center gap-4">
                             <label class="text-sm font-bold text-slate-500">Giá thông thường (₫)</label>
                             <div class="relative">
-                                <input type="number" name="compare_price" step="1000"
-                                       value="{{ old('compare_price', $product?->compare_price) }}"
+                                <input type="text" x-model="comparePriceStr" @input="comparePriceStr = formatMoney(comparePriceStr)"
                                        class="form-input !text-sm !py-2 bg-slate-50 border-slate-200 border-dashed hover:bg-white hover:border-blue-400 focus:bg-white transition-all">
+                                <input type="hidden" name="compare_price" :value="parseMoney(comparePriceStr)">
+                                <p class="text-[10px] text-slate-400 mt-1 uppercase font-black tracking-widest italic opacity-60">Giá thị trường hoặc giá gốc chưa giảm</p>
                             </div>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-[160px_1fr] items-center gap-4">
                             <label class="text-sm font-bold text-slate-700">Giá bán ưu đãi (₫)</label>
                             <div class="relative">
-                                <input type="number" name="price" step="1000"
-                                       value="{{ old('price', $product?->price) }}"
-                                       class="form-input !text-sm !py-2.5 font-bold text-blue-600 border-blue-200 focus:ring-blue-100 shadow-sm">
+                                <input type="text" x-model="mainPriceStr" @input="mainPriceStr = formatMoney(mainPriceStr)"
+                                       class="form-input !text-base !py-3 font-black text-blue-600 border-blue-200 focus:ring-blue-100 shadow-sm transition-all focus:scale-[1.01]">
+                                <input type="hidden" name="price" :value="parseMoney(mainPriceStr)">
+                                <p class="text-[10px] text-blue-400 mt-1 uppercase font-black tracking-widest italic">Giá hiển thị bán cho khách hàng</p>
                             </div>
                         </div>
-                        {{-- Removed Cost Price field --}}
                     </div>
 
                     {{-- Tab 2: Kho hàng --}}
@@ -379,7 +449,7 @@ window.productInitData = {
                             </div>
                         @else
                             <div class="p-10 text-center border-2 border-dashed border-slate-100 rounded-3xl">
-                                <p class="text-sm text-slate-400 font-bold italic">Không có thuộc tính nào khả dụng.</p>
+                                <p class="text-sm text-slate-400 font-bold">Không có thuộc tính nào khả dụng.</p>
                             </div>
                         @endif
                     </div>
@@ -557,9 +627,118 @@ window.productInitData = {
                                     <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-300">
                                         <i class="fa-solid fa-layer-group text-2xl"></i>
                                     </div>
-                                    <p class="text-sm font-bold text-slate-400 italic">Vui lòng chọn thuộc tính để tạo biến thể.</p>
+                                    <p class="text-sm font-bold text-slate-400">Vui lòng chọn thuộc tính để tạo biến thể.</p>
                                 </div>
                             </template>
+                        </div>
+                    </div>
+
+                    {{-- Tab: Combo & Bán kèm --}}
+                    <div x-show="activeDataTab === 'combos'" x-cloak class="space-y-6">
+                        <div class="flex items-center justify-between mb-2">
+                            <div>
+                                <p class="text-sm font-bold text-slate-800 tracking-tight">Mua thêm Combo sản phẩm</p>
+                                <p class="text-[11px] text-slate-400 font-bold uppercase mt-1">Thiết lập Upsell / Bán kèm sản phẩm</p>
+                            </div>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div class="relative">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Thêm sản phẩm vào combo</label>
+                                <div class="flex gap-2">
+                                    <select class="form-select !py-2.5 !text-sm flex-1 border-slate-200" @change="addCombo($event.target.value); $event.target.value=''">
+                                        <option value="">-- Chọn sản phẩm để thêm --</option>
+                                        @foreach($allProducts ?? [] as $p)
+                                            <option value="{{ $p->id }}">{{ $p->name }} ({{ number_format($p->price, 0, ',', '.') }}₫)</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="border border-slate-100 rounded-[24px] overflow-hidden bg-slate-50/30 shadow-sm">
+                                <table class="w-full text-sm">
+                                    <thead class="bg-white border-b border-slate-100">
+                                        <tr>
+                                            <th class="px-5 py-4 text-left text-[11px] font-black text-slate-400 uppercase tracking-widest">Sản phẩm</th>
+                                            <th class="px-5 py-4 text-left text-[11px] font-black text-slate-400 uppercase tracking-widest">Giá Gốc</th>
+                                            <th class="px-5 py-4 text-left text-[11px] font-black text-slate-400 uppercase tracking-widest">Giảm giá</th>
+                                            <th class="px-5 py-4 text-left text-[11px] font-black text-slate-400 uppercase tracking-widest">Giá Combo (₫)</th>
+                                            <th class="px-5 py-4 text-center text-[11px] font-black text-slate-400 uppercase tracking-widest">Hiển thị</th>
+                                            <th class="px-5 py-4 w-10"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-100">
+                                        <template x-for="(c, idx) in combos" :key="idx">
+                                            <tr class="bg-white/50 hover:bg-white transition-colors group">
+                                                <td class="px-5 py-4">
+                                                    <div class="flex items-center gap-3">
+                                                        <div class="w-10 h-10 rounded-xl bg-white border border-slate-100 overflow-hidden shadow-sm flex-shrink-0">
+                                                            <img :src="c.image || '/admin/images/placeholder.webp'" class="w-full h-full object-cover">
+                                                        </div>
+                                                        <div class="flex flex-col">
+                                                            <span class="text-xs font-black text-slate-700 line-clamp-1" x-text="c.name"></span>
+                                                            <span class="text-[9px] text-slate-400 font-bold uppercase tracking-tight mt-0.5">ID: <span x-text="c.id"></span></span>
+                                                        </div>
+                                                    </div>
+                                                    <input type="hidden" :name="`combos[${idx}][id]`" :value="c.id">
+                                                </td>
+                                                <td class="px-5 py-4">
+                                                    <span class="text-xs font-bold text-slate-400" x-text="new Intl.NumberFormat('vi-VN').format(c.original_price) + '₫'"></span>
+                                                </td>
+                                                <td class="px-5 py-4">
+                                                    <div class="flex items-center gap-1">
+                                                        <div class="relative flex-grow max-w-[120px]">
+                                                            <input type="text" 
+                                                                   x-model="c.discount_value" 
+                                                                   @input="if(c.discount_type === 'fixed') { c.discount_value = formatMoney(c.discount_value) }"
+                                                                   class="form-input !py-1.5 !pr-7 !text-xs font-black border-slate-200 focus:border-blue-400"
+                                                                   placeholder="0">
+                                                            <span class="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-300" x-text="c.discount_type === 'percent' ? '%' : '₫'"></span>
+                                                        </div>
+                                                        <select x-model="c.discount_type" 
+                                                                :name="`combos[${idx}][discount_type]`"
+                                                                @change="c.discount_value = '0'"
+                                                                class="form-select !py-1.5 !px-2 !text-[10px] font-black uppercase text-blue-600 border-none bg-blue-50 rounded-lg cursor-pointer">
+                                                            <option value="percent">%</option>
+                                                            <option value="fixed">VNĐ</option>
+                                                        </select>
+                                                        <input type="hidden" :name="`combos[${idx}][discount_value]`" :value="parseMoney(c.discount_value)">
+                                                    </div>
+                                                </td>
+                                                <td class="px-5 py-4">
+                                                    <div class="relative max-w-[140px]">
+                                                        <input type="hidden" :name="`combos[${idx}][price]`" :value="calculateFinalPrice(c)">
+                                                        <span class="text-xs font-black text-emerald-600" x-text="new Intl.NumberFormat('vi-VN').format(calculateFinalPrice(c)) + '₫'"></span>
+                                                    </div>
+                                                </td>
+                                                <td class="px-5 py-4 text-center">
+                                                    <label class="relative inline-flex items-center cursor-pointer">
+                                                        <input type="checkbox" :name="`combos[${idx}][is_active]`" value="1" x-model="c.is_active" class="sr-only peer">
+                                                        <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                                                    </label>
+                                                </td>
+                                                <td class="px-5 py-4 text-right">
+                                                    <button type="button" @click="removeCombo(idx)" 
+                                                            class="w-8 h-8 rounded-lg bg-slate-50 text-slate-300 hover:text-rose-600 hover:bg-rose-50 transition-all flex items-center justify-center">
+                                                        <i class="fa-solid fa-xmark text-xs"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                        <template x-if="combos.length === 0">
+                                            <tr>
+                                                <td colspan="6" class="px-5 py-16 text-center">
+                                                    <div class="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-3 text-slate-300">
+                                                        <i class="fa-solid fa-layer-group text-xl"></i>
+                                                    </div>
+                                                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Chưa có sản phẩm combo nào</p>
+                                                    <p class="text-[10px] text-slate-300 font-bold mt-1">Chọn sản phẩm từ danh sách bên trên để bắt đầu</p>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
 
@@ -578,7 +757,7 @@ window.productInitData = {
             </div>
         </div>
 
-        @include('admin.components.seo-checklist', ['context' => 'product', 'model' => $product])
+        @include('components.admin.seo-checklist', ['context' => 'product', 'model' => $product])
     </div>
 
     {{-- ═══ CỘT PHẢI: Metadata & Media ═══ --}}
@@ -704,7 +883,7 @@ window.productInitData = {
                 </p>
             </div>
             <div class="card-body">
-                @if(isset($categories) && $categories->count() > 0)
+                @if(isset($categories) && count($categories) > 0)
                 <div class="max-h-[300px] overflow-y-auto space-y-2 bg-slate-50/30 p-4 rounded-2xl border border-slate-50 pr-2 custom-scroll">
                     @php $selectedCats = old('category_ids', $isEdit ? $product->categories->pluck('id')->toArray() : []); @endphp
                     @foreach($categories as $cat)
@@ -720,7 +899,7 @@ window.productInitData = {
                     @endforeach
                 </div>
                 @else
-                    <p class="text-xs text-slate-400 italic font-bold">Chưa tạo danh mục nào.</p>
+                    <p class="text-xs text-slate-400 font-bold">Chưa tạo danh mục nào.</p>
                 @endif
             </div>
         </div>
@@ -768,7 +947,7 @@ window.productInitData = {
     </div>
 </div>
 
-@push('scripts')
+@push('styles')
 <style>
     .custom-scroll::-webkit-scrollbar { width: 4px; }
     .custom-scroll::-webkit-scrollbar-track { background: transparent; }

@@ -11,7 +11,11 @@
         @forelse($languages as $lang)
         <div class="card p-4 flex items-center gap-4">
             <div class="text-xl w-10 text-center flex-shrink-0 text-gray-400">
-                <i class="fa-solid fa-language"></i>
+                @if($lang->flag)
+                    <img src="{{ $lang->flag }}" alt="{{ $lang->name }}" class="w-8 h-8 object-contain mx-auto rounded">
+                @else
+                    <i class="fa-solid fa-language"></i>
+                @endif
             </div>
             <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-2">
@@ -84,9 +88,20 @@
                                class="form-input" required>
                     </div>
                     <div>
-                        <label class="form-label">Biểu tượng</label>
-                        <input type="text" name="flag" value="{{ old('flag') }}" placeholder="vi, en..."
-                               class="form-input text-xl" maxlength="10">
+                        <label class="form-label">Biểu tượng (Cờ)</label>
+                        <div class="flex items-center gap-3">
+                            <div id="add_flag_preview" class="w-12 h-12 border rounded-xl flex items-center justify-center bg-slate-50 flex-shrink-0 overflow-hidden">
+                                <i class="fa-solid fa-image text-slate-200 text-xl"></i>
+                            </div>
+                            <div class="flex-1">
+                                <input type="hidden" name="flag" id="add_flag_input">
+                                <button type="button" onclick="openMediaPicker('add_flag_input', (url) => { document.getElementById('add_flag_preview').innerHTML = `<img src='${url}' class='w-full h-full object-contain'>` })" 
+                                        class="btn-secondary btn-sm w-full justify-center py-2.5">
+                                    <i class="fa-solid fa-plus mr-1"></i> Chọn / Tải ảnh
+                                </button>
+                                <p class="text-[10px] text-gray-400 mt-1.5 leading-tight">PNG/SVG tỷ lệ 1:1 hoặc 4:3</p>
+                            </div>
+                        </div>
                     </div>
                     <label class="flex items-center gap-2 cursor-pointer">
                         <input type="checkbox" name="is_active" value="1" checked
@@ -134,8 +149,19 @@
                     <input type="text" name="native_name" id="edit_native_name" class="form-input" required>
                 </div>
                 <div>
-                    <label class="form-label">Biểu tượng</label>
-                    <input type="text" name="flag" id="edit_flag" class="form-input text-xl" maxlength="10" placeholder="vi, en...">
+                    <label class="form-label">Biểu tượng hiện tại</label>
+                    <div class="flex items-center gap-3">
+                        <div id="edit_flag_preview" class="w-12 h-12 border rounded-xl flex items-center justify-center bg-slate-50 flex-shrink-0 overflow-hidden">
+                            <!-- Preview image will be injected here -->
+                        </div>
+                        <div class="flex-1">
+                            <input type="hidden" name="flag" id="edit_flag_input">
+                            <button type="button" onclick="openMediaPicker('edit_flag_input', (url) => { document.getElementById('edit_flag_preview').innerHTML = `<img src='${url}' class='w-full h-full object-contain'>` })" 
+                                    class="btn-secondary btn-sm w-full justify-center py-2.5">
+                                <i class="fa-solid fa-arrows-rotate mr-1"></i> Thay đổi ảnh
+                            </button>
+                        </div>
+                    </div>
                 </div>
                 <div>
                     <label class="form-label">Thứ tự</label>
@@ -161,11 +187,18 @@
 const routes = @json($languages->pluck('id'));
 
 function openEditModal(id, code, name, nativeName, flag, isActive, sortOrder) {
-    document.getElementById('editForm').action = `/admin/languages/${id}`;
+    document.getElementById('editForm').action = `/admin/settings/languages/${id}`;
     document.getElementById('edit_code').value = code;
     document.getElementById('edit_name').value = name;
     document.getElementById('edit_native_name').value = nativeName;
-    document.getElementById('edit_flag').value = flag;
+    const previewDiv = document.getElementById('edit_flag_preview');
+    const inputEl = document.getElementById('edit_flag_input');
+    inputEl.value = flag && flag !== 'null' ? flag : '';
+    if (flag && flag !== 'null') {
+        previewDiv.innerHTML = `<img src="${flag}" class="w-full h-full object-contain">`;
+    } else {
+        previewDiv.innerHTML = `<i class="fa-solid fa-image text-slate-200 text-xl"></i>`;
+    }
     document.getElementById('edit_sort_order').value = sortOrder;
     document.getElementById('edit_is_active').checked = isActive == 1;
     document.getElementById('editModal').classList.remove('hidden');

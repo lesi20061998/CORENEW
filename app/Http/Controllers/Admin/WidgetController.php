@@ -42,10 +42,15 @@ class WidgetController extends Controller
         $types = $this->widgetService->registeredTypes();
         $name  = $types[$request->type]['label'] ?? $request->type;
 
-        $this->widgetService->create(
-            ['name' => $name] + $request->only(['type', 'area', 'sort_order', 'is_active'])
+        $widget = $this->widgetService->create(
+            ['name' => $request->input('name') ?? ($types[$request->type]['label'] ?? $request->type)] 
+            + $request->only(['type', 'area', 'sort_order', 'is_active'])
             + ['config' => $request->input('config', [])]
         );
+        
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true, 'widget' => $widget]);
+        }
 
         return redirect()->route('admin.widgets.index')
             ->with('success', 'Đã tạo widget thành công.');
@@ -73,17 +78,27 @@ class WidgetController extends Controller
 
         $this->widgetService->update(
             $id,
-            ['name' => $name] + $request->only(['area', 'sort_order', 'is_active'])
+            ['name' => $request->input('name') ?? ($types[$widget->type]['label'] ?? $widget->type)] 
+            + $request->only(['area', 'sort_order', 'is_active'])
             + ['config' => $request->input('config', [])]
         );
+
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true]);
+        }
 
         return redirect()->route('admin.widgets.index')
             ->with('success', 'Đã cập nhật widget.');
     }
 
-    public function destroy(int $id)
+    public function destroy(Request $request, int $id)
     {
         $this->widgetService->delete($id);
+
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true]);
+        }
+
         return redirect()->route('admin.widgets.index')
             ->with('success', 'Đã xóa widget.');
     }

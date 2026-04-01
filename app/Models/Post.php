@@ -8,9 +8,13 @@ use Illuminate\Support\Str;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+use App\Traits\HasTranslations;
+
 class Post extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, HasTranslations;
+
+    public array $translatableFields = ['title', 'content', 'excerpt', 'meta_title', 'meta_description'];
 
     protected $fillable = [
         'title', 'slug', 'content', 'excerpt', 'thumbnail',

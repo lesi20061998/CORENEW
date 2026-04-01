@@ -25,6 +25,12 @@ class ProductRepository
             $query->where(fn($q) => $q->where('name', 'like', '%'.$filters['search'].'%')
                                       ->orWhere('sku', 'like', '%'.$filters['search'].'%'));
         }
+        if (!empty($filters['category_ids'])) {
+            $categoryIds = is_array($filters['category_ids']) ? $filters['category_ids'] : [$filters['category_ids']];
+            $query->whereHas('categories', function($q) use ($categoryIds) {
+                $q->whereIn('categories.id', $categoryIds);
+            });
+        }
         if (!empty($filters['category_id'])) {
             $query->where('category_id', $filters['category_id']);
         }

@@ -47,8 +47,8 @@ class UserController extends Controller
         $user->update($data);
 
         if ($request->filled('password')) {
-            $request->validate(['password' => 'min:6|confirmed']);
-            $user->update(['password' => Hash::make($request->password)]);
+            $request->validate(['password' => ['confirmed', \Illuminate\Validation\Rules\Password::min(8)->letters()->numbers()->symbols()]]);
+            $user->update(['password' => $request->password]);
         }
 
         return back()->with('success', 'Đã cập nhật tài khoản.');
@@ -81,8 +81,8 @@ class UserController extends Controller
         $user->update($data);
 
         if ($request->filled('password')) {
-            $request->validate(['password' => 'min:6|confirmed']);
-            $user->update(['password' => Hash::make($request->password)]);
+            $request->validate(['password' => ['confirmed', \Illuminate\Validation\Rules\Password::min(8)->letters()->numbers()->symbols()]]);
+            $user->update(['password' => $request->password]);
         }
 
         return back()->with('success', 'Đã cập nhật tài khoản.');

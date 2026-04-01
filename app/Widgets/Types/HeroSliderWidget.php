@@ -5,42 +5,52 @@ namespace App\Widgets\Types;
 use App\Models\Widget as WidgetModel;
 use App\Widgets\BaseWidget;
 
-/**
- * Widget: Hero Slider - Banner chính trang chủ
- * Map từ: .rts-banner-area-one (index.html) và .rts-banner-area-two (index-two.html)
- */
 class HeroSliderWidget extends BaseWidget
 {
-    public static string $label       = 'Hero Slider';
-    public static string $description = 'Banner slider chính trang chủ với tiêu đề, phụ đề và nút CTA';
+    public static string $label       = 'Banner Chế độ Slider';
+    public static string $description = 'Banner lớn đầu trang với hiệu ứng trượt Swiper';
     public static string $icon        = 'fa-solid fa-images';
 
     public static function fields(): array
     {
         return [
-            ['key' => 'style',    'label' => 'Kiểu hiển thị', 'type' => 'select',
-                'options' => ['fullwidth' => 'Toàn chiều rộng', 'boxed' => 'Có viền'],
-                'default' => 'fullwidth'],
-            ['key' => 'autoplay', 'label' => 'Tự động chạy',  'type' => 'toggle', 'default' => true],
-            ['key' => 'interval', 'label' => 'Thời gian (ms)', 'type' => 'number', 'default' => 4000],
-            ['key' => 'slides',   'label' => 'Slides',         'type' => 'repeater', 'default' => [],
-                'fields' => [
-                    ['key' => 'bg_image',    'label' => 'Ảnh nền',       'type' => 'image'],
-                    ['key' => 'bg_class',    'label' => 'CSS class nền',  'type' => 'text'],
-                    ['key' => 'pre_title',   'label' => 'Tiêu đề nhỏ',   'type' => 'text'],
-                    ['key' => 'title',       'label' => 'Tiêu đề chính', 'type' => 'text'],
-                    ['key' => 'description', 'label' => 'Mô tả',         'type' => 'textarea'],
-                    ['key' => 'btn_text',    'label' => 'Nút CTA',        'type' => 'text', 'default' => 'Mua ngay'],
-                    ['key' => 'btn_link',    'label' => 'Link nút',       'type' => 'text', 'default' => '/shop'],
-                    ['key' => 'price_label', 'label' => 'Nhãn giá',      'type' => 'text'],
-                    ['key' => 'price',       'label' => 'Giá hiển thị',  'type' => 'text'],
+            ['key' => 'slides', 'label' => 'Danh sách Slide', 'type' => 'repeater',
+                'default' => [
+                    [
+                        'bg_class'    => 'bg_one-banner',
+                        'pre_title'   => 'Giảm đến 30% cho đơn hàng đầu tiên từ 1.500.000đ',
+                        'title'       => "Đừng bỏ lỡ những ưu đãi\nthực phẩm tuyệt vời",
+                        'btn_text'    => 'Mua ngay',
+                        'btn_link'    => '/shop',
+                    ],
+                    [
+                        'bg_class'    => 'bg_one-banner two',
+                        'pre_title'   => 'Giảm đến 30% cho đơn hàng đầu tiên từ 1.500.000đ',
+                        'title'       => "Thực phẩm tươi sạch\nmỗi ngày cho gia đình bạn",
+                        'btn_text'    => 'Khám phá ngay',
+                        'btn_link'    => '/shop',
+                    ],
                 ],
+                'fields' => [
+                    ['key' => 'image',    'label' => 'Ảnh nền (URL)', 'type' => 'image'],
+                    ['key' => 'bg_class',  'label' => 'CSS Class nền', 'type' => 'text', 'placeholder' => 'bg_one-banner', 'col' => 'col-md-6'],
+                    ['key' => 'pre_title', 'label' => 'Text nhỏ (Pre)', 'type' => 'text', 'col' => 'col-md-6'],
+                    ['key' => 'title',    'label' => 'Tiêu đề chính', 'type' => 'text'],
+                    ['key' => 'description', 'label' => 'Mô tả',     'type' => 'text'],
+                    ['key' => 'btn_text', 'label' => 'Text nút',      'type' => 'text', 'default' => 'Shop Now', 'col' => 'col-md-6'],
+                    ['key' => 'btn_link', 'label' => 'Link nút',      'type' => 'text', 'default' => '/shop', 'col' => 'col-md-6'],
+                ]
             ],
+            ['key' => 'autoplay_delay', 'label' => 'Tốc độ tự chạy (ms)', 'type' => 'number', 'default' => 4000],
         ];
     }
 
     public static function render(array $config, WidgetModel $widget): string
     {
-        return static::view('widgets.types.hero_slider', ['config' => $config, 'widget' => $widget]);
+        return static::view('widgets.types.hero_main', [
+            'config' => $config,
+            'widget' => $widget,
+            'slides' => $config['slides'] ?? []
+        ]);
     }
 }

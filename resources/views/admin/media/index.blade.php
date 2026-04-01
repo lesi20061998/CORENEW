@@ -65,7 +65,6 @@
         display: flex;
         flex-direction: column;
         min-width: 0;
-        margin-left: 16px;
     }
     .media-toolbar {
         background: #fff;
@@ -83,7 +82,7 @@
         flex: 1;
         overflow-y: auto;
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
         gap: 12px;
         align-content: start;
     }
@@ -108,7 +107,11 @@
     .media-card-thumb .file-icon {
         width: 100%; height: 100%;
         display: flex; align-items: center; justify-content: center;
-        font-size: 32px;
+        font-size: 26px;
+    }
+    .folder-card .media-card-thumb {
+        aspect-ratio: 16/9;
+        background: #fff;
     }
     .media-card-check {
         position: absolute;
@@ -146,9 +149,18 @@
     }
     .media-card-action-btn:hover { background: #fff; }
     .media-card-action-btn.del:hover { background: #fee2e2; color: #dc2626; }
-    .media-card-info { padding: 9px 10px; }
-    .media-card-name { font-size: 12px; font-weight: 600; color: #374151; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .media-card-meta { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+    .media-card-info { padding: 9px 10px; min-height: 48px; display: flex; flex-direction: column; justify-content: center; }
+    .media-card-name { 
+        font-size: 11.5px; 
+        font-weight: 600; 
+        color: #374151; 
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;  
+        overflow: hidden;
+        line-height: 1.3;
+    }
+    .media-card-meta { font-size: 10.5px; color: #94a3b8; margin-top: 3px; }
 
     /* Upload zone */
     .upload-zone {
@@ -234,62 +246,69 @@
 
 <div class="media-layout" x-data="mediaManager()" x-init="init()">
 
-    {{-- ══ FOLDER TREE ══ --}}
-    <div class="folder-tree">
-        <div class="folder-tree-header">
-            <span>Thư mục</span>
-        </div>
-        <div class="folder-list">
-            @foreach($rootFolders as $name => $meta)
-            @php $count = $folderCounts[$name] ?? 0; @endphp
-            <a href="{{ route('admin.media.index', ['folder' => $name]) }}"
-               class="folder-item {{ $folder === $name ? 'active' : '' }}">
-                <span class="folder-icon" style="background:{{ $folder === $name ? 'rgba(37,99,235,.1)' : '#f8fafc' }};">
-                    <i class="fa-solid {{ $meta['icon'] }}" style="color:{{ $folder === $name ? '#2563eb' : $meta['color'] }};"></i>
-                </span>
-                <span class="folder-name">{{ $name }}</span>
-                <span class="folder-count">{{ $count }}</span>
-            </a>
-            @endforeach
-
-            {{-- Custom folders not in root list --}}
-            @foreach($folderCounts as $name => $count)
-                @if(!array_key_exists($name, $rootFolders))
-                <a href="{{ route('admin.media.index', ['folder' => $name]) }}"
-                   class="folder-item {{ $folder === $name ? 'active' : '' }}">
-                    <span class="folder-icon" style="background:#f8fafc;">
-                        <i class="fa-solid fa-folder" style="color:#64748b;"></i>
-                    </span>
-                    <span class="folder-name">{{ $name }}</span>
-                    <span class="folder-count">{{ $count }}</span>
-                </a>
-                @endif
-            @endforeach
-        </div>
-    </div>
-
     {{-- ══ MEDIA PANEL ══ --}}
-    <div class="media-panel">
+    <div class="media-panel" style="margin-left:0; width:100%;">
 
-        {{-- Toolbar --}}
-        <div class="media-toolbar">
-            <div style="display:flex;align-items:center;gap:8px;flex:1;">
-                <i class="fa-solid fa-folder-open" style="color:#3b82f6;font-size:16px;"></i>
-                <span style="font-size:15px;font-weight:700;color:#0f172a;">{{ $folder }}</span>
-                <span style="font-size:13px;color:#94a3b8;">({{ $media->total() }} tệp)</span>
-            </div>
-            <div style="display:flex;align-items:center;gap:8px;">
-                <button @click="selectAll()" class="btn btn-ghost btn-sm">
-                    <i class="fa-solid fa-check-double"></i> Chọn tất cả
+        {{-- Breadcrumbs & Navigation --}}
+        <div class="media-toolbar" style="margin-bottom:12px;">
+            <nav class="flex items-center gap-3 overflow-hidden">
+                <a href="{{ route('admin.media.index') }}" class="px-3 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-blue-600 hover:text-white transition-all shadow-sm shrink-0 gap-2">
+                    <i class="fa-solid fa-house text-xs"></i>
+                    <span class="text-[10px] font-black uppercase tracking-widest">Gốc</span>
+                </a>
+                <i class="fa-solid fa-chevron-right text-[10px] text-slate-300"></i>
+                @foreach($breadcrumbs as $bc)
+                    <a href="{{ route('admin.media.index', ['folder_id' => $bc->id]) }}" class="px-4 py-2 rounded-xl {{ $currentFolder && $currentFolder->id == $bc->id ? 'bg-blue-600 text-white shadow-blue-200' : 'bg-slate-50 text-slate-600 hover:bg-blue-50' }} text-[11px] font-black uppercase transition-all border border-slate-100 whitespace-nowrap shadow-sm">
+                        {{ $bc->name }}
+                    </a>
+                    @if(!$loop->last)
+                        <i class="fa-solid fa-chevron-right text-[10px] text-slate-300"></i>
+                    @endif
+                @endforeach
+                @if($currentFolder)
+                    <span class="text-[10px] font-black uppercase text-slate-300 ml-2 tracking-widest italic opacity-60">({{ $folders->count() }} Thư mục, {{ $media->total() }} Tệp)</span>
+                @else
+                    <span class="text-[11px] font-black uppercase text-slate-600 bg-white px-4 py-2 rounded-xl border border-slate-100 shadow-sm">Kho tài liệu chính</span>
+                @endif
+            </nav>
+            <div class="flex items-center gap-3 ml-auto">
+                <button @click="openNewFolder()" class="btn btn-secondary border-none bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white" style="height:44px;border-radius:14px;">
+                    <i class="fa-solid fa-folder-plus"></i> Thư mục mới
                 </button>
-                <button @click="clearSelection()" class="btn btn-ghost btn-sm" x-show="selected.length > 0" x-cloak>
-                    Bỏ chọn
+                <div class="w-[1px] h-6 bg-slate-100"></div>
+                <button @click="selectAll()" class="w-10 h-10 rounded-xl bg-white border border-slate-100 text-slate-400 hover:text-blue-600 transition-all shadow-sm flex items-center justify-center">
+                    <i class="fa-solid fa-check-double"></i>
                 </button>
             </div>
         </div>
 
         {{-- Grid --}}
         <div class="media-grid" id="media-grid">
+            {{-- Folders --}}
+            @foreach($folders as $f)
+            <div class="media-card folder-card" style="border-color:#f1f5f9;background:#fdfdfd;" 
+                 @dblclick="window.location.href='{{ route('admin.media.index', ['folder_id' => $f->id]) }}'">
+                <div class="media-card-thumb" style="background:#fff7ed; position:relative;">
+                    <div class="file-icon" style="color:{{ $f->color ?? '#f97316' }};">
+                        <i class="fa-solid {{ $f->icon ?? 'fa-folder' }}"></i>
+                    </div>
+                    <div class="media-card-actions">
+                        <button class="media-card-action-btn del"
+                                @click.stop="deleteFolder({{ $f->id }})"
+                                title="Xóa thư mục">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="media-card-info" style="text-align:center;">
+                    <div class="media-card-name" style="font-weight:700; color:{{ $f->color ?? '#374151' }};" title="{{ $f->name }}">
+                        {{ $f->name }}
+                    </div>
+                </div>
+            </div>
+            @endforeach
+
+            {{-- Files --}}
             @forelse($media as $item)
             <div class="media-card" :class="selected.includes({{ $item->id }}) ? 'selected' : ''"
                  @click="toggle({{ $item->id }})">
@@ -326,18 +345,20 @@
                 </div>
             </div>
             @empty
-            <div class="empty-state">
-                <i class="fa-solid fa-images"></i>
-                <p style="font-size:14px;font-weight:600;color:#64748b;">Thư mục trống</p>
-                <p style="font-size:12.5px;margin-top:4px;">Tải lên tệp để bắt đầu</p>
-            </div>
+            @if($folders->isEmpty())
+                <div class="empty-state">
+                    <i class="fa-solid fa-images"></i>
+                    <p style="font-size:14px;font-weight:600;color:#64748b;">Thư mục trống</p>
+                    <p style="font-size:12.5px;margin-top:4px;">Tải lên tệp để bắt đầu</p>
+                </div>
+            @endif
             @endforelse
         </div>
 
         {{-- Pagination --}}
         @if($media->hasPages())
         <div style="margin-top:16px;flex-shrink:0;">
-            {{ $media->appends(['folder' => $folder])->links() }}
+            {{ $media->appends(['folder_id' => $currentFolder ? $currentFolder->id : null])->links() }}
         </div>
         @endif
     </div>
@@ -371,8 +392,9 @@
             <div class="modal-body">
                 <label class="form-label">Chọn thư mục đích</label>
                 <select x-model="moveTarget" class="form-select">
-                    @foreach($rootFolders as $name => $meta)
-                    <option value="{{ $name }}">{{ $name }}</option>
+                    <option value="">Thư mục gốc (Root)</option>
+                    @foreach($allFolders as $f)
+                    <option value="{{ $f->id }}">{{ $f->name }}</option>
                     @endforeach
                 </select>
             </div>
@@ -392,55 +414,56 @@
         <span x-text="toastMsg"></span>
     </div>
 
-</div>
-
-{{-- ══ UPLOAD MODAL ══ --}}
-<div id="upload-modal" class="modal-overlay" style="display:none;">
-    <div class="modal-box" style="max-width:520px;">
-        <div class="modal-header">
-            <span class="modal-title"><i class="fa-solid fa-upload" style="color:#3b82f6;margin-right:8px;"></i>Tải lên tệp mới</span>
-            <button onclick="document.getElementById('upload-modal').style.display='none'"
-                    style="background:none;border:none;cursor:pointer;color:#94a3b8;font-size:18px;">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-        </div>
-        <form action="{{ route('admin.media.store') }}" method="POST" enctype="multipart/form-data">
-            @csrf
+    {{-- ══ UPLOAD MODAL ══ --}}
+    <div id="upload-modal" class="modal-overlay" style="display:none;">
+        <div class="modal-box" style="max-width:520px;">
+            <div class="modal-header">
+                <span class="modal-title"><i class="fa-solid fa-upload" style="color:#3b82f6;margin-right:8px;"></i>Tải lên tệp mới</span>
+                <button onclick="document.getElementById('upload-modal').style.display='none'"
+                        style="background:none;border:none;cursor:pointer;color:#94a3b8;font-size:18px;">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
             <div class="modal-body" style="display:flex;flex-direction:column;gap:16px;">
-
                 {{-- Drop zone --}}
                 <div class="upload-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
                     <i class="fa-solid fa-cloud-arrow-up"></i>
-                    <p>Kéo thả tệp vào đây hoặc <strong style="color:#3b82f6;">nhấn để chọn</strong></p>
-                    <span>PNG, JPG, GIF, PDF — tối đa 10MB</span>
-                    <div id="file-preview" style="margin-top:12px;font-size:13px;color:#374151;font-weight:600;"></div>
+                    <p>Kéo thả nhiều tệp vào đây hoặc <strong style="color:#3b82f6;">nhấn để chọn</strong></p>
+                    <span>PNG, JPG, GIF, PDF... Không giới hạn số lượng</span>
+                    <div id="file-preview" style="margin-top:12px;font-size:13px;color:#374151;font-weight:600;max-height:100px;overflow-y:auto;background:#fff;padding:0 10px;border-radius:8px;"></div>
                 </div>
-                <input type="file" id="file-input" name="file" required accept="image/*,application/pdf"
-                       style="display:none;" onchange="previewFile(this)">
+                <input type="file" id="file-input" multiple accept="image/*,application/pdf"
+                       style="display:none;" onchange="previewFiles(this)">
+
+                <div x-show="isUploading" x-cloak class="mt-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-[11px] font-black uppercase text-blue-600 tracking-widest" x-text="`Đang tải: ${uploadCount}/${totalFiles}`"></span>
+                        <span class="text-[11px] font-black text-slate-400" x-text="`${uploadProgress}%`"></span >
+                    </div>
+                    <div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                        <div class="h-full bg-blue-500 transition-all duration-300" :style="`width: ${uploadProgress}%`"></div >
+                    </div>
+                </div>
 
                 <div>
-                    <label class="form-label">Thư mục</label>
-                    <select name="folder" class="form-select">
-                        @foreach($rootFolders as $name => $meta)
-                        <option value="{{ $name }}" {{ $folder === $name ? 'selected' : '' }}>{{ $name }}</option>
+                    <label class="form-label">Thư mục đích</label>
+                    <select id="upload-folder" class="form-select">
+                        <option value="">Lưu trữ chính</option>
+                        @foreach($allFolders as $f)
+                        <option value="{{ $f->id }}" {{ ($currentFolder && $currentFolder->id === $f->id) ? 'selected' : '' }}>{{ $f->name }}</option>
                         @endforeach
                     </select>
                 </div>
-
-                <div>
-                    <label class="form-label">Mô tả ảnh (Alt text)</label>
-                    <input type="text" name="alt" placeholder="Mô tả nội dung ảnh..." class="form-input">
-                </div>
             </div>
             <div class="modal-footer">
-                <button type="button" onclick="document.getElementById('upload-modal').style.display='none'"
-                        class="btn btn-ghost">Hủy</button>
-                <button type="submit" class="btn btn-primary">
-                    <i class="fa-solid fa-upload"></i> Tải lên ngay
+                <button type="button" @click="closeUploadModal()" class="btn btn-ghost">Hủy</button>
+                <button type="button" @click="processBulkUpload()" class="btn btn-primary" id="upload-submit-btn" disabled style="opacity:0.5;">
+                    <i class="fa-solid fa-upload"></i> Bắt đầu tải lên
                 </button>
             </div>
-        </form>
+        </div>
     </div>
+
 </div>
 
 @endsection
@@ -451,15 +474,101 @@ function mediaManager() {
     return {
         selected: [],
         showMoveModal: false,
-        moveTarget: '{{ $folder }}',
+        moveTarget: '',
         toast: false,
         toastMsg: '',
+        
+        // Upload states
+        isUploading: false,
+        uploadProgress: 0,
+        uploadCount: 0,
+        totalFiles: 0,
 
         init() {
-            // Auto-open upload modal if no files
-            @if($media->isEmpty() && $media->total() === 0)
-            // document.getElementById('upload-modal').style.display = 'flex';
-            @endif
+            // ...
+        },
+
+        closeUploadModal() {
+            if (this.isUploading) return;
+            document.getElementById('upload-modal').style.display='none';
+            document.getElementById('file-preview').innerHTML = '';
+            document.getElementById('file-input').value = '';
+            document.getElementById('upload-submit-btn').disabled = true;
+            document.getElementById('upload-submit-btn').style.opacity = '0.5';
+        },
+
+        async processBulkUpload() {
+            const files = document.getElementById('file-input').files;
+            if (!files.length) return;
+
+            const folder = document.getElementById('upload-folder').value;
+            this.totalFiles = files.length;
+            this.uploadCount = 0;
+            this.isUploading = true;
+            this.uploadProgress = 0;
+
+            const batchSize = 1; // Upload one by one for maximum reliability
+            
+            for (let i = 0; i < files.length; i++) {
+                const formData = new FormData();
+                formData.append('file', files[i]);
+                formData.append('folder_id', folder);
+                formData.append('_token', '{{ csrf_token() }}');
+
+                try {
+                    const response = await fetch("{{ route('admin.media.store') }}", {
+                        method: 'POST',
+                        body: formData,
+                        headers: { 'Accept': 'application/json' }
+                    });
+                    
+                    if (response.ok) {
+                        this.uploadCount++;
+                        this.uploadProgress = Math.round((this.uploadCount / this.totalFiles) * 100);
+                    } else {
+                        console.error('Upload failed for file:', files[i].name);
+                    }
+                } catch (err) {
+                    console.error('Network error during upload:', err);
+                }
+            }
+
+            this.showToast(`Đã tải lên thành công ${this.uploadCount} tệp`);
+            setTimeout(() => location.reload(), 1000);
+        },
+        async openNewFolder() {
+            const name = prompt('Nhập tên thư mục mới:');
+            if (!name) return;
+
+            const res = await fetch("{{ route('admin.media.create-folder') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ 
+                    name: name, 
+                    parent_id: {{ $currentFolder->id ?? 'null' }}
+                })
+            });
+
+            if (res.ok) {
+                this.showToast('Đã tạo thư mục');
+                setTimeout(() => location.reload(), 800);
+            }
+        },
+
+        async deleteFolder(id) {
+            if (!confirm('Xóa thư mục này và toàn bộ nội dung bên trong?')) return;
+            const res = await fetch("{{ route('admin.media.index') }}/folder/" + id, {
+                method: 'DELETE',
+                headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' }
+            });
+            if (res.ok) {
+                this.showToast('Đã xóa thư mục');
+                setTimeout(() => location.reload(), 800);
+            }
         },
 
         toggle(id) {
@@ -502,7 +611,7 @@ function mediaManager() {
         },
 
         openMoveModal() {
-            this.moveTarget = '{{ $folder }}';
+            this.moveTarget = '';
             this.showMoveModal = true;
         },
 
@@ -514,7 +623,7 @@ function mediaManager() {
                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
                     'Accept': 'application/json'
                 },
-                body: JSON.stringify({ ids: this.selected, folder: this.moveTarget })
+                body: JSON.stringify({ ids: this.selected, folder_id: this.moveTarget })
             });
             if (res.ok) {
                 this.showMoveModal = false;
@@ -538,16 +647,28 @@ function mediaManager() {
                 this.showToast(`Đã xóa ${this.selected.length} tệp`);
                 setTimeout(() => location.reload(), 800);
             }
-        }
+        },
     };
 }
 
 // Upload modal helpers
-function previewFile(input) {
+function previewFiles(input) {
     const preview = document.getElementById('file-preview');
-    if (input.files && input.files[0]) {
-        const f = input.files[0];
-        preview.textContent = `✓ ${f.name} (${(f.size/1024).toFixed(1)} KB)`;
+    const submitBtn = document.getElementById('upload-submit-btn');
+    
+    if (input.files && input.files.length > 0) {
+        if (input.files.length === 1) {
+            const f = input.files[0];
+            preview.textContent = `✓ ${f.name} (${(f.size/1024).toFixed(1)} KB)`;
+        } else {
+            preview.textContent = `✓ Đã chọn ${input.files.length} tệp tin`;
+        }
+        submitBtn.disabled = false;
+        submitBtn.style.opacity = '1';
+    } else {
+        preview.textContent = '';
+        submitBtn.disabled = true;
+        submitBtn.style.opacity = '0.5';
     }
 }
 
@@ -563,7 +684,7 @@ if (dropZone) {
         dropZone.classList.remove('drag-over');
         if (e.dataTransfer.files.length) {
             fileInput.files = e.dataTransfer.files;
-            previewFile(fileInput);
+            previewFiles(fileInput);
         }
     });
 }

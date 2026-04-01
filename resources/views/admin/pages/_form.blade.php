@@ -20,12 +20,12 @@
                 </div>
                 <div>
                     <label class="form-label">Nội dung</label>
-                    @include('admin.components.editor', ['name' => 'content', 'value' => old('content', $page?->content), 'height' => 420])
+                    @include('components.admin.editor', ['name' => 'content', 'value' => old('content', $page?->content), 'height' => 420])
                 </div>
             </div>
         </div>
 
-        @include('admin.components.seo-checklist', ['context' => 'page', 'model' => $page])
+        @include('components.admin.seo-checklist', ['context' => 'page', 'model' => $page])
     </div>
 
     <div class="space-y-5">

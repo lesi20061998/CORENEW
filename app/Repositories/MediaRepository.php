@@ -10,11 +10,13 @@ class MediaRepository
 {
     public function __construct(protected Media $model) {}
 
-    public function paginate(int $perPage = 24, ?string $folder = null): LengthAwarePaginator
+    public function paginate(int $perPage = 40, ?int $folderId = null): LengthAwarePaginator
     {
         $q = $this->model->latest();
-        if ($folder !== null) {
-            $q->where('folder', $folder);
+        if ($folderId !== null) {
+            $q->where('folder_id', $folderId);
+        } else {
+            $q->whereNull('folder_id');
         }
         return $q->paginate($perPage);
     }
@@ -31,12 +33,16 @@ class MediaRepository
         return $this->model->find($id);
     }
 
-    public function getForPicker(?string $folder, string $search): \Illuminate\Support\Collection
+    public function getForPicker(?int $folderId, string $search): \Illuminate\Support\Collection
     {
         $q = $this->model->latest()->limit(120);
-        if ($folder !== '') {
-            $q->where('folder', $folder);
+        
+        if ($folderId !== null) {
+            $q->where('folder_id', $folderId);
+        } else {
+            $q->whereNull('folder_id');
         }
+
         if ($search !== '') {
             $q->where('name', 'like', '%' . $search . '%');
         }
@@ -48,9 +54,9 @@ class MediaRepository
         return $this->model->create($data);
     }
 
-    public function moveToFolder(array $ids, string $folder): int
+    public function moveToFolder(array $ids, ?int $folderId): int
     {
-        return $this->model->whereIn('id', $ids)->update(['folder' => $folder]);
+        return $this->model->whereIn('id', $ids)->update(['folder_id' => $folderId]);
     }
 
     public function delete(int $id): bool

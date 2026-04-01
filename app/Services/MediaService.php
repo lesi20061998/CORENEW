@@ -12,32 +12,28 @@ class MediaService
 {
     public function __construct(protected MediaRepository $repository) {}
 
-    public function getPaginated(int $perPage = 24, ?string $folder = null)
+    public function getPaginated(int $perPage = 40, ?int $folderId = null)
     {
-        return $this->repository->paginate($perPage, $folder);
+        return $this->repository->paginate($perPage, $folderId);
     }
 
     public function getFolderCounts(): array
     {
-        $counts = $this->repository->getFolderCounts()->toArray();
-        $result = [];
-        foreach (array_keys(Media::$rootFolders) as $folder) {
-            $result[$folder] = $counts[$folder] ?? 0;
-        }
-        // Add any custom folders not in root list
-        foreach ($counts as $folder => $count) {
-            if (!isset($result[$folder])) {
-                $result[$folder] = $count;
-            }
-        }
-        return $result;
+        return $this->repository->getFolderCounts()->toArray();
     }
 
-    public function upload(UploadedFile $file, string $folder = 'Chung', string $disk = 'public'): Media
+    public function upload(UploadedFile $file, ?int $folderId = null, string $disk = 'public'): Media
     {
         $name     = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
         $fileName = Str::slug($name) . '-' . time() . '.' . $file->getClientOriginalExtension();
-        $path     = $file->storeAs('media', $fileName, $disk);
+        
+        // Build physical folder path: media/parent/child/...
+        $folderPath = 'media';
+        if ($folderId) {
+            $folderPath .= '/' . $this->getFolderPath($folderId);
+        }
+        
+        $path = $file->storeAs($folderPath, $fileName, $disk);
 
         $data = [
             'name'        => $name,
@@ -46,7 +42,7 @@ class MediaService
             'path'        => $path,
             'disk'        => $disk,
             'size'        => $file->getSize(),
-            'folder'      => $folder,
+            'folder_id'   => $folderId,
             'uploaded_by' => auth()->id(),
         ];
 
@@ -59,9 +55,23 @@ class MediaService
         return $this->repository->create($data);
     }
 
-    public function moveToFolder(array $ids, string $folder): int
+    private function getFolderPath(int $folderId): string
     {
-        return $this->repository->moveToFolder($ids, $folder);
+        $folder = \App\Models\MediaFolder::find($folderId);
+        if (!$folder) return '';
+
+        $parts = [$folder->name];
+        $temp = $folder;
+        while ($temp->parent_id && ($temp = $temp->parent)) {
+            array_unshift($parts, $temp->name);
+        }
+
+        return implode('/', array_map(fn($s) => Str::slug($s), $parts));
+    }
+
+    public function moveToFolder(array $ids, ?int $folderId): int
+    {
+        return $this->repository->moveToFolder($ids, $folderId);
     }
 
     public function deleteMany(array $ids): int
@@ -87,10 +97,5 @@ class MediaService
         return $this->repository->getForPicker($folder, $search);
     }
 
-    public function getAllFolders(): array
-    {
-        $rootKeys = array_keys(Media::$rootFolders);
-        $dbFolders = $this->repository->getFolderCounts()->keys()->toArray();
-        return array_values(array_unique(array_merge($rootKeys, $dbFolders)));
-    }
+
 }

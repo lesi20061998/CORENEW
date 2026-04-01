@@ -669,7 +669,7 @@
           /* Initialize */
 
           $(document).ready(function() {
-            $('select').niceSelect();
+            $('select:not(.form-select)').niceSelect();
           });
         },
 

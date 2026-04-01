@@ -7,18 +7,14 @@ use Illuminate\Support\Facades\Storage;
 
 class Media extends Model
 {
-    protected $fillable = ['name', 'file_name', 'mime_type', 'path', 'disk', 'size', 'width', 'height', 'alt', 'folder', 'uploaded_by'];
+    protected $fillable = ['name', 'file_name', 'mime_type', 'path', 'disk', 'size', 'width', 'height', 'alt', 'folder_id', 'uploaded_by'];
 
-    // Default root folders for the media manager
-    public static array $rootFolders = [
-        'Chung'       => ['icon' => 'fa-folder',       'color' => '#64748b'],
-        'Sản phẩm'    => ['icon' => 'fa-box-open',     'color' => '#f59e0b'],
-        'Bài viết'    => ['icon' => 'fa-newspaper',    'color' => '#10b981'],
-        'Trang tĩnh'  => ['icon' => 'fa-file-lines',   'color' => '#3b82f6'],
-        'Banner'      => ['icon' => 'fa-image',         'color' => '#8b5cf6'],
-        'Danh mục'    => ['icon' => 'fa-layer-group',  'color' => '#ec4899'],
-        'Tài liệu'    => ['icon' => 'fa-file-pdf',     'color' => '#ef4444'],
-    ];
+    public function folder()
+    {
+        return $this->belongsTo(MediaFolder::class, 'folder_id');
+    }
+
+    // Hierarchical folders managed via MediaFolder model
 
     public function getUrlAttribute(): string
     {

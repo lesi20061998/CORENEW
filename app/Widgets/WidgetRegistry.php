@@ -19,18 +19,20 @@ class WidgetRegistry
      * key => FQCN
      */
     protected static array $widgetClasses = [
-        // Homepage sections
-        'hero_slider'      => \App\Widgets\Types\HeroSliderWidget::class,
-        'category_slider'  => \App\Widgets\Types\CategorySliderWidget::class,
-        'features_bar'     => \App\Widgets\Types\FeaturesBarWidget::class,
-        'product_grid'     => \App\Widgets\Types\ProductGridWidget::class,
-        'deal_countdown'   => \App\Widgets\Types\DealCountdownWidget::class,
-        'promo_banners'    => \App\Widgets\Types\PromoBannersWidget::class,
-        'testimonial'      => \App\Widgets\Types\TestimonialWidget::class,
-        'latest_posts'     => \App\Widgets\Types\LatestPostsWidget::class,
-        'newsletter'       => \App\Widgets\Types\NewsletterWidget::class,
-        'product_tabs'     => \App\Widgets\Types\ProductTabsWidget::class,
-        'html_block'       => \App\Widgets\Types\HtmlBlockWidget::class,
+        // Homepage Sections (The Builder)
+        'hero_main' => \App\Widgets\Types\HeroSliderWidget::class,
+        'cat_swiper' => \App\Widgets\Types\CategorySliderWidget::class,
+        'feature_icons' => \App\Widgets\Types\FeaturesBarWidget::class,
+        'prod_featured' => \App\Widgets\Types\ProductGridWidget::class,
+        'deal_flash' => \App\Widgets\Types\DealCountdownWidget::class,
+        'prod_tabs' => \App\Widgets\Types\ProductTabsWidget::class,
+
+        // Advanced
+        'html_custom' => \App\Widgets\Types\HtmlBlockWidget::class,
+        'newsletter_bar' => \App\Widgets\Types\NewsletterWidget::class,
+        'posts_latest' => \App\Widgets\Types\LatestPostsWidget::class,
+        'promo_banners' => \App\Widgets\Types\PromoBannersWidget::class,
+        'testimonials' => \App\Widgets\Types\TestimonialWidget::class,
     ];
 
     /**
@@ -40,19 +42,8 @@ class WidgetRegistry
     public static function areas(): array
     {
         return [
-            // Homepage
-            'homepage_v1'    => ['label' => 'Trang chủ',          'description' => 'Khu vực trang chủ chính',         'icon' => 'fa-house'],
-
-            // Shop areas
-            'shop_top'       => ['label' => 'Shop - Trên',        'description' => 'Banner trên trang shop',          'icon' => 'fa-store'],
-            'shop_sidebar'   => ['label' => 'Shop - Sidebar',     'description' => 'Sidebar trang shop',              'icon' => 'fa-sidebar'],
-            'product_below'  => ['label' => 'Sản phẩm - Dưới',   'description' => 'Dưới chi tiết sản phẩm',         'icon' => 'fa-box'],
-
-            // Blog areas
-            'blog_sidebar'   => ['label' => 'Blog - Sidebar',     'description' => 'Sidebar trang blog',              'icon' => 'fa-newspaper'],
-
-            // Footer areas
-            'footer'         => ['label' => 'Footer',             'description' => 'Khu vực footer',                  'icon' => 'fa-table-columns'],
+            'homepage' => ['label' => 'Homepage Layout', 'description' => 'Sắp xếp các Section trên trang chủ', 'icon' => 'fa-house-chimney-window'],
+            'footer' => ['label' => 'Footer Columns', 'description' => 'Cài đặt chân trang', 'icon' => 'fa-table-columns'],
         ];
     }
 
@@ -64,12 +55,30 @@ class WidgetRegistry
         $result = [];
         foreach (static::$widgetClasses as $key => $class) {
             if (class_exists($class)) {
+                $fields = $class::fields();
+                // Merge base common fields if method exists
+                if (method_exists($class, 'commonFields')) {
+                    $common = $class::commonFields();
+                    $keyedFields = [];
+                    // Load specific fields first
+                    foreach ($fields as $f) {
+                        $keyedFields[$f['key']] = $f;
+                    }
+                    // Overlay common fields only if key doesn't exist yet
+                    foreach ($common as $cf) {
+                        if (!isset($keyedFields[$cf['key']])) {
+                            $keyedFields[$cf['key']] = $cf;
+                        }
+                    }
+                    $fields = array_values($keyedFields);
+                }
+
                 $result[$key] = [
-                    'label'       => $class::$label,
+                    'label' => $class::$label,
                     'description' => $class::$description,
-                    'icon'        => $class::$icon,
-                    'class'       => $class,
-                    'fields'      => $class::fields(),
+                    'icon' => $class::$icon,
+                    'class' => $class,
+                    'fields' => $fields,
                 ];
             }
         }

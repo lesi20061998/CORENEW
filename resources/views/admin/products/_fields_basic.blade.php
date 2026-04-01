@@ -23,7 +23,7 @@
             Mô tả ngắn
             @if($locale) <span class="text-xs text-gray-400 font-normal">({{ strtoupper($locale) }})</span> @endif
         </label>
-        @include('admin.components.editor', [
+        @include('components.admin.editor', [
             'name'   => ($p . 'short_description' . $s),
             'value'  => old($p . 'short_description' . $s, $locale ? ($td['short_description'] ?? '') : ($product?->short_description ?? '')),
             'height' => 180,
@@ -35,7 +35,7 @@
             Mô tả chi tiết
             @if($locale) <span class="text-xs text-gray-400 font-normal">({{ strtoupper($locale) }})</span> @endif
         </label>
-        @include('admin.components.editor', [
+        @include('components.admin.editor', [
             'name'   => ($p . 'description' . $s),
             'value'  => old($p . 'description' . $s, $locale ? ($td['description'] ?? '') : ($product?->description ?? '')),
             'height' => 360,

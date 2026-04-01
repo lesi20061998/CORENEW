@@ -7,11 +7,26 @@ import tailwindcss from "@tailwindcss/vite";
 export default defineConfig({
     plugins: [
         laravel({
-            input: ['resources/css/app.css', 'resources/js/app.js'],
+            input: [
+                'public/theme/scss/style.scss'
+            ],
             refresh: [`resources/views/**/*`],
         }),
         tailwindcss(),
     ],
+    css: {
+        preprocessorOptions: {
+            scss: {
+                api: 'legacy',
+                quietDeps: true,
+            }
+        },
+        // KHÔNG cho phép Vite xử lý URL trong CSS để tránh vỡ ảnh của theme
+        devSourcemap: true,
+    },
+    build: {
+        assetsInlineLimit: 0,
+    },
     server: {
         cors: true,
     },

@@ -25,9 +25,6 @@
         <a href="#sec-opengraph" class="seo-nav-link flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-100 transition-colors">
             <i class="fa-brands fa-facebook w-4 text-center text-gray-400 text-xs"></i> Open Graph
         </a>
-        <a href="#sec-twitter" class="seo-nav-link flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-100 transition-colors">
-            <i class="fa-brands fa-x-twitter w-4 text-center text-gray-400 text-xs"></i> Twitter / X
-        </a>
         <a href="#sec-script" class="seo-nav-link flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-100 transition-colors">
             <i class="fa-solid fa-code w-4 text-center text-gray-400 text-xs"></i> Script
         </a>
@@ -187,51 +184,6 @@
     </div>
 </div>
 
-{{-- Twitter / X Card --}}
-<div class="card scroll-mt-4" id="sec-twitter">
-    <div class="card-header flex items-center gap-3">
-        <div class="w-8 h-8 rounded-lg bg-gray-900 flex items-center justify-center flex-shrink-0">
-            <i class="fa-brands fa-x-twitter text-white text-sm"></i>
-        </div>
-        <div>
-            <p class="text-sm font-semibold text-gray-800">Twitter / X Card</p>
-            <p class="text-xs text-gray-400">Hiển thị khi chia sẻ lên Twitter/X</p>
-        </div>
-    </div>
-    <div class="card-body space-y-5">
-
-        {{-- Twitter Card Type --}}
-        <div>
-            <label class="form-label">Loại Twitter Card</label>
-            <select name="settings[seo_twitter_card]" class="form-select">
-                <option value="summary_large_image" {{ ($map['seo_twitter_card'] ?? 'summary_large_image') === 'summary_large_image' ? 'selected' : '' }}>summary_large_image (Ảnh lớn — khuyến nghị)</option>
-                <option value="summary"             {{ ($map['seo_twitter_card'] ?? '') === 'summary'             ? 'selected' : '' }}>summary (Ảnh nhỏ)</option>
-                <option value="app"                 {{ ($map['seo_twitter_card'] ?? '') === 'app'                 ? 'selected' : '' }}>app (Ứng dụng)</option>
-            </select>
-        </div>
-
-        {{-- Twitter @site --}}
-        <div>
-            <label class="form-label">Twitter @username của website</label>
-            <input type="text" name="settings[seo_twitter_site]"
-                   value="{{ $map['seo_twitter_site'] ?? '' }}"
-                   class="form-input"
-                   placeholder="@VietTinMart">
-            <p class="text-xs text-gray-400 mt-1">Tài khoản Twitter/X chính thức của website (bao gồm dấu @).</p>
-        </div>
-
-        {{-- Twitter @creator --}}
-        <div>
-            <label class="form-label">Twitter/label>
-            <input type="text" name="settings[seo_twitter_creator]"
-                   value="{{ $map['seo_twitter_creator'] ?? '' }}"
-                   class="form-input"
-                   placeholder="@author_handle">
-            <p class="text-xs text-gray-400 mt-1">Tài khoản tác giả mặc định, dùng cho bài viết/sản phẩm không có tác giả riêng.</p>
-        </div>
-
-    </div>
-</div>
 
 {{-- Script --}}
 <div class="card scroll-mt-4" id="sec-script">

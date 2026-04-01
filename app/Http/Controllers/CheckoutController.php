@@ -16,7 +16,7 @@ class CheckoutController extends Controller
             return redirect()->route('cart.page')->with('error', 'Giỏ hàng của bạn đang trống.');
         }
         $total = collect($cart)->sum(fn($i) => ($i['price'] ?? 0) * ($i['qty'] ?? 1));
-        return view('checkout.index', compact('cart', 'total'));
+        return view('shop.checkout', compact('cart', 'total'));
     }
 
     public function store(Request $request)
@@ -97,6 +97,6 @@ class CheckoutController extends Controller
     public function success(string $orderNumber)
     {
         $order = Order::where('order_number', $orderNumber)->firstOrFail();
-        return view('checkout.success', compact('order'));
+        return view('shop.success', compact('order'));
     }
 }

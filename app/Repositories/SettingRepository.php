@@ -13,7 +13,7 @@ class SettingRepository
 
     public function all(): Collection
     {
-        return $this->model->orderBy('group')->orderBy('key')->get();
+        return $this->model->orderBy('group')->orderBy('key')->get(['*']);
     }
 
     public function getByGroup(string $group): Collection
@@ -22,7 +22,7 @@ class SettingRepository
             ->orderBy('section')
             ->orderBy('sort_order')
             ->orderBy('key')
-            ->get();
+            ->get(['*']);
     }
 
     public function get(string $key, $default = null)
@@ -35,13 +35,10 @@ class SettingRepository
         return $this->model->set($key, $value, $group, $type);
     }
 
-    public function updateMultiple(array $settings): void
+    public function updateMultiple(array $settings, string $group = 'general'): void
     {
         foreach ($settings as $key => $value) {
-            $setting = $this->model->where('key', $key)->first();
-            if ($setting) {
-                $setting->update(['value' => $value]);
-            }
+            $this->model->set($key, $value, $group);
         }
     }
 
