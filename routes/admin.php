@@ -134,6 +134,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::delete('/{id}', [MenuController::class, 'destroy'])->name('destroy');
         });
         // Orders
+        Route::get('/orders/new-check', [OrderController::class, 'getNewOrders'])->name('orders.new-check');
         Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
         Route::get('/orders/trash', [OrderController::class, 'trash'])->name('orders.trash');
         Route::get('/orders/create', [OrderController::class, 'create'])->name('orders.create');

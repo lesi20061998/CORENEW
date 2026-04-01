@@ -127,6 +127,7 @@ class Product extends Model
     {
         if (!$this->image) return null;
         if (str_starts_with($this->image, 'http')) return $this->image;
+        if (str_starts_with($this->image, 'media/')) return asset('storage/' . $this->image);
         return asset($this->image);
     }
 
@@ -179,5 +180,25 @@ class Product extends Model
         $flashPrice = $this->flash_price;
         if ($flashPrice === null) return null;
         return (int) round((1 - $flashPrice / $this->price) * 100);
+    }
+
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class);
+    }
+
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
+    }
+
+    public function approvedReviews()
+    {
+        return $this->hasMany(Review::class)->where('status', 'approved');
+    }
+
+    public function getAverageRatingAttribute()
+    {
+        return round($this->approvedReviews()->avg('rating'), 1) ?: 0;
     }
 }

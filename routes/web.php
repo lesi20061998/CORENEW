@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Route;
 // ─── CORE WEB ROUTES (SINGLE LOCALE MODE) ───────────────────────────────────
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/shop/{slug}', [App\Http\Controllers\ShopController::class, 'show'])->name('shop.show');
+Route::post('/review/submit', [App\Http\Controllers\ReviewController::class, 'store'])->name('review.submit');
 Route::get('/cua-hang', [ShopController::class, 'index'])->name('shop.index');
 Route::get('/cua-hang/search-suggest', [ShopController::class, 'searchSuggest'])->name('shop.suggest');
 Route::get('/cua-hang/{category_slug}', [ShopController::class, 'category'])->name('shop.category');
@@ -35,7 +37,7 @@ Route::prefix('tai-khoan')->middleware('auth')->group(function () {
 
 Route::get('/gioi-thieu', fn() => view('pages.about'))->name('about');
 Route::get('/faq', fn() => view('pages.faq'))->name('faq');
-Route::get('/theo-doi-don', fn() => view('pages.order-track'))->name('order.track');
+Route::get('/theo-doi-don', [CheckoutController::class, 'trackOrder'])->name('order.track');
 Route::get('/wishlist', [CustomerActionController::class, 'wishlistIndex'])->name('wishlist');
 Route::get('/so-sanh', [CustomerActionController::class, 'compareIndex'])->name('compare.index');
 Route::get('/quick-view/{id}', [CustomerActionController::class, 'getQuickView'])->name('product.quickview');

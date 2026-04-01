@@ -51,7 +51,7 @@
                                     <td>
                                         <div class="product-item">
                                             <div class="product-thumb">
-                                                <img src="{{ $product->image ? asset($product->image) : asset('theme/images/shop/01.png') }}" alt="{{ $product->name }}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 10px;">
+                                                <img src="{{ $product->thumbnail_url ?: asset('theme/images/shop/01.png') }}" alt="{{ $product->name }}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 10px;">
                                             </div>
                                             <div class="product-info ml--20">
                                                 <h4 class="title"><a href="{{ route('shop.show', $product->slug) }}">{{ $product->name }}</a></h4>

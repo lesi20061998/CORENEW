@@ -99,4 +99,24 @@ class CheckoutController extends Controller
         $order = Order::where('order_number', $orderNumber)->firstOrFail();
         return view('shop.success', compact('order'));
     }
+
+    public function trackOrder(Request $request)
+    {
+        $order = null;
+        $orderNumber = $request->get('order_id');
+        $email = $request->get('email');
+
+        if ($orderNumber && $email) {
+            $order = Order::where('order_number', $orderNumber)
+                ->where('customer_email', $email)
+                ->with(['items'])
+                ->first();
+            
+            if (!$order) {
+                return view('pages.order-track')->with('error', 'Không tìm thấy đơn hàng với thông tin đã cung cấp. Vui lòng kiểm tra lại Mã đơn hàng và Email.');
+            }
+        }
+
+        return view('pages.order-track', compact('order'));
+    }
 }

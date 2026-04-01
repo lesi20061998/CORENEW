@@ -7,8 +7,7 @@
                 <!-- Left: Gallery Section (Single Image Engine) -->
                 <div class="qv-gallery-section">
                     @php
-                        $mainImg = $product->image ?: asset('theme/images/grocery/01.jpg');
-                        $mainImgUrl = str_starts_with($mainImg, 'http') ? $mainImg : asset($mainImg);
+                        $mainImgUrl = $product->thumbnail_url ?: asset('theme/images/grocery/01.jpg');
 
                         $allImages = $product->images ?: [];
                         if ($product->image) {
@@ -31,7 +30,7 @@
                         <div class="qv-thumbnails-group">
                             @foreach($allImages as $index => $img)
                                 @php
-                                    $imgUrl = str_starts_with($img, 'http') ? $img : asset($img);
+                                    $imgUrl = str_starts_with($img, 'http') ? $img : (str_starts_with($img, 'media/') ? asset('storage/' . $img) : asset($img));
                                     $active = $index === 0 ? 'active' : '';
                                 @endphp
                                 <div class="qv-thumb-item {{ $active }}" data-img="{{ $imgUrl }}">
@@ -78,7 +77,7 @@
 
                         @if(!$product->has_contact_price)
                             <button onclick="cart.add({{ $product->id }}, this)" class="qv-add-to-cart">
-                                <i class="fa-regular fa-cart-shopping"></i> Add To Cart
+                                <i class="far fa-shopping-cart"></i> Add To Cart
                             </button>
                         @else
                             <a href="tel:{{ setting('hotline') }}" class="qv-add-to-cart qv-contact">

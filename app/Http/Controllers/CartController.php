@@ -67,12 +67,19 @@ class CartController extends Controller
     public function update(Request $request)
     {
         $cart = session('cart', []);
+        $itemSubtotalFormatted = '';
+        
         if (isset($cart[$request->rowId])) {
             $cart[$request->rowId]['qty'] = max(1, (int) $request->qty);
+            $itemSubtotalFormatted = number_format($cart[$request->rowId]['price'] * $cart[$request->rowId]['qty'], 0, ',', '.') . 'đ';
+            session(['cart' => $cart]);
         }
-        session(['cart' => $cart]);
 
-        return response()->json(['success' => true]);
+        return response()->json([
+            'success'                => true,
+            'item_subtotal_formatted' => $itemSubtotalFormatted,
+            'count'                  => array_sum(array_column($cart, 'qty'))
+        ]);
     }
 
     public function count()
@@ -105,10 +112,27 @@ class CartController extends Controller
     private function normalizeImagePath(?string $image): ?string
     {
         if (!$image) return null;
-        // Strip full URL, keep only the path after /storage/
-        if (str_contains($image, '/storage/')) {
-            return preg_replace('#^.*/storage/#', '', $image);
+        
+        // If it's already a full URL, return as is
+        if (str_starts_with($image, 'http')) {
+            // But if it contains /storage/, we might want to normalize it to a relative path for consistency,
+            // or just leave it. Let's keep /storage/ if it's there.
+            if (str_contains($image, '/storage/')) {
+                return 'storage/' . preg_replace('#^.*/storage/#', '', $image);
+            }
+            return $image;
         }
+
+        // If it already starts with storage/, just return it
+        if (str_starts_with($image, 'storage/')) {
+            return $image;
+        }
+
+        // If it's a media path but missing storage/, add it
+        if (str_starts_with($image, 'media/')) {
+            return 'storage/' . $image;
+        }
+
         return $image;
     }
 }

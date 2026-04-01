@@ -140,6 +140,12 @@ class SettingController extends Controller
             return view('admin.settings.seo', compact('module', 'settings'));
         }
 
+        // Review group gets its own dedicated view
+        if ($group === 'review') {
+            $settingsMap = $settings->pluck('value', 'key');
+            return view('admin.settings.review', compact('module', 'settings', 'settingsMap'));
+        }
+
         // Appearance group gets its own dedicated view
         if ($group === 'appearance') {
             $settingsMap = $settings->pluck('value', 'key');

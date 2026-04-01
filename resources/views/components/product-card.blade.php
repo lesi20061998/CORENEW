@@ -6,14 +6,13 @@
     $discountPercent = $product->discount_percent;
 @endphp
 
-<div class="single-shopping-card-one vtm-product-card">
-    <!-- image and action area start -->
+<div class="vtm-product-card">
+    {{-- Image Area --}}
     <div class="image-and-action-area-wrapper">
         <a href="{{ route('shop.show', ['slug' => $product->slug]) }}" class="thumbnail-preview">
             @if($product->on_sale)
-                <div class="badge">
-                    <span>{{ $discountPercent }}% <br> Off</span>
-                    <i class="fa-solid fa-bookmark"></i>
+                <div class="vtm-badge-ribbon">
+                    <span>{{ $discountPercent }}%</span><br>Giảm giá
                 </div>
             @endif
             <img src="{{ $thumbnailUrl }}" alt="{{ $product->name }}">
@@ -31,40 +30,42 @@
         </div>
     </div>
 
-    <!-- body content start -->
-    <div class="body-content">
+    {{-- Content Area --}}
+    <div class="content-area">
+        <div class="category-text">{{ $categoryName }}</div>
         <a href="{{ route('shop.show', ['slug' => $product->slug]) }}">
-            <h4 class="title">{{ Str::limit($product->name, 50) }}</h4>
+            <h3 class="product-title-h3">{{ Str::limit($product->name, 50) }}</h3>
         </a>
-        <span class="availability">{{ $product->unit ?? '500g Pack' }}</span>
         
-        <div class="price-area">
-            <span class="current">{{ $product->formatted_price }}</span>
-            @if($product->compare_price > $product->price)
-                <div class="previous">{{ $product->formatted_old_price }}</div>
-            @endif
+        <div class="stars-area">
+            <i class="fa-solid fa-star"></i>
+            <i class="fa-solid fa-star"></i>
+            <i class="fa-solid fa-star"></i>
+            <i class="fa-solid fa-star"></i>
+            <i class="fa-solid fa-star"></i>
         </div>
 
-        <div class="cart-counter-action">
-            @if(!$product->has_contact_price)
-                <div class="quantity-edit">
-                    <input type="text" class="input qv-qty-input" value="01">
-                    <div class="button-wrapper-action">
-                        <button class="qv-qty-btn qv-minus">-<i class="fa-regular fa-chevron-down"></i></button>
-                        <button class="plus qv-qty-btn qv-plus">+<i class="fa-regular fa-chevron-up"></i></button>
-                    </div>
-                </div>
-                <a href="javascript:void(0)" onclick="cart.add({{ $product->id }}, this)" class="rts-btn btn-primary radious-sm with-icon">
-                    <div class="btn-text">Add</div>
-                    <div class="arrow-icon">
-                        <i class="fa-regular fa-cart-shopping"></i>
-                    </div>
-                </a>
-            @else
-                <a href="tel:{{ setting('hotline') }}" class="rts-btn btn-primary radious-sm w-100 text-center">
-                    <div class="btn-text">Liên hệ</div>
-                </a>
-            @endif
+        <div class="price-and-btn-wrapper">
+            <div class="price-area">
+                <span class="current-price">{{ $product->formatted_price }}</span>
+                @if($product->old_price > $product->effective_price)
+                    <span class="old-price">{{ $product->formatted_old_price }}</span>
+                @endif
+            </div>
+
+            <div class="cart-counter-action mt-4">
+                @if(!$product->has_contact_price)
+                    <button type="button" @click="cart.add({{ $product->id }}, $event.target)" 
+                            class="rts-btn btn-primary w-100 py-3 rounded-xl font-bold uppercase text-[11px] tracking-wider d-flex align-items-center justify-content-center gap-2 border-0">
+                        <i class="fas fa-shopping-cart m-0" style="font-size: 1rem;"></i> MUA NGAY
+                    </button>
+                @else
+                    <a href="{{ route('shop.show', ['slug' => $product->slug]) }}" 
+                       class="rts-btn btn-primary w-100 py-3 rounded-xl font-bold uppercase text-[11px] tracking-wider text-center d-flex align-items-center justify-content-center gap-2">
+                        <i class="fas fa-phone m-0" style="font-size: 1rem;"></i> LIÊN HỆ
+                    </a>
+                @endif
+            </div>
         </div>
     </div>
 </div>

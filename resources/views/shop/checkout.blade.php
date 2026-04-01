@@ -94,7 +94,7 @@
                             <div class="single-shop-list" style="padding: 15px 0; border-bottom: 1px solid #eee;">
                                 <div class="left-area">
                                     <a href="{{ route('shop.show', $item['slug']) }}" class="thumbnail">
-                                        <img src="{{ asset($item['image']) }}" alt="{{ $item['name'] }}" style="width: 50px; height: 50px; object-fit: cover;">
+                                        <img src="{{ str_starts_with($item['image'], 'http') ? $item['image'] : asset($item['image']) }}" alt="{{ $item['name'] }}" style="width: 50px; height: 50px; object-fit: cover;">
                                     </a>
                                     <div class="info">
                                         <a href="{{ route('shop.show', $item['slug']) }}" class="title" style="font-size: 14px; display: block;">{{ $item['name'] }}</a>

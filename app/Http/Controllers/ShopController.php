@@ -37,6 +37,7 @@ class ShopController extends Controller
                 'discount_percent' => $effectivePrice <= 0 ? null : ($p->flash_discount_percent ?? $p->getDiscountPercentAttribute()),
                 'category_ids'     => $p->categories->pluck('id')->toArray(),
                 'category_slugs'   => $p->categories->pluck('slug')->toArray(),
+                'category_names'   => $p->categories->pluck('name')->toArray(),
                 'created_at'       => $p->created_at->toIso8601String(),
                 'is_featured'      => (bool)$p->is_featured,
                 'url'              => route('shop.show', ['slug' => $p->slug]),
@@ -95,7 +96,7 @@ class ShopController extends Controller
     {
         $product = Product::where('slug', $slug)
             ->where('status', 'active')
-            ->with(['categories', 'productAttributes', 'variants'])
+            ->with(['categories', 'productAttributes.attribute', 'productAttributes.attributeValue', 'variants.attributeValues.attribute'])
             ->firstOrFail();
 
         $relatedProducts = Product::where('status', 'active')

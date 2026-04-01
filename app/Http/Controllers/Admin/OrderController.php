@@ -232,4 +232,32 @@ class OrderController extends Controller
 
         return redirect()->route('admin.orders.trash')->with('success', 'Đã xóa vĩnh viễn đơn hàng.');
     }
+
+    public function getNewOrders(Request $request)
+    {
+        $afterId = (int) $request->get('after', 0);
+        
+        // Fetch all orders created after the 'afterId'
+        $orders = Order::where('id', '>', $afterId)
+            ->where('status', 'pending') // Only notify for new pending orders
+            ->orderBy('id', 'asc')
+            ->take(10) // Safety limit
+            ->get();
+
+        $data = $orders->map(function($order) {
+            return [
+                'id' => (int) $order->id,
+                'order_number' => $order->order_number,
+                'customer_name' => $order->customer_name,
+                'total' => number_format($order->total, 0, ',', '.') . '₫',
+                'time' => $order->created_at->diffForHumans(),
+                'url' => route('admin.orders.show', $order->id)
+            ];
+        });
+
+        return response()->json([
+            'orders' => $data,
+            'latest_id' => (int) (Order::max('id') ?? 0)
+        ]);
+    }
 }

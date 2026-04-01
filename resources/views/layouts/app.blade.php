@@ -11,9 +11,8 @@
     <link rel="shortcut icon" type="image/x-icon" href="{{ asset('theme/images/fav.png') }}">
 
     <!-- Theme Styles (Stable Static Distribution Mode) -->
-    <link rel="stylesheet preload" href="{{ asset('theme/css/combie.css') }}" as="style">
-    <link rel="stylesheet preload" href="{{ asset('theme/css/plugins.css') }}" as="style">
-    <link rel="stylesheet preload" href="{{ asset('theme/css/style.css') }}" as="style">
+    <link rel="stylesheet" href="{{ asset('theme/css/plugins.css') }}">
+    <link rel="stylesheet" href="{{ asset('theme/css/style.css') }}">
     <link rel="stylesheet" href="{{ asset('theme/css/update.css') }}">
 
     @stack('styles')
@@ -146,6 +145,7 @@
     <!-- plugins js -->
     <script src="{{ asset('theme/js/plugins.js') }}"></script>
     <script src="{{ asset('theme/js/main.js') }}"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <script src="{{ asset('theme/js/update.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 

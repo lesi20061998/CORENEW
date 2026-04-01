@@ -56,8 +56,8 @@
            SIDEBAR (MODERN DARK)
         ════════════════════════════════ */
         #sidebar {
-            width: 290px;
-            min-width: 290px;
+            width: 250px;
+            min-width: 250px;
             background: #0f172a;
             display: flex;
             flex-direction: column;
@@ -76,49 +76,49 @@
         }
 
         .sb-logo {
-            padding: 24px 20px;
-            margin-bottom: 20px;
+            padding: 20px 18px;
+            margin-bottom: 10px;
             display: flex;
             align-items: center;
-            gap: 14px;
+            gap: 12px;
         }
 
         .sb-logo-icon {
-            width: 44px;
-            height: 44px;
-            border-radius: 14px;
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
             background: linear-gradient(135deg, #3b82f6, #1d4ed8);
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
-            box-shadow: 0 8px 16px rgba(37, 99, 235, 0.3);
+            box-shadow: 0 6px 12px rgba(37, 99, 235, 0.25);
         }
 
         .sb-logo-icon i {
             color: #fff;
-            font-size: 18px;
+            font-size: 16px;
         }
 
         .sb-logo-text p {
-            font-size: 17px;
+            font-size: 15px;
             font-weight: 800;
             color: #fff;
             text-transform: uppercase;
         }
 
         .sb-logo-text span {
-            font-size: 10px;
+            font-size: 9px;
             color: #485b74;
             font-weight: 800;
             text-transform: uppercase;
-            margin-top: 2px;
+            margin-top: 1px;
             display: block;
         }
 
         .nav-label {
-            padding: 24px 24px 10px;
-            font-size: 10px;
+            padding: 20px 24px 10px;
+            font-size: 9.5px;
             font-weight: 700;
             text-transform: uppercase;
             color: #334155;
@@ -128,9 +128,9 @@
         .nav-item {
             display: flex;
             align-items: center;
-            gap: 14px;
-            padding: 12px 24px;
-            font-size: 14px;
+            gap: 12px;
+            padding: 10px 20px;
+            font-size: 13.5px;
             font-weight: 600;
             color: #94a3b8;
             cursor: pointer;
@@ -695,6 +695,106 @@
             @if($errors->any())
                 window.addEventListener('load', () => adminToast('Thông tin chưa đúng', "{{ $errors->first() }}", 'error'));
             @endif
+
+            // Smart Efficiency Order Poller
+            (function() {
+                let lastSeenId = parseInt(localStorage.getItem('last_order_id')) || 0;
+                let pollerInterval = 60000; // Low frequency (1 minute) for background sync
+                let isPolling = false;
+
+                function checkNewOrders() {
+                    if (isPolling) return;
+                    isPolling = true;
+
+                    // Fetch URL with Cache Buster
+                    fetch(`{{ route('admin.orders.new-check') }}?after=${lastSeenId}&_t=${Date.now()}`, {
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    })
+                    .then(res => {
+                        if (res.status === 404) {
+                            console.warn('ADMIN SYSTEM: Vui lòng F5 để cập nhật route mới nhất.');
+                            return { orders: [], latest_id: lastSeenId };
+                        }
+                        return res.json();
+                    })
+                    .then(data => {
+                        const newOrders = data.orders || [];
+                        const serverLatestId = parseInt(data.latest_id);
+
+                        if (lastSeenId === 0) {
+                            lastSeenId = serverLatestId;
+                            localStorage.setItem('last_order_id', lastSeenId);
+                            return;
+                        }
+
+                        if (newOrders.length > 0) {
+                            const activityList = document.getElementById('recent-activity-list');
+                            
+                            newOrders.forEach((order, index) => {
+                                setTimeout(() => {
+                                    adminToast('🔔 ĐƠN HÀNG MỚI!', `#${order.order_number} - ${order.customer_name}`, 'success');
+                                    
+                                    // 1. Play sound
+                                    if (index === 0) {
+                                        try { new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3').play(); } catch(e) {}
+                                    }
+
+                                    // 2. Update dashboard list if on dashboard
+                                    if (activityList) {
+                                        const newItem = document.createElement('div');
+                                        newItem.className = 'flex items-center justify-between anim-new-order';
+                                        newItem.style.opacity = '0';
+                                        newItem.style.transform = 'translateX(-10px)';
+                                        newItem.style.transition = 'all 0.5s ease-out';
+                                        newItem.innerHTML = `
+                                            <div class="flex items-center gap-2">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-sm animate-pulse"></span>
+                                                <span class="text-[10px] font-bold">#${order.order_number}</span>
+                                            </div>
+                                            <span class="text-[9px] text-slate-400">Vừa xong</span>
+                                        `;
+                                        activityList.prepend(newItem);
+                                        // Fade in
+                                        requestAnimationFrame(() => {
+                                            newItem.style.opacity = '1';
+                                            newItem.style.transform = 'translateX(0)';
+                                        });
+
+                                        // Keep list to 8 items max
+                                        if (activityList.children.length > 8) {
+                                            activityList.removeChild(activityList.lastChild);
+                                        }
+                                    }
+                                }, index * 800);
+                            });
+                        }
+
+                        if (serverLatestId > lastSeenId) {
+                            lastSeenId = serverLatestId;
+                            localStorage.setItem('last_order_id', lastSeenId);
+                        }
+                    })
+                    .catch(err => {})
+                    .finally(() => { isPolling = false; });
+                }
+
+                // 1. Initial boot
+                setTimeout(checkNewOrders, 500);
+
+                // 2. Slow periodic sync
+                setInterval(checkNewOrders, pollerInterval);
+
+                // 3. SMART TRIGGER: Instant check when user switches back to this tab
+                document.addEventListener('visibilitychange', () => {
+                    if (document.visibilityState === 'visible') {
+                        console.log('Admin tab activated - Performing instant order sync...');
+                        checkNewOrders();
+                    }
+                });
+
+                // 4. Also check on Window Focus
+                window.addEventListener('focus', checkNewOrders);
+            })();
         </script>
 
         <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
