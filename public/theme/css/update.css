@@ -1,726 +1,296 @@
 /* 
+   Product Card Consistency 
    =========================================
-   CLEAN & UNIQUE QUICK VIEW (QV) STYLES
-   =========================================
-   Using 'qv-' prefix to ensure ZERO conflicts with the theme CSS.
 */
 
-/* 1. Modal Overlay & Container */
-.qv-modal-wrapper {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.45);
-    backdrop-filter: blur(5px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 10000;
-}
-
-/* 2. Main Popup Structure */
-.qv-modal-content {
-    background: #fff;
-    width: 925px;
-    height: 620px;
-    max-height: 90vh;
-    border-radius: 12px;
-    position: relative;
-    padding: 30px;
-    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15);
-    transform: scale(0.9);
-    animation: qvScaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-}
-
-@keyframes qvScaleIn {
-    to {
-        transform: scale(1);
-    }
-}
-
-.qv-main-layout {
-    display: flex;
-    gap: 30px;
-    height: 100%;
-}
-
-/* 3. Left Side - Product Gallery */
-.qv-gallery-section {
-    width: 400px;
-    flex-shrink: 0;
-    display: flex;
-    flex-direction: column;
-}
-
-.qv-image-preview-container {
-    height: 480px;
-    border: 1px solid #f0f0f0;
-    border-radius: 8px;
-    overflow: hidden;
-    margin-bottom: 15px;
-    position: relative;
-}
-
-.qv-main-image {
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    top: 0;
-    left: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #fff;
-    transition: opacity 0.4s ease;
-}
-
-.qv-main-image.hide {
-    opacity: 0;
-    pointer-events: none;
-}
-
-.qv-image-zoom {
-    width: 100%;
-    height: 100%;
-    background-size: 200%;
-    background-position: center;
-    background-repeat: no-repeat;
-}
-
-.qv-main-image img {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-}
-
-/* Horizontal Thumbnails Support */
-.qv-thumbnails-group {
-    display: flex;
-    gap: 12px;
-}
-
-.qv-thumb-item {
-    width: 65px;
-    height: 65px;
-    border: 1px solid #eee;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.3s;
-    opacity: 0.6;
-}
-
-.qv-thumb-item img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    padding: 2px;
-}
-
-.qv-thumb-item.active,
-.qv-thumb-item:hover {
-    border-color: #629d23;
-    opacity: 1;
-    transform: translateY(-2px);
-}
-
-/* 4. Right Side - Product Content */
-.qv-info-section {
-    flex-grow: 1;
-    overflow-y: auto;
-    padding-right: 15px;
-}
-
-.qv-status-meta {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 12px;
-}
-
-.qv-badge-cat {
-    background: #629d23;
-    color: #fff;
-    padding: 3px 12px;
-    border-radius: 4px;
-    font-size: 11px;
-    text-transform: uppercase;
-    font-weight: 600;
-}
-
-.qv-rating {
-    color: #ffb400;
-    font-size: 12px;
-    display: flex;
-    align-items: center;
-}
-
-.qv-review-count {
-    color: #9c9c9c;
-    margin-left: 8px;
-    font-size: 13px;
-}
-
-.qv-product-title {
-    font-size: 28px;
-    font-weight: 700;
-    color: #1a1a1a;
-    line-height: 1.2;
-    margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.qv-stock-tag {
-    background: #f1f8e9;
-    color: #629d23;
-    padding: 2px 10px;
-    border-radius: 4px;
-    font-size: 11px;
-    font-weight: 500;
-}
-
-.qv-price-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 20px;
-}
-
-.qv-price-current {
-    font-size: 34px;
-    font-weight: 700;
-    color: #629d23;
-}
-
-.qv-price-old {
-    font-size: 18px;
-    color: #ababab;
-    text-decoration: line-through;
-    font-weight: 400;
-}
-
-.qv-description p {
-    font-size: 14px;
-    color: #616161;
-    line-height: 1.7;
-    margin-bottom: 25px;
-}
-
-/* 5. CTA Area (Buttons) */
-.qv-cta-group {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    margin-bottom: 30px;
-}
-
-.qv-quantity-control {
-    border: 1px solid #eeeeee;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-}
-
-.qv-qty-btn {
-    width: 35px;
-    height: 48px;
-    background: none;
-    border: none;
-    font-size: 18px;
-    color: #333;
-    cursor: pointer;
-}
-
-/* =========================================
-   VTM HORIZONTAL PRODUCT CARD (BOX 2)
-   ========================================= */
-.vtm-product-card-horizontal {
-    background: #ffffff !important;
-    border: 1px solid #f0f0f0 !important;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
-}
-
-.vtm-product-card-horizontal:hover {
-    border-color: #629d23 !important;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-}
-
-.vtm-product-card-horizontal .image-wrapper {
-    background: #f9f9f9;
-    min-height: 150px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.vtm-product-card-horizontal .image-wrapper img {
-    max-height: 140px;
-    object-fit: contain;
-}
-
-.vtm-product-card-horizontal .product-title {
-    font-size: 15px !important;
-    font-weight: 600 !important;
-    color: #1a1a1a !important;
-}
-
-.vtm-product-card-horizontal .unit-text {
-    font-size: 13px !important;
-}
-
-.vtm-product-card-horizontal .current-price {
-    color: #629d23 !important;
-    font-weight: 700 !important;
-    font-size: 20px !important;
-}
-
-.vtm-product-card-horizontal .old-price {
-    font-size: 14px !important;
-}
-
-/* Ribbon Badge Custom */
-.vtm-badge-ribbon {
-    position: absolute;
-    top: 5px;
-    left: 5px;
-    background: #FFB400;
-    /* Gold/Yellow from reference */
-    color: #000;
-    padding: 5px 8px;
-    font-size: 9px;
-    font-weight: 700;
-    line-height: 1.2;
-    z-index: 5;
-    border-radius: 2px;
-    text-align: center;
-    text-transform: uppercase;
-}
-
-.vtm-product-card-horizontal .quantity-edit .input {
-    width: 45px !important;
-    height: 40px !important;
-    font-size: 14px !important;
-}
-
-.btn-primary-outline {
-    background: transparent;
-    border: 1px solid #629d23;
-    color: #629d23;
-    font-weight: 600;
-    transition: all 0.3sease;
-}
-
-.btn-primary-outline:hover {
-    background: #629d23;
-    color: #fff;
-}
-
-.qv-qty-input {
-    width: 45px;
-    height: 48px;
-    border: none;
-    text-align: center;
-    font-size: 15px;
-    font-weight: 700;
-    color: #1a1a1a;
-}
-
-.qv-add-to-cart {
-    background: #629d23;
-    color: #fff;
-    height: 48px;
-    border-radius: 6px;
-    padding: 0 35px;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    border: none;
-    cursor: pointer;
-    transition: background 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.qv-add-to-cart:hover {
-    background: #4e7e1c;
-}
-
-.qv-wishlist-btn {
-    width: 48px;
-    height: 48px;
-    border-radius: 6px;
-    background: #f1f8e9;
-    color: #629d23;
-    border: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    cursor: pointer;
-    transition: all 0.3s;
-}
-
-.qv-wishlist-btn:hover {
-    background: #629d23;
-    color: #fff;
-}
-
-/* 6. Meta Sections */
-.qv-meta-info {
-    padding-top: 20px;
-    border-top: 1px solid #f2f2f2;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.qv-meta-row {
-    font-size: 13px;
-    color: #1a1a1a;
-}
-
-.qv-meta-row b {
-    color: #979797;
-    font-weight: 500;
-    width: 90px;
-    display: inline-block;
-}
-
-.qv-social-share {
-    margin-top: 20px;
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.qv-social-share span {
-    font-size: 14px;
-    font-weight: 600;
-    color: #9c9c9c;
-}
-
-.qv-social-icons {
-    display: flex;
-    gap: 15px;
-}
-
-.qv-social-icons a {
-    color: #000;
-    font-size: 14px;
-    transition: color 0.3s;
-}
-
-.qv-social-icons a:hover {
-    color: #629d23;
-}
-
-/* 7. Close Button Refinement */
-.qv-close-btn {
-    position: absolute;
-    top: -15px;
-    right: -15px;
-    width: 38px;
-    height: 38px;
-    background: #fff;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-    border: none;
-    cursor: pointer;
-    z-index: 1001;
-}
-
-.qv-close-btn:hover i {
-    color: #629d23;
-}
-
-/* Helper Class for Stability (Uniform Product Cards) */
+/* Đảm bảo tất cả các ảnh sản phẩm có cùng tỷ lệ khung hình và fit đúng cách */
 .single-shopping-card-one {
-    height: 100% !important;
-    display: flex !important;
-    flex-direction: column !important;
-}
-
-/* =========================================
-   VTM UNIFIED PREMIUM PRODUCT CARD STYLES
-   ========================================= */
-.vtm-product-card {
-    background: #fff !important;
-    border: 1px solid #f0f0f0 !important;
-    border-radius: 24px !important;
-    overflow: hidden !important;
-    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1) !important;
     display: flex !important;
     flex-direction: column !important;
     height: 100% !important;
-    position: relative !important;
+    background: #fff;
+    border: 1px solid #f0f0f0;
+    transition: all 0.3s ease;
 }
 
-.vtm-product-card:hover {
-    transform: translateY(-8px) !important;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08) !important;
-    border-color: #629D23 !important;
+.single-shopping-card-one:hover {
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
 }
 
-.vtm-product-card .image-and-action-area-wrapper {
-    position: relative !important;
-    background: #f8fafc !important;
-    height: 240px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
+.single-shopping-card-one .thumbnail-preview {
+    display: block !important;
+    width: 100% !important;
+    aspect-ratio: 1 / 1 !important;
+    /* Tạo khung hình vuông */
     overflow: hidden !important;
+    position: relative !important;
+    background-color: #f9f9f9 !important;
+    border-radius: 8px 8px 0 0 !important;
 }
 
-.vtm-product-card .thumbnail-preview {
+.single-shopping-card-one .thumbnail-preview img {
     width: 100% !important;
     height: 100% !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-}
-
-.vtm-product-card .thumbnail-preview img {
-    max-width: 85% !important;
-    max-height: 85% !important;
-    width: auto !important;
-    height: auto !important;
     object-fit: contain !important;
-    transition: transform 0.6s ease !important;
+    /* 'contain' để hiện trọn vẹn sản phẩm */
+    padding: 10px;
+    transition: transform 0.3s ease;
 }
 
-.vtm-product-card:hover .thumbnail-preview img {
-    transform: scale(1.1) !important;
+.single-shopping-card-one:hover .thumbnail-preview img {
+    transform: scale(1.05);
 }
 
-.vtm-product-card .vtm-badge-ribbon {
-    position: absolute !important;
-    top: 15px !important;
-    left: 15px !important;
-    padding: 6px 12px !important;
-    background: #629D23 !important;
-    color: #fff !important;
-    font-weight: 900 !important;
-    font-size: 10px !important;
-    text-transform: uppercase !important;
-    border-radius: 8px !important;
-    z-index: 10 !important;
-    line-height: 1.2 !important;
-    text-align: center !important;
-}
-
-.vtm-product-card .content-area {
-    padding: 24px !important;
+/* Cố định chiều cao nội dung để thẻ không bị trồi sụt */
+.single-shopping-card-one .body-content {
     flex-grow: 1 !important;
     display: flex !important;
     flex-direction: column !important;
+    padding: 15px !important;
 }
 
-.vtm-product-card .category-text {
-    font-size: 10px !important;
-    font-weight: 900 !important;
-    color: #629D23 !important;
-    text-transform: uppercase !important;
-    letter-spacing: 0.15em !important;
-    margin-bottom: 8px !important;
-}
-
-.vtm-product-card .product-title-h3,
-.vtm-product-card .title {
-    font-size: 16px !important;
-    font-weight: 700 !important;
-    color: #1a202c !important;
-    margin-bottom: 12px !important;
-    line-height: 1.4 !important;
-    height: 44px !important;
-    overflow: hidden !important;
+.single-shopping-card-one .body-content .title {
     display: -webkit-box !important;
     -webkit-line-clamp: 2 !important;
+    /* Giới hạn 2 dòng */
+    line-clamp: 2 !important;
+    /* Thuộc tính chuẩn */
     -webkit-box-orient: vertical !important;
-    transition: color 0.3s !important;
+    overflow: hidden !important;
+    height: 42px !important;
+    /* Chiều cao cố định cho 2 dòng */
+    margin-bottom: 8px !important;
+    font-size: 15px !important;
+    line-height: 1.4 !important;
+    font-weight: 600 !important;
 }
 
-.vtm-product-card:hover .product-title-h3,
-.vtm-product-card:hover .title {
-    color: #629D23 !important;
+.single-shopping-card-one .availability {
+    font-size: 13px !important;
+    color: #888 !important;
+    margin-bottom: 10px !important;
 }
 
-.vtm-product-card .stars-area {
+.single-shopping-card-one .price-area {
+    margin-top: auto !important;
+    /* Đẩy phần giá và nút xuống đáy */
+    display: flex !important;
+    align-items: baseline !important;
+    gap: 8px !important;
     margin-bottom: 15px !important;
-    color: #fbbf24 !important;
-    font-size: 10px !important;
-    display: flex !important;
-    gap: 2px !important;
 }
 
-.vtm-product-card .price-area {
-    display: flex !important;
+/* Thẻ nằm ngang (Horizontal) */
+.single-shopping-card-one.discount-offer {
+    flex-direction: row !important;
     align-items: center !important;
-    gap: 12px !important;
-    margin-bottom: 20px !important;
-    padding: 12px !important;
-    background: #f8fafc !important;
-    border-radius: 12px !important;
 }
 
-.vtm-product-card .current-price {
-    font-size: 20px !important;
-    font-weight: 900 !important;
-    color: #629D23 !important;
+.single-shopping-card-one.discount-offer .thumbnail-preview {
+    max-width: 130px !important;
+    border-radius: 8px 0 0 8px !important;
+    flex-shrink: 0 !important;
 }
 
-.vtm-product-card .old-price {
-    font-size: 12px !important;
-    color: #94a3b8 !important;
-    text-decoration: line-through !important;
+.single-shopping-card-one.discount-offer .body-content {
+    padding: 15px !important;
 }
 
-.vtm-product-card .action-share-option {
-    position: absolute !important;
-    bottom: -60px !important;
+/* 
+   Quick View Modal 
+   =========================================
+*/
+
+#quick-view-modal-container {
+    position: fixed !important;
+    top: 0 !important;
     left: 0 !important;
     width: 100% !important;
-    background: #629D23 !important;
-    display: flex !important;
-    justify-content: center !important;
-    gap: 15px !important;
-    padding: 12px !important;
-    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1) !important;
-    z-index: 20 !important;
-    border-radius: 20px 20px 0 0 !important;
+    height: 100% !important;
+    z-index: 100000 !important;
+    /* Đảm bảo cao nhất */
+    display: none;
+    overflow: hidden;
 }
 
-.vtm-product-card:hover .action-share-option {
-    bottom: 0 !important;
-}
-
-.vtm-product-card .single-action {
-    width: 36px !important;
-    height: 36px !important;
-    background: transparent !important;
-    border: 1px dashed rgba(255, 255, 255, 0.8) !important;
-    border-radius: 50% !important;
+/* Modal Overlay */
+.qv-modal-wrapper {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    background: rgba(0, 0, 0, 0.8) !important;
+    /* Đậm hơn một chút */
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    cursor: pointer !important;
-    transition: all 0.3s !important;
-    color: #fff !important;
-    font-size: 14px !important;
+    padding: 20px !important;
+    backdrop-filter: blur(4px) !important;
 }
 
-.vtm-product-card .single-action i {
-    color: #fff !important;
-}
-
-.vtm-product-card .single-action:hover {
-    background: rgba(255, 255, 255, 0.2) !important;
-    border-style: solid !important;
-    transform: scale(1.1) !important;
-}
-
-.vtm-product-card .price-and-btn-wrapper {
-    margin-top: auto !important;
-}
-
-/* =========================================
-   VTM HORIZONTAL PRODUCT CARD REFINEMENTS
-   ========================================= */
-body .vtm-product-card-horizontal {
-    background: #ffffff;
-    border: 1px solid #f0f0f0;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
-}
-
-body .vtm-product-card-horizontal .cart-counter-action {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 15px;
-    margin-top: 15px;
-}
-
-body .vtm-product-card-horizontal .quantity-edit {
-    margin-bottom: 0;
-    flex-shrink: 0;
-}
-
-.single-shopping-card-one .cart-counter-action .quantity-edit input {
-    max-width: 30px;
-}
-
-/* =========================================
-   CHECKOUT FORM MODERNIZATION
-   ========================================= */
-.checkout-form-container input:not([type="radio"]):not([type="checkbox"]),
-.checkout-form-container select,
-.checkout-form-container textarea {
-    height: 52px !important;
-    border-radius: 12px !important;
-    border: 1px solid #e1e7ec !important;
-    padding: 10px 20px !important;
-    font-size: 15px !important;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-    background-color: #ffffff !important;
+/* Modal Box */
+.qv-modal-container {
+    background: #fff !important;
     width: 100% !important;
-    color: #2b3d51 !important;
+    max-width: 950px !important;
+    height: auto !important;
+    max-height: 90vh !important;
+    border-radius: 12px !important;
+    position: relative !important;
+    overflow-y: auto !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
 }
 
-.checkout-form-container textarea {
-    height: 120px !important;
-    padding-top: 15px !important;
-}
+@keyframes qvModalIn {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+    }
 
-.checkout-form-container input:focus,
-.checkout-form-container select:focus,
-.checkout-form-container textarea:focus {
-    border-color: #629d23 !important;
-    box-shadow: 0 0 0 4px rgba(98, 157, 35, 0.08) !important;
-    outline: none !important;
-}
-
-.checkout-form-container label {
-    font-weight: 700 !important;
-    color: #1a2b3c !important;
-    margin-bottom: 10px !important;
-    display: block !important;
-    font-size: 14px !important;
-    letter-spacing: -0.2px;
-}
-
-.checkout-form-container .single-input {
-    margin-bottom: 24px !important;
-    max-width: 100% !important;
-    width: 100%;
-}
-
-.checkout-form-container .half-input-wrapper {
-    display: flex;
-    gap: 20px;
-}
-
-@media (max-width: 768px) {
-    .checkout-form-container .half-input-wrapper {
-        flex-direction: column;
-        gap: 0;
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
     }
 }
 
-.checkout-form-container select.form-select {
+/* Close Button Override */
+.qv-close-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 10;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #f0f0f0;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 15px center;
-    background-size: 16px;
-    appearance: none;
+    transition: all 0.2s;
 }
 
-#anywhere-home.bgshow {
+.qv-close-btn:hover {
+    background: var(--color-primary);
+    color: #fff;
+    transform: rotate(90deg);
+}
+
+/* Quick View Layout Fixes */
+.details-product-area {
+    display: flex;
+    gap: 30px;
+    padding: 40px;
+}
+
+.product-thumb-area {
+    flex: 0 0 45%;
+    max-width: 45%;
+}
+
+.contents {
+    flex: 1;
+}
+
+/* Gallery Section */
+.thumb-wrapper {
+    width: 100%;
+    aspect-ratio: 1/1;
+    overflow: hidden;
+    border-radius: 10px;
+    background: #f8f8f8;
+}
+
+.thumb-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.thumb-wrapper.hide {
     display: none;
+}
+
+.product-thumb-filter-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.thumb-filter {
+    width: 70px;
+    height: 70px;
+    border-radius: 8px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    overflow: hidden;
+    transition: 0.2s;
+}
+
+.thumb-filter.active {
+    border-color: var(--color-primary);
+}
+
+.thumb-filter img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Responsiveness */
+@media (max-width: 768px) {
+    .details-product-area {
+        flex-direction: column;
+        padding: 20px;
+    }
+
+    .product-thumb-area {
+        max-width: 100%;
+    }
+}
+
+/* 
+   Editor Content Styling (Table, etc.) 
+   =========================================
+*/
+.disc table, 
+.additional-info-content table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    margin-bottom: 20px !important;
+    border: 1px solid #ddd !important;
+}
+
+.disc table th, 
+.disc table td,
+.additional-info-content table th, 
+.additional-info-content table td {
+    border: 1px solid #ddd !important;
+    padding: 12px 15px !important;
+    text-align: left !important;
+    font-size: 14px !important;
+    line-height: 1.5 !important;
+}
+
+.disc table th,
+.additional-info-content table th {
+    background-color: #f8f9fa !important;
+    font-weight: 700 !important;
+    color: var(--color-heading-1) !important;
+    border-bottom: 2px solid #eee !important;
+}
+
+.disc table tr:nth-child(even),
+.additional-info-content table tr:nth-child(even) {
+    background-color: #fcfcfc !important;
+}
+
+.disc img, 
+.additional-info-content img {
+    max-width: 100% !important;
+    height: auto !important;
+    border-radius: 8px !important;
+    margin: 10px 0 !important;
 }

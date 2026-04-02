@@ -45,7 +45,7 @@
 
                 <div class="action-buttons d-flex gap-3 justify-content-center">
                     <a href="{{ route('shop.index') }}" class="rts-btn btn-primary px-5 py-3 rounded-pill">Tiếp tục mua sắm</a>
-                    <a href="{{ route('orders') }}" class="rts-btn btn-outline border-only px-5 py-3 rounded-pill">Xem đơn hàng</a>
+                    <a href="{{ route('profile') . '?tab=orders' }}" class="rts-btn btn-outline border-only px-5 py-3 rounded-pill">Xem đơn hàng</a>
                 </div>
             </div>
         </div>

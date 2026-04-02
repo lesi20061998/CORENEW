@@ -43,7 +43,7 @@ class ProductRepository
 
     public function find(int $id): ?Product
     {
-        return $this->model->with(['attributeValues.attribute'])->find($id);
+        return $this->model->with(['attributeValues.attribute', 'combos.variants'])->find($id);
     }
 
     public function findBySlug(string $slug): ?Product

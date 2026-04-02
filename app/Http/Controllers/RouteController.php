@@ -18,7 +18,7 @@ class RouteController extends Controller
         // 1. Thử tìm sản phẩm
         $product = Product::where('slug', $slug)
             ->where('status', 'active')
-            ->with(['categories', 'productAttributes', 'variants', 'activeCombos'])
+            ->with(['categories', 'productAttributes', 'variants', 'activeCombos.variants'])
             ->first();
 
         if ($product) {

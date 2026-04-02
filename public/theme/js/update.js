@@ -91,15 +91,20 @@ const cwAction = {
 
         // Show loading if you want, but AJAX is fast
         $.ajax({
-            url: '/quick-view/' + productId,
+            url: window.VTM_CONFIG ? window.VTM_CONFIG.baseUrl + '/quick-view/' + productId : '/quick-view/' + productId,
             method: 'GET',
+            dataType: 'json',
             success: function (response) {
-                // IMPORTANT: Use response.html as the controller sends a JSON object
-                modalContainer.html(response.html).fadeIn(300);
-                $('body').css('overflow', 'hidden'); // Lock scroll when open
+                if (response && response.html) {
+                    modalContainer.hide().html(response.html).fadeIn(300);
+                    $('body').css('overflow', 'hidden'); 
+                } else {
+                    Swal.fire('Lỗi!', 'Dữ liệu sản phẩm trống.', 'error');
+                }
             },
-            error: function () {
-                Swal.fire('Error!', 'Could not load product details.', 'error');
+            error: function (xhr) {
+                console.error("QuickView Error:", xhr);
+                Swal.fire('Lỗi!', 'Không thể tải thông tin sản phẩm.', 'error');
             }
         });
     },
@@ -107,7 +112,7 @@ const cwAction = {
     addWishlist: function (id, btn) {
         const $btn = $(btn);
         $.ajax({
-            url: '/wishlist/add',
+            url: window.VTM_CONFIG ? window.VTM_CONFIG.baseUrl + '/wishlist/add' : '/wishlist/add',
             method: 'POST',
             data: {
                 product_id: id,
@@ -137,7 +142,7 @@ const cwAction = {
     addCompare: function (id, btn) {
         const $btn = $(btn);
         $.ajax({
-            url: '/compare/add',
+            url: window.VTM_CONFIG ? window.VTM_CONFIG.baseUrl + '/compare/add' : '/compare/add',
             method: 'POST',
             data: {
                 product_id: id,
@@ -159,7 +164,7 @@ const cwAction = {
                         timer: 2000,
                         showConfirmButton: false
                     }).then(() => {
-                        window.location.href = '/so-sanh';
+                        window.location.href = window.VTM_CONFIG ? window.VTM_CONFIG.baseUrl + '/so-sanh' : '/so-sanh';
                     });
                 } else {
                     Swal.fire({
@@ -194,7 +199,7 @@ const cart = {
         $btn.prop('disabled', true).html('<i class="fa-solid fa-spinner fa-spin"></i>');
 
         $.ajax({
-            url: '/gio-hang/them',
+            url: window.VTM_CONFIG ? window.VTM_CONFIG.baseUrl + '/gio-hang/them' : '/gio-hang/them',
             method: 'POST',
             data: {
                 product_id: productId,
@@ -226,7 +231,7 @@ const cart = {
 
     remove: function (rowId) {
         $.ajax({
-            url: '/gio-hang/xoa',
+            url: window.VTM_CONFIG ? window.VTM_CONFIG.baseUrl + '/gio-hang/xoa' : '/gio-hang/xoa',
             method: 'POST',
             data: {
                 rowId: rowId,
@@ -235,7 +240,7 @@ const cart = {
             success: function (response) {
                 cart.updateDropdown();
                 // Update header counts
-                $.get('/gio-hang/so-luong', function (data) {
+                $.get(window.VTM_CONFIG ? window.VTM_CONFIG.baseUrl + '/gio-hang/so-luong' : '/gio-hang/so-luong', function (data) {
                     $('.cart .number').text(data.count);
                 });
             }
@@ -245,7 +250,7 @@ const cart = {
     updateDropdown: function () {
         const dropdownContainer = $('.cart-dropdown-container');
         if (dropdownContainer.length) {
-            $.get('/gio-hang/dropdown', function (html) {
+            $.get(window.VTM_CONFIG ? window.VTM_CONFIG.baseUrl + '/gio-hang/dropdown' : '/gio-hang/dropdown', function (html) {
                 dropdownContainer.html(html);
             });
         }
@@ -267,6 +272,26 @@ $(document).ready(function () {
         cart.add(id, this);
     });
 
+    // Mobile Menu Toggle
+    $(document).on('click', '#menu-btn', function(e) {
+        e.preventDefault();
+        $('#side-bar').addClass('show');
+        $('#anywhere-home').addClass('bgshow');
+    });
+
+    $(document).on('click', '.close-icon-menu, #anywhere-home', function(e) {
+        e.preventDefault();
+        $('#side-bar').removeClass('show');
+        $('#anywhere-home').removeClass('bgshow');
+    });
+
+    // Language/Currency Dropdown on Mobile
+    $(document).on('click', '.language-hover > a', function(e) {
+        if ($(window).width() < 992) {
+            e.preventDefault();
+            $(this).next('.category-sub-menu').slideToggle();
+        }
+    });
 
     $.get('/gio-hang/so-luong', function (data) {
         $('.cart .number').text(data.count);

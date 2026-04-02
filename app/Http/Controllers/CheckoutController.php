@@ -15,14 +15,34 @@ class CheckoutController extends Controller
         if (empty($cart)) {
             return redirect()->route('cart.page')->with('error', 'Giỏ hàng của bạn đang trống.');
         }
-        $total = collect($cart)->sum(fn($i) => ($i['price'] ?? 0) * ($i['qty'] ?? 1));
-        return view('shop.checkout', compact('cart', 'total'));
+        $subtotal = collect($cart)->sum(fn($i) => ($i['price'] ?? 0) * ($i['qty'] ?? 1));
+        
+        $appliedCoupons = session('applied_coupons', []);
+        $couponList = [];
+        $totalDiscount = 0;
+
+        foreach ($appliedCoupons as $couponId) {
+            $coupon = \App\Models\Coupon::find($couponId);
+            if ($coupon && $coupon->isValid($subtotal)) {
+                $discount = $coupon->calculateDiscount($subtotal);
+                $totalDiscount += $discount;
+                $couponList[] = [
+                    'code' => $coupon->code,
+                    'discount' => $discount
+                ];
+            }
+        }
+
+        $total = max(0, $subtotal - $totalDiscount);
+
+        return view('shop.checkout', compact('cart', 'subtotal', 'totalDiscount', 'total', 'couponList'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'name'            => 'required|string|max:100',
+            'first_name'      => 'required|string|max:100',
+            'last_name'       => 'required|string|max:100',
             'email'           => 'required|email',
             'phone'           => 'required|string|max:20',
             'street_address'  => 'required|string',
@@ -33,9 +53,10 @@ class CheckoutController extends Controller
 
         $cart = session('cart', []);
         if (empty($cart)) {
-            return redirect()->route('cart.page');
+            return redirect()->route('cart.page')->with('error', 'Giỏ hàng của bạn đang trống.');
         }
 
+        $fullName    = trim($request->first_name . ' ' . $request->last_name);
         $total       = collect($cart)->sum(fn($i) => ($i['price'] ?? 0) * ($i['qty'] ?? 1));
         $orderNumber = Order::generateOrderNumber();
         $shippingFee = $total >= 500000 ? 0 : 30000;
@@ -55,10 +76,23 @@ class CheckoutController extends Controller
             ]);
         }
 
+        $totalDiscount = 0;
+        $appliedCouponCodes = [];
+        $appliedCoupons = session('applied_coupons', []);
+
+        foreach ($appliedCoupons as $couponId) {
+            $coupon = \App\Models\Coupon::find($couponId);
+            if ($coupon && $coupon->isValid($total)) {
+                $totalDiscount += $coupon->calculateDiscount($total);
+                $appliedCouponCodes[] = $coupon->code;
+                $coupon->increment('usage_count');
+            }
+        }
+
         $order = Order::create([
             'order_number'      => $orderNumber,
             'user_id'           => $user?->id,
-            'customer_name'     => $request->name,
+            'customer_name'     => $fullName,
             'customer_email'    => $request->email,
             'customer_phone'    => $request->phone,
             'shipping_address'   => $fullAddress,
@@ -66,12 +100,14 @@ class CheckoutController extends Controller
             'shipping_district'  => $request->district_name,
             'shipping_ward'      => $request->ward_name,
             'subtotal'           => $total,
+            'discount'           => $totalDiscount,
             'shipping_fee'       => $shippingFee,
-            'total'              => $total + $shippingFee,
+            'total'              => max(0, $total - $totalDiscount + $shippingFee),
             'status'             => 'pending',
             'payment_status'     => 'unpaid',
             'payment_method'     => $request->payment_method ?? 'cod',
             'customer_note'      => $request->notes,
+            'coupon_code'        => implode(', ', $appliedCouponCodes),
         ]);
 
         foreach ($cart as $item) {
@@ -89,7 +125,7 @@ class CheckoutController extends Controller
             ]);
         }
 
-        session()->forget('cart');
+        session()->forget(['cart', 'applied_coupons']);
 
         return redirect()->route('checkout.success', $orderNumber);
     }

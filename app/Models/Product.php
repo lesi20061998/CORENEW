@@ -14,10 +14,10 @@ class Product extends Model
     use HasFactory, HasTranslations, SoftDeletes;
 
     // Fields có thể dịch đa ngôn ngữ
-    public array $translatableFields = ['name', 'short_description', 'description', 'meta_title', 'meta_description'];
+    public array $translatableFields = ['name', 'short_description', 'description', 'additional_info', 'meta_title', 'meta_description'];
 
     protected $fillable = [
-        'name', 'slug', 'short_description', 'description',
+        'name', 'slug', 'short_description', 'description', 'additional_info',
         'price', 'compare_price', 'cost_price', 'sku',
         'stock', 'stock_status', 'has_variants', 'weight',
         'status', 'is_featured', 'is_favorite', 'is_best_seller', 'sort_order',
@@ -93,7 +93,7 @@ class Product extends Model
     public function combos()
     {
         return $this->belongsToMany(Product::class, 'product_combos', 'product_id', 'combo_product_id')
-                    ->withPivot('combo_price', 'discount_type', 'discount_value', 'sort_order', 'is_active')
+                    ->withPivot('combo_product_variant_id', 'combo_price', 'discount_type', 'discount_value', 'sort_order', 'is_active')
                     ->withTimestamps();
     }
 

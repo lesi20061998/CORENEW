@@ -10,7 +10,7 @@
     $existingTranslations = [];
     if ($isEdit && $hasI18n) {
         foreach ($otherLangs as $lang) {
-            foreach (['name','short_description','description','meta_title','meta_description'] as $f) {
+            foreach (['name','short_description','description','additional_info','meta_title','meta_description'] as $f) {
                 $existingTranslations[$lang->code][$f] = $product->translate($f, $lang->code);
             }
         }
@@ -20,20 +20,49 @@
     $comboInitData = [];
     if ($isEdit) {
         $comboInitData = $product->combos->map(function($c) {
+            $variantId = $c->pivot->combo_product_variant_id;
+            $name = $c->name;
+            $price = (float)$c->price;
+            $image = $c->image;
+            if ($variantId) {
+                // Eager loaded variants
+                $variant = $c->variants->where('id', $variantId)->first();
+                if ($variant) {
+                    $name .= ' (' . ($variant->label ?: ($variant->sku ?: 'Biến thể #'.$variant->id)) . ')';
+                    $price = (float)($variant->price ?: $c->price);
+                    if ($variant->image) $image = $variant->image;
+                }
+            }
             return [
                 'id' => $c->id,
-                'name' => $c->name,
-                'image' => $c->image ? (str_starts_with($c->image, 'http') ? $c->image : asset($c->image)) : null,
-                'original_price' => (float)$c->price,
+                'variant_id' => $variantId,
+                'name' => $name,
+                'image' => $image ? (str_starts_with($image, 'http') ? $image : asset($image)) : null,
+                'original_price' => $price,
                 'discount_type' => $c->pivot->discount_type ?? 'fixed',
                 'discount_value' => $c->pivot->discount_value ?? 0,
-                'combo_price' => $c->pivot->combo_price,
+                'combo_price' => (float)$c->pivot->combo_price,
                 'is_active' => (bool)$c->pivot->is_active,
                 'sort_order' => $c->pivot->sort_order
             ];
         })->toArray();
     }
+    
+    // Global batch settings from first item
+    $firstC = collect($comboInitData)->first();
+    $initBatchVal = $firstC ? $firstC['discount_value'] : 0;
+    if ($firstC && $firstC['discount_type'] === 'fixed') {
+        $initBatchVal = number_format($initBatchVal, 0, ',', ',');
+    }
+    $initBatchType = $firstC ? $firstC['discount_type'] : 'percent';
 @endphp
+
+<script>
+window.comboBatchInit = {
+    value: '{{ $initBatchVal }}',
+    type: '{{ $initBatchType }}'
+};
+</script>
 
 <script>
 // Maps and context from PHP
@@ -80,25 +109,91 @@ window.productFormManager = function(existingVariants, existingAttrMap) {
         bulkEdit: false,
         bulkPrice: '',
         bulkStock: '',
-        combos: @json($comboInitData ?? [], JSON_UNESCAPED_UNICODE),
-        comboSearch: '',
+        batchDiscountValue: window.comboBatchInit.value || '0',
+        batchDiscountType: window.comboBatchInit.type || 'percent',
+        batchSelectedProducts: [],
+        combos: @json($comboInitData ?? []),
 
-        addCombo(pId) {
+        addCombo(pIdAndVariantId, discountVal = null, discountType = null) {
+            const [pId, vId] = String(pIdAndVariantId).split(':').map(Number);
             const allP = @json($allProducts ?? [], JSON_UNESCAPED_UNICODE);
             const p = allP.find(item => item.id == pId);
-            if (!p || this.combos.some(c => c.id == pId)) return;
+            if (!p) return;
+
+            // Check if already in combos (matching both product_id and variant_id)
+            if (this.combos.some(c => c.id == pId && (c.variant_id == (vId || null)))) return;
+            
+            let name = p.name;
+            let price = p.price;
+            let image = p.image;
+
+            if (vId) {
+                const variant = (p.variants || []).find(v => v.id == vId);
+                if (variant) {
+                    const vLabel = (variant.label || (variant.sku || 'Variant #'+vId));
+                    name += ' (' + vLabel + ')';
+                    if (variant.price) price = variant.price;
+                    if (variant.image) image = variant.image;
+                }
+            }
+
             this.combos.push({
                 id: p.id,
-                name: p.name,
-                image: p.image ? (p.image.startsWith('http') ? p.image : '/'+p.image) : null,
-                original_price: p.price,
-                discount_type: 'percent',
-                discount_value: 0,
-                combo_price: p.price,
+                variant_id: vId || null,
+                name: name,
+                image: image ? (image.startsWith('http') ? image : '/'+image) : null,
+                original_price: price,
+                discount_type: discountType || 'percent',
+                discount_value: discountVal || '0',
+                combo_price: price,
                 is_active: true,
                 sort_order: this.combos.length
             });
-            this.comboSearch = '';
+        },
+
+        addImmediateCombo() {
+            if (typeof window.jQuery === 'undefined') {
+                const data = document.getElementById('combo-multi-select').value;
+                if (!data) { alert('Vui lòng chọn một sản phẩm trước.'); return; }
+                this.addCombo(data, this.batchDiscountValue, this.batchDiscountType);
+                document.getElementById('combo-multi-select').value = '';
+                return;
+            }
+            const data = window.jQuery('#combo-multi-select').val();
+            if (!data) { alert('Vui lòng chọn một sản phẩm trước.'); return; }
+            this.addCombo(data, this.batchDiscountValue, this.batchDiscountType);
+            window.jQuery('#combo-multi-select').val(null).trigger('change');
+        },
+
+        addBatchCombos() {
+            if (this.batchSelectedProducts.length === 0) {
+                alert('Vui lòng chọn ít nhất một sản phẩm.');
+                return;
+            }
+            this.batchSelectedProducts.forEach(pId => {
+                this.addCombo(pId, this.batchDiscountValue, this.batchDiscountType);
+            });
+            // Reset
+            this.batchSelectedProducts = [];
+            if (window.jQuery && $('#combo-multi-select').length) {
+                $('#combo-multi-select').val(null).trigger('change');
+            }
+        },
+
+        getProductNameFromList(pIdAndVariantId) {
+            const [pId, vId] = String(pIdAndVariantId).split(':').map(Number);
+            const allP = @json($allProducts ?? [], JSON_UNESCAPED_UNICODE);
+            const p = allP.find(item => item.id == pId);
+            if (!p) return 'Unknown';
+            let name = p.name;
+            if (vId) {
+                const v = (p.variants || []).find(v => v.id == vId);
+                if (v) {
+                   const vLabel = (v.label || (v.sku || 'Variant #'+vId));
+                   name += ' (' + vLabel + ')';
+                }
+            }
+            return name;
         },
 
         formatMoney(val) {
@@ -112,11 +207,15 @@ window.productFormManager = function(existingVariants, existingAttrMap) {
         },
 
         calculateFinalPrice(c) {
-            let val = parseFloat(c.discount_value) || 0;
+            let val = parseFloat(String(c.discount_value).replace(/,/g, "")) || 0;
+            let mainPrice = this.parseMoney(this.mainPriceStr);
+            let originalPriceB = parseFloat(c.original_price) || 0;
+            let totalOriginal = mainPrice + originalPriceB;
+            
             if (c.discount_type === 'percent') {
-                return Math.max(0, c.original_price * (1 - val / 100));
+                return Math.max(0, totalOriginal * (1 - val / 100));
             } else {
-                return Math.max(0, val); // Assume user enters the COMBO price
+                return Math.max(0, totalOriginal - val);
             }
         },
         removeCombo(idx) {
@@ -350,7 +449,7 @@ window.productInitData = {
                             </div>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-[160px_1fr] items-center gap-4">
-                            <label class="text-sm font-bold text-slate-700">Giá bán ưu đãi (₫)</label>
+                            <label class="text-sm font-bold text-slate-700">Giá bán ưu đãi (A) (₫)</label>
                             <div class="relative">
                                 <input type="text" x-model="mainPriceStr" @input="mainPriceStr = formatMoney(mainPriceStr)"
                                        class="form-input !text-base !py-3 font-black text-blue-600 border-blue-200 focus:ring-blue-100 shadow-sm transition-all focus:scale-[1.01]">
@@ -643,96 +742,114 @@ window.productInitData = {
                         </div>
 
                         <div class="space-y-4">
-                            <div class="relative">
-                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Thêm sản phẩm vào combo</label>
-                                <div class="flex gap-2">
-                                    <select class="form-select !py-2.5 !text-sm flex-1 border-slate-200" @change="addCombo($event.target.value); $event.target.value=''">
-                                        <option value="">-- Chọn sản phẩm để thêm --</option>
-                                        @foreach($allProducts ?? [] as $p)
-                                            <option value="{{ $p->id }}">{{ $p->name }} ({{ number_format($p->price, 0, ',', '.') }}₫)</option>
-                                        @endforeach
-                                    </select>
+                            <div class="relative bg-blue-50/50 p-6 rounded-3xl border border-blue-100 shadow-sm mb-6">
+                                <label class="text-[11px] font-black text-blue-600 uppercase tracking-widest block mb-4 flex items-center gap-2">
+                                    <i class="fa-solid fa-plus-circle"></i> THIẾT LẬP COMBO HÀNG LOẠT
+                                </label>
+                                <div class="space-y-5">
+                                    <div class="w-full">
+                                        <label class="text-[10px] font-bold text-slate-400 uppercase mb-1.5 block">1. Tìm & Chọn sản phẩm mua kèm (Sản phẩm B)</label>
+                                        <div class="relative" wire:ignore>
+                                            <select id="combo-multi-select" 
+                                                    class="form-select !py-2.5 !text-sm w-full border-slate-200">
+                                                <option value="">--- Gõ tên sản phẩm cần thêm ---</option>
+                                                @foreach($allProducts ?? [] as $p)
+                                                    @if($p)
+                                                        @if($p->has_variants && $p->variants->count() > 0)
+                                                            <optgroup label="{{ $p->name }}">
+                                                                @foreach($p->variants as $v)
+                                                                    <option value="{{ $p->id }}:{{ $v->id }}" 
+                                                                            data-image="{{ $v->image ? (str_starts_with($v->image,'http') ? $v->image : asset($v->image)) : ($p->image ? (str_starts_with($p->image,'http') ? $p->image : asset($p->image)) : asset('admin/images/placeholder.webp')) }}">
+                                                                        {{ $p->name }} - {{ $v->label ?: ($v->sku ?: 'Variant #'.$v->id) }} 
+                                                                        ({{ number_format($v->price ?: $p->price, 0, ',', '.') }}₫)
+                                                                    </option>
+                                                                @endforeach
+                                                            </optgroup>
+                                                        @else
+                                                            <option value="{{ $p->id }}:0"
+                                                                    data-image="{{ $p->image ? (str_starts_with($p->image,'http') ? $p->image : asset($p->image)) : asset('admin/images/placeholder.webp') }}">
+                                                                {{ $p->name }} ({{ number_format($p->price, 0, ',', '.') }}₫)
+                                                            </option>
+                                                        @endif
+                                                    @endif
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="flex flex-col lg:flex-row gap-4 items-end pt-5 border-t border-blue-100/50">
+                                        <div class="flex-grow lg:max-w-[220px]">
+                                            <label class="text-[10px] font-bold text-slate-400 uppercase mb-1.5 block">2. Mức giảm giá khi mua Combo</label>
+                                            <div class="relative">
+                                                <input type="text" x-model="batchDiscountValue" 
+                                                       @input="if(batchDiscountType === 'fixed') { batchDiscountValue = formatMoney(batchDiscountValue) }"
+                                                       class="form-input !py-2.5 !text-sm font-black border-slate-200 rounded-xl pr-16" placeholder="0">
+                                                <div class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center px-2 py-1 bg-slate-100 rounded-lg">
+                                                    <span class="text-[10px] font-black text-slate-400" x-text="batchDiscountType === 'percent' ? '%' : '₫'"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="w-full lg:w-40">
+                                            <label class="text-[10px] font-bold text-slate-400 uppercase mb-1.5 block">3. Loại giảm giá</label>
+                                            <select x-model="batchDiscountType" class="form-select !py-2.5 !text-sm font-bold border-slate-200 rounded-xl bg-slate-50 border-dashed">
+                                                <option value="percent">Giảm theo %</option>
+                                                <option value="fixed">Giảm trừ Tiền mặt</option>
+                                            </select>
+                                        </div>
+                                        <div class="flex-shrink-0">
+                                            <button type="button" @click="addImmediateCombo()" 
+                                                    class="h-[46px] px-10 bg-blue-600 text-white rounded-xl text-[11px] font-black uppercase tracking-widest hover:bg-blue-700 shadow-xl shadow-blue-500/20 transition-all active:scale-95 flex items-center gap-2 whitespace-nowrap">
+                                                <i class="fa-solid fa-plus font-bold"></i> THÊM VÀO DANH SÁCH
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
+                                <p class="text-[10px] text-slate-400 font-bold mt-3 italic">* Các sản phẩm đã chọn sẽ được thêm vào danh sách combo bên dưới với mức giảm tương ứng (So với Tổng A+B).</p>
                             </div>
 
-                            <div class="border border-slate-100 rounded-[24px] overflow-hidden bg-slate-50/30 shadow-sm">
+                            <div class="border border-slate-100 rounded-[28px] overflow-hidden bg-slate-50/20 shadow-sm">
                                 <table class="w-full text-sm">
-                                    <thead class="bg-white border-b border-slate-100">
-                                        <tr>
-                                            <th class="px-5 py-4 text-left text-[11px] font-black text-slate-400 uppercase tracking-widest">Sản phẩm</th>
-                                            <th class="px-5 py-4 text-left text-[11px] font-black text-slate-400 uppercase tracking-widest">Giá Gốc</th>
-                                            <th class="px-5 py-4 text-left text-[11px] font-black text-slate-400 uppercase tracking-widest">Giảm giá</th>
-                                            <th class="px-5 py-4 text-left text-[11px] font-black text-slate-400 uppercase tracking-widest">Giá Combo (₫)</th>
-                                            <th class="px-5 py-4 text-center text-[11px] font-black text-slate-400 uppercase tracking-widest">Hiển thị</th>
-                                            <th class="px-5 py-4 w-10"></th>
-                                        </tr>
-                                    </thead>
                                     <tbody class="divide-y divide-slate-100">
                                         <template x-for="(c, idx) in combos" :key="idx">
-                                            <tr class="bg-white/50 hover:bg-white transition-colors group">
-                                                <td class="px-5 py-4">
-                                                    <div class="flex items-center gap-3">
-                                                        <div class="w-10 h-10 rounded-xl bg-white border border-slate-100 overflow-hidden shadow-sm flex-shrink-0">
+                                            <tr class="bg-white/50 hover:bg-white transition-all duration-300 group">
+                                                <td class="px-6 py-5">
+                                                    <div class="flex items-center gap-4">
+                                                        <div class="w-12 h-12 rounded-2xl bg-white border border-slate-100 overflow-hidden shadow-sm flex-shrink-0 group-hover:scale-105 transition-transform duration-300">
                                                             <img :src="c.image || '/admin/images/placeholder.webp'" class="w-full h-full object-cover">
                                                         </div>
                                                         <div class="flex flex-col">
-                                                            <span class="text-xs font-black text-slate-700 line-clamp-1" x-text="c.name"></span>
-                                                            <span class="text-[9px] text-slate-400 font-bold uppercase tracking-tight mt-0.5">ID: <span x-text="c.id"></span></span>
+                                                            <span class="text-[13px] font-black text-slate-700" x-text="c.name"></span>
+                                                            <div class="flex items-center gap-2 mt-1.5">
+                                                                <span class="px-2 py-0.5 bg-slate-100 text-[9px] font-black text-slate-400 uppercase rounded-lg tracking-widest">ID: <span x-text="c.id"></span></span>
+                                                                <template x-if="c.variant_id">
+                                                                    <span class="px-2 py-0.5 bg-blue-50 text-[9px] font-black text-blue-400 uppercase rounded-lg tracking-widest">VARIANT: <span x-text="c.variant_id"></span></span>
+                                                                </template>
+                                                            </div>
                                                         </div>
                                                     </div>
+                                                    {{-- Hidden Inputs for persistence --}}
                                                     <input type="hidden" :name="`combos[${idx}][id]`" :value="c.id">
+                                                    <input type="hidden" :name="`combos[${idx}][variant_id]`" :value="c.variant_id">
+                                                    <input type="hidden" :name="`combos[${idx}][discount_type]`" :value="batchDiscountType">
+                                                    <input type="hidden" :name="`combos[${idx}][discount_value]`" :value="parseMoney(batchDiscountValue)">
                                                 </td>
-                                                <td class="px-5 py-4">
-                                                    <span class="text-xs font-bold text-slate-400" x-text="new Intl.NumberFormat('vi-VN').format(c.original_price) + '₫'"></span>
-                                                </td>
-                                                <td class="px-5 py-4">
-                                                    <div class="flex items-center gap-1">
-                                                        <div class="relative flex-grow max-w-[120px]">
-                                                            <input type="text" 
-                                                                   x-model="c.discount_value" 
-                                                                   @input="if(c.discount_type === 'fixed') { c.discount_value = formatMoney(c.discount_value) }"
-                                                                   class="form-input !py-1.5 !pr-7 !text-xs font-black border-slate-200 focus:border-blue-400"
-                                                                   placeholder="0">
-                                                            <span class="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-300" x-text="c.discount_type === 'percent' ? '%' : '₫'"></span>
-                                                        </div>
-                                                        <select x-model="c.discount_type" 
-                                                                :name="`combos[${idx}][discount_type]`"
-                                                                @change="c.discount_value = '0'"
-                                                                class="form-select !py-1.5 !px-2 !text-[10px] font-black uppercase text-blue-600 border-none bg-blue-50 rounded-lg cursor-pointer">
-                                                            <option value="percent">%</option>
-                                                            <option value="fixed">VNĐ</option>
-                                                        </select>
-                                                        <input type="hidden" :name="`combos[${idx}][discount_value]`" :value="parseMoney(c.discount_value)">
-                                                    </div>
-                                                </td>
-                                                <td class="px-5 py-4">
-                                                    <div class="relative max-w-[140px]">
-                                                        <input type="hidden" :name="`combos[${idx}][price]`" :value="calculateFinalPrice(c)">
-                                                        <span class="text-xs font-black text-emerald-600" x-text="new Intl.NumberFormat('vi-VN').format(calculateFinalPrice(c)) + '₫'"></span>
-                                                    </div>
-                                                </td>
-                                                <td class="px-5 py-4 text-center">
-                                                    <label class="relative inline-flex items-center cursor-pointer">
-                                                        <input type="checkbox" :name="`combos[${idx}][is_active]`" value="1" x-model="c.is_active" class="sr-only peer">
-                                                        <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
-                                                    </label>
-                                                </td>
-                                                <td class="px-5 py-4 text-right">
+                                                <td class="px-6 py-5 text-right">
                                                     <button type="button" @click="removeCombo(idx)" 
-                                                            class="w-8 h-8 rounded-lg bg-slate-50 text-slate-300 hover:text-rose-600 hover:bg-rose-50 transition-all flex items-center justify-center">
-                                                        <i class="fa-solid fa-xmark text-xs"></i>
+                                                            class="w-10 h-10 rounded-2xl bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white transition-all duration-300 flex items-center justify-center border border-rose-100/50 shadow-sm active:scale-90 group-hover:shadow-rose-200">
+                                                        <i class="fa-solid fa-trash-can text-sm"></i>
                                                     </button>
                                                 </td>
                                             </tr>
                                         </template>
                                         <template x-if="combos.length === 0">
                                             <tr>
-                                                <td colspan="6" class="px-5 py-16 text-center">
-                                                    <div class="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-3 text-slate-300">
-                                                        <i class="fa-solid fa-layer-group text-xl"></i>
+                                                <td class="px-8 py-20 text-center">
+                                                    <div class="max-w-[200px] mx-auto opacity-20 group">
+                                                        <div class="w-16 h-16 bg-slate-200 rounded-[2rem] flex items-center justify-center mx-auto mb-4 group-hover:rotate-12 transition-transform duration-500">
+                                                            <i class="fa-solid fa-layer-group text-2xl text-slate-400"></i>
+                                                        </div>
+                                                        <p class="text-[11px] font-black uppercase tracking-[.2em] text-slate-500 leading-relaxed">Danh sách combo trống</p>
                                                     </div>
-                                                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Chưa có sản phẩm combo nào</p>
-                                                    <p class="text-[10px] text-slate-300 font-bold mt-1">Chọn sản phẩm từ danh sách bên trên để bắt đầu</p>
                                                 </td>
                                             </tr>
                                         </template>
@@ -947,11 +1064,110 @@ window.productInitData = {
     </div>
 </div>
 
-@push('styles')
+@push('scripts')
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+    $(document).ready(function() {
+        const $el = $('#combo-multi-select');
+
+        function formatProduct(state) {
+            if (!state.id) return state.text;
+            const img = $(state.element).data('image');
+            const $state = $(
+                '<div class="flex items-center gap-3 py-1">' +
+                    '<div class="w-10 h-10 rounded-lg overflow-hidden border border-slate-100 flex-shrink-0 bg-white">' +
+                        '<img src="' + img + '" class="w-full h-full object-cover" />' +
+                    '</div>' +
+                    '<div class="flex flex-col">' +
+                        '<span class="text-[11px] font-black text-slate-700 leading-tight mb-0.5">' + state.text + '</span>' +
+                        '<span class="text-[9px] text-blue-500 font-bold uppercase tracking-tight">Sẵn sàng chọn</span>' +
+                    '</div>' +
+                '</div>'
+            );
+            return $state;
+        }
+
+        $el.select2({
+            placeholder: "--- Gõ tên sản phẩm cần thêm ---",
+            allowClear: true,
+            width: '100%',
+            templateResult: formatProduct,
+            templateSelection: formatProduct,
+            dropdownCssClass: 'select2-combos-dropdown'
+        });
+
+        // Sync Select2 with Alpine.js (Search & Push mode)
+        $el.on('select2:select', function (e) {
+            const data = e.params.data.id;
+            if (!data) return;
+
+            const alpineEl = document.querySelector('[x-data*="productFormManager"]');
+            if (alpineEl) {
+                let alpineStore = null;
+                if (window.Alpine && typeof window.Alpine.$data === 'function') {
+                    alpineStore = window.Alpine.$data(alpineEl);
+                } else if (alpineEl._x_dataStack) {
+                    alpineStore = alpineEl._x_dataStack[0];
+                } else if (alpineEl.__x) {
+                    alpineStore = alpineEl.__x.$data;
+                }
+
+                if (alpineStore) {
+                    if (!alpineStore.batchSelectedProducts.includes(data)) {
+                        alpineStore.batchSelectedProducts.push(data);
+                    }
+                }
+            }
+            
+            // Clear selection after add
+            $(this).val(null).trigger('change');
+        });
+    });
+</script>
 <style>
     .custom-scroll::-webkit-scrollbar { width: 4px; }
     .custom-scroll::-webkit-scrollbar-track { background: transparent; }
     .custom-scroll::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
     .custom-scroll::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
+    
+    /* Select2 Tweaks */
+    .select2-combos-dropdown .select2-results__option {
+        padding: 6px 12px !important;
+        border-bottom: 1px solid #f1f5f9;
+    }
+    .select2-combos-dropdown .select2-results__option--highlighted {
+        background-color: #f8fafc !important;
+        color: inherit !important;
+    }
+    .select2-combos-dropdown .select2-results__group {
+        font-size: 10px !important;
+        font-weight: 900 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.05em !important;
+        color: #94a3b8 !important;
+        background: #f8fafc !important;
+        padding: 8px 12px !important;
+    }
+    .select2-container--default .select2-selection--multiple {
+        border-color: #e2e8f0 !important;
+        border-radius: 0.75rem !important;
+        padding: 4px 8px !important;
+        min-height: 45px !important;
+        transition: all 0.2s;
+    }
+    .select2-container--default.select2-container--focus .select2-selection--multiple {
+        border-color: #3b82f6 !important;
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+    }
+    .select2-container--default .select2-selection--multiple .select2-selection__choice {
+        background-color: #eff6ff !important;
+        border-color: #dbeafe !important;
+        color: #1e40af !important;
+        border-radius: 6px !important;
+        font-size: 11px !important;
+        font-weight: 700 !important;
+        padding: 2px 8px !important;
+    }
 </style>
 @endpush

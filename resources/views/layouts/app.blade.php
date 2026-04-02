@@ -137,10 +137,8 @@
     </div>
     <!-- progress area end -->
 
-    <!-- Quick View Modal Container -->
-    <div id="quick-view-modal-container"></div>
-    <!-- Theme Overlay -->
-    <div id="anywhere-home"></div>
+    <!-- Modal & Overlay managed in footer -->
+
 
     <!-- plugins js -->
     <script src="{{ asset('theme/js/plugins.js') }}"></script>
@@ -148,6 +146,11 @@
     <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <script src="{{ asset('theme/js/update.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        window.VTM_CONFIG = {
+            baseUrl: "{{ url('/') }}"
+        };
+    </script>
 
 
 

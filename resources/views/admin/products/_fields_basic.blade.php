@@ -41,4 +41,16 @@
             'height' => 360,
         ])
     </div>
+
+    <div>
+        <label class="form-label">
+            Thông tin bổ sung (Cấu hình, thông số...)
+            @if($locale) <span class="text-xs text-gray-400 font-normal">({{ strtoupper($locale) }})</span> @endif
+        </label>
+        @include('components.admin.editor', [
+            'name'   => ($p . 'additional_info' . $s),
+            'value'  => old($p . 'additional_info' . $s, $locale ? ($td['additional_info'] ?? '') : ($product?->additional_info ?? '')),
+            'height' => 250,
+        ])
+    </div>
 </div>

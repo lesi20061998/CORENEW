@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\TranslationController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\MenuController;
 use App\Http\Controllers\Admin\FlashSaleController;
+use App\Http\Controllers\Admin\CouponController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -156,6 +157,15 @@ Route::prefix('admin')->name('admin.')->group(function () {
             'edit' => 'flash-sales.edit',
             'update' => 'flash-sales.update',
             'destroy' => 'flash-sales.destroy',
+        ]);
+        // Coupons
+        Route::resource('coupons', CouponController::class)->names([
+            'index' => 'coupons.index',
+            'create' => 'coupons.create',
+            'store' => 'coupons.store',
+            'edit' => 'coupons.edit',
+            'update' => 'coupons.update',
+            'destroy' => 'coupons.destroy',
         ]);
         // Users
         Route::get('/users', [UserController::class, 'index'])->name('users.index');

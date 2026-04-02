@@ -1,82 +1,77 @@
 @php
-    $layout = $config['layout'] ?? 'grid';
-    $isSwiper = $layout === 'swiper' || ($config['is_swiper'] ?? false) || str_contains($config['wrap_class'] ?? '', 'top-tranding-product') || str_contains($config['wrap_class'] ?? '', 'featured-product');
+    $layout = $config['layout'] ?? 'slider';
+    $isSwiper = $layout === 'slider';
     $uniqueId = 'swiper-' . substr(md5(json_encode($config) . ($config['title'] ?? '')), 0, 8);
-    
-    // Adjust swiper data based on columns if provided
     $slidesPerView = (int)($config['columns'] ?? 6);
-    $swiperData = [
-        "spaceBetween" => 20,
-        "slidesPerView" => $slidesPerView,
-        "loop" => true,
-        "speed" => 1000,
-        "autoplay" => ["delay" => 5000, "pauseOnMouseEnter" => true],
-        "navigation" => [
-            "nextEl" => "." . $uniqueId . "-next",
-            "prevEl" => "." . $uniqueId . "-prev"
-        ],
-        "breakpoints" => [
-            "320" => ["slidesPerView" => 1],
-            "480" => ["slidesPerView" => 2],
-            "768" => ["slidesPerView" => 3],
-            "1200" => ["slidesPerView" => min(4, $slidesPerView)],
-            "1500" => ["slidesPerView" => $slidesPerView]
-        ]
-    ];
 @endphp
-<!-- rts grocery feature area start -->
 <div id="{{ $uniqueId }}-wrapper" class="{{ $config['wrap_class'] ?? 'rts-grocery-feature-area rts-section-gapBottom' }}" {!! $sectionStyles !!}>
     <div class="container">
         <div class="row">
             <div class="col-lg-12">
                 <div class="title-area-between">
                     <h2 class="title-left">{{ $config['title'] ?? 'Featured Grocery' }}</h2>
+                    @if($isSwiper)
                     <div class="next-prev-swiper-wrapper">
-                        <div class="swiper-button-prev"><i class="fa-regular fa-chevron-left"></i></div>
-                        <div class="swiper-button-next"><i class="fa-regular fa-chevron-right"></i></div>
+                        <div class="swiper-button-prev {{ $uniqueId }}-prev"><i class="fa-regular fa-chevron-left"></i></div>
+                        <div class="swiper-button-next {{ $uniqueId }}-next"><i class="fa-regular fa-chevron-right"></i></div>
                     </div>
+                    @endif
                 </div>
             </div>
         </div>
-
-        @if($isSwiper)
+    </div>
+    <div class="container">
         <div class="row">
-            <div class="col-lg-12 mt--20">
-                <div class="swiper {{ $uniqueId }} swiper-data" data-swiper='{!! json_encode($swiperData) !!}'>
-                    <div class="swiper-wrapper">
-                        @foreach($products as $product)
-                        <div class="swiper-slide">
-                            <x-product-card :product="$product" />
+            <div class="col-lg-12">
+                @if($isSwiper)
+                <div class="category-area-main-wrapper-one">
+                    <div class="swiper mySwiper-category-1 swiper-data" data-swiper='{
+                        "spaceBetween":16,
+                        "slidesPerView":{{ $slidesPerView }},
+                        "loop": true,
+                        "speed": 700,
+                        "navigation":{
+                            "nextEl":".{{ $uniqueId }}-next",
+                            "prevEl":".{{ $uniqueId }}-prev"
+                        },
+                        "breakpoints":{
+                        "0":{"slidesPerView":1,"spaceBetween": 12},
+                        "480":{"slidesPerView":2,"spaceBetween":12},
+                        "640":{"slidesPerView":2,"spaceBetween":16},
+                        "840":{"slidesPerView":3,"spaceBetween":16},
+                        "1140":{"slidesPerView":{{ min(5, $slidesPerView) }},"spaceBetween":16},
+                        "1540":{"slidesPerView":{{ min(6, $slidesPerView) }},"spaceBetween":16},
+                        "1840":{"slidesPerView":{{ $slidesPerView }},"spaceBetween":16}
+                        }
+                    }'>
+                        <div class="swiper-wrapper">
+                            @foreach($products as $product)
+                            <div class="swiper-slide">
+                                <x-product-card :product="$product" />
+                            </div>
+                            @endforeach
                         </div>
-                        @endforeach
                     </div>
                 </div>
+                @else
+                <div class="row g-4 @if($layout == 'grid') mt--20 @endif">
+                    @php
+                        $gridClass = match($config['columns'] ?? '5') {
+                            '2' => 'col-lg-6 col-md-6',
+                            '3' => 'col-lg-4 col-md-6',
+                            '4' => 'col-lg-3 col-md-6',
+                            '6' => 'col-xxl-2 col-xl-2 col-lg-3 col-md-4 col-sm-6',
+                            default => 'col-xxl-2 col-xl-3 col-lg-4 col-md-6 col-sm-6', // 5 columns (approx)
+                        };
+                    @endphp
+                    @foreach($products as $product)
+                    <div class="{{ $gridClass }} col-12">
+                        <x-product-card :product="$product" />
+                    </div>
+                    @endforeach
+                </div>
+                @endif
             </div>
         </div>
-        
-        @push('scripts')
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                const wrapper = document.getElementById('{{ $uniqueId }}-wrapper');
-                if(wrapper) {
-                    const prevBtn = wrapper.querySelector('.swiper-button-prev');
-                    const nextBtn = wrapper.querySelector('.swiper-button-next');
-                    if(prevBtn) prevBtn.classList.add('{{ $uniqueId }}-prev');
-                    if(nextBtn) nextBtn.classList.add('{{ $uniqueId }}-next');
-                }
-            });
-        </script>
-        @endpush
-
-        @else
-        <div class="row g-4 mt--20">
-            @foreach($products as $product)
-            <div class="col-xxl-2 col-xl-3 col-lg-4 col-md-6 col-sm-6 col-12">
-                <x-product-card :product="$product" />
-            </div>
-            @endforeach
-        </div>
-        @endif
     </div>
 </div>
-<!-- rts grocery feature area end -->

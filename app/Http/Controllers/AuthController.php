@@ -73,7 +73,9 @@ class AuthController extends Controller
 
     public function profile()
     {
-        return view('account.profile', ['user' => Auth::user()]);
+        $user = Auth::user();
+        $orders = $user->orders()->latest()->take(10)->get();
+        return view('account.profile', compact('user', 'orders'));
     }
 
     public function updateProfile(Request $request)
@@ -82,9 +84,11 @@ class AuthController extends Controller
         $request->validate([
             'name'  => 'required|string|max:100',
             'email' => 'required|email|unique:users,email,' . $user->id,
+            'phone' => 'nullable|string|max:20',
+            'address' => 'nullable|string|max:255',
         ]);
 
-        $user->update($request->only('name', 'email', 'phone'));
+        $user->update($request->only('name', 'email', 'phone', 'address'));
 
         return back()->with('success', 'Cập nhật thông tin thành công!');
     }

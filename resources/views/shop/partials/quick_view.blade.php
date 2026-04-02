@@ -1,110 +1,104 @@
-<div class="qv-modal-wrapper">
-    <div class="qv-modal-container">
-        <div class="qv-modal-content">
-            <button class="qv-close-btn"><i class="fal fa-times"></i></button>
-
-            <div class="qv-main-layout">
-                <!-- Left: Gallery Section (Single Image Engine) -->
-                <div class="qv-gallery-section">
-                    @php
-                        $mainImgUrl = $product->thumbnail_url ?: asset('theme/images/grocery/01.jpg');
-
-                        $allImages = $product->images ?: [];
-                        if ($product->image) {
-                            array_unshift($allImages, $product->image);
+<div class="qv-modal-wrapper" style="min-height: 400px; background: rgba(0,0,0,0.85);">
+    <div class="product-details-popup qv-modal-container" style="display: block !important; opacity: 1 !important; visibility: visible !important;">
+        <button class="product-details-close-btn qv-close-btn"><i class="fal fa-times"></i></button>
+        <div class="details-product-area">
+            <div class="product-thumb-area">
+                <div class="cursor"></div>
+                @php
+                    $allImages = [];
+                    if ($product->image) {
+                        $allImages[] = str_starts_with($product->image, 'http') ? $product->image : asset($product->image);
+                    }
+                    if ($product->images && is_array($product->images)) {
+                        foreach ($product->images as $img) {
+                            $allImages[] = str_starts_with($img, 'http') ? $img : asset($img);
                         }
-                        $allImages = array_unique(array_slice($allImages, 0, 3));
-                    @endphp
+                    }
+                    if (empty($allImages)) {
+                        $allImages[] = asset('theme/images/grocery/01.jpg');
+                    }
+                    $allImages = array_unique(array_slice($allImages, 0, 4));
+                    $numberClasses = ['one', 'two', 'three', 'four'];
+                @endphp
 
-                    <div class="qv-image-preview-container">
-                        <!-- ONLY ONE IMAGE CONTAINER - ZERO GHOSTING -->
-                        <div class="qv-main-image">
-                            <div id="qv-main-zoom" class="qv-image-zoom" onmousemove="zoom(event)"
-                                style="background-image: url('{{ $mainImgUrl }}');">
-
-                            </div>
+                @foreach($allImages as $index => $imgUrl)
+                    @php $class = $numberClasses[$index] ?? 'more'; @endphp
+                    <div class="thumb-wrapper {{ $class }} filterd-items {{ $index === 0 ? 'figure' : 'hide' }}">
+                        <div class="product-thumb zoom" onmousemove="zoom(event)"
+                            style="background-image: url('{{ $imgUrl }}');">
+                            <img src="{{ $imgUrl }}" alt="{{ $product->name }}">
                         </div>
                     </div>
+                @endforeach
 
-                    @if(count($allImages) > 1)
-                        <div class="qv-thumbnails-group">
-                            @foreach($allImages as $index => $img)
-                                @php
-                                    $imgUrl = str_starts_with($img, 'http') ? $img : (str_starts_with($img, 'media/') ? asset('storage/' . $img) : asset($img));
-                                    $active = $index === 0 ? 'active' : '';
-                                @endphp
-                                <div class="qv-thumb-item {{ $active }}" data-img="{{ $imgUrl }}">
-                                    <img src="{{ $imgUrl }}" alt="thumb">
-                                </div>
-                            @endforeach
+                <div class="product-thumb-filter-group">
+                    @foreach($allImages as $index => $imgUrl)
+                        @php $class = $numberClasses[$index] ?? 'more'; @endphp
+                        <div class="thumb-filter filter-btn {{ $index === 0 ? 'active' : '' }}" data-show=".{{ $class }}">
+                            <img src="{{ $imgUrl }}" alt="product-thumb-filter">
                         </div>
+                    @endforeach
+                </div>
+            </div>
+            <div class="contents">
+                <div class="product-status">
+                    <span class="product-catagory">{{ $product->categories->first()->name ?? 'Danh mục' }}</span>
+                    <div class="rating-stars-group">
+                        @php 
+                            $avgRating = $product->approvedReviews->avg('rating') ?? 5;
+                            $reviewCount = $product->approvedReviews->count();
+                        @endphp
+                        @for($i = 1; $i <= 5; $i++)
+                            <div class="rating-star"><i class="{{ $i <= $avgRating ? 'fas' : 'far' }} fa-star"></i></div>
+                        @endfor
+                        <span>{{ $reviewCount }} Reviews</span>
+                    </div>
+                </div>
+                <h2 class="product-title">{{ $product->name }} <span class="stock">@if($product->stock > 0) In Stock @else Out of Stock @endif</span></h2>
+                <span class="product-price">
+                    @if($product->compare_price > $product->price)
+                        <span class="old-price">{{ number_format($product->compare_price) }}đ</span>
+                    @endif
+                    <span class="current-price">{{ $product->formatted_price }}</span>
+                </span>
+                <div class="qv-description-text mb--20">
+                    {!! $product->short_description ?: \Illuminate\Support\Str::limit(strip_tags($product->description), 200) !!}
+                </div>
+                <div class="product-bottom-action">
+                    <div class="cart-edit">
+                        <div class="quantity-edit action-item">
+                            <button class="button qv-qty-btn qv-minus">-</button>
+                            <input type="text" class="input qv-qty-input" value="1">
+                            <button class="button plus qv-qty-btn qv-plus">+</button>
+                        </div>
+                    </div>
+                    @if(!$product->has_contact_price)
+                        <a href="javascript:void(0);" onclick="cart.add({{ $product->id }}, this)" class="rts-btn btn-primary radious-sm with-icon">
+                            <div class="btn-text">Thêm vào giỏ</div>
+                            <div class="arrow-icon"><i class="fa-regular fa-cart-shopping"></i></div>
+                            <div class="arrow-icon"><i class="fa-regular fa-cart-shopping"></i></div>
+                        </a>
+                    @else
+                        <a href="tel:{{ setting('site_phone') }}" class="rts-btn btn-primary radious-sm">Liên hệ ngay</a>
+                    @endif
+                    <a href="javascript:void(0);" onclick="cwAction.addWishlist({{ $product->id }}, this)" class="rts-btn btn-primary ml--20"><i
+                            class="fa-light fa-heart"></i></a>
+                </div>
+                <div class="product-uniques">
+                    <span class="sku product-unipue"><span>SKU: </span> {{ $product->sku ?? 'Đang cập nhật' }}</span>
+                    @if($product->categories->isNotEmpty())
+                        <span class="catagorys product-unipue"><span>Categories: </span> {{ $product->categories->pluck('name')->join(', ') }}</span>
+                    @endif
+                    @if($product->meta_keywords)
+                        <span class="tags product-unipue"><span>Tags: </span> {{ $product->meta_keywords }}</span>
                     @endif
                 </div>
-
-                <!-- Right: Information Section -->
-                <div class="qv-info-section">
-                    <div class="qv-status-meta">
-                        <span class="qv-badge-cat">{{ $product->categories->first()->name ?? 'VEG' }}</span>
-                        <div class="qv-rating">
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star" style="color: #eee;"></i>
-                            <span class="qv-review-count">10 Reviews</span>
-                        </div>
-                    </div>
-
-                    <h2 class="qv-product-title">{{ $product->name }} <span class="qv-stock-tag">In Stock</span></h2>
-
-                    <div class="qv-price-row">
-                        <span class="qv-price-current">{{ $product->formatted_price }}</span>
-                        @if($product->compare_price > $product->price)
-                            <span class="qv-price-old">{{ $product->formatted_old_price }}</span>
-                        @endif
-                    </div>
-
-                    <div class="qv-description">
-                        <p>{{ Str::limit(strip_tags($product->description), 220) }}</p>
-                    </div>
-
-                    <div class="qv-cta-group">
-                        <div class="qv-quantity-control">
-                            <button class="qv-qty-btn qv-minus">-</button>
-                            <input type="text" class="qv-qty-input" value="01">
-                            <button class="qv-qty-btn qv-plus">+</button>
-                        </div>
-
-                        @if(!$product->has_contact_price)
-                            <button onclick="cart.add({{ $product->id }}, this)" class="qv-add-to-cart">
-                                <i class="far fa-shopping-cart"></i> Add To Cart
-                            </button>
-                        @else
-                            <a href="tel:{{ setting('hotline') }}" class="qv-add-to-cart qv-contact">
-                                <i class="fa-regular fa-phone"></i> Contact Now
-                            </a>
-                        @endif
-
-                        <button onclick="cwAction.addWishlist({{ $product->id }}, this)" class="qv-wishlist-btn">
-                            <i class="fa-light fa-heart"></i>
-                        </button>
-                    </div>
-
-                    <div class="qv-meta-info">
-                        <div class="qv-meta-row"><b>SKU:</b> <span>{{ $product->sku ?? 'VEG-001' }}</span></div>
-                        <div class="qv-meta-row">
-                            <b>Categories:</b>
-                            <span>
-                                @foreach($product->categories as $cat)
-                                    {{ $cat->name }}{{ !$loop->last ? ', ' : '' }}
-                                @endforeach
-                            </span>
-                        </div>
-                        @if($product->meta_keywords)
-                            <div class="qv-meta-row"><b>Tags:</b> <span>{{ $product->meta_keywords }}</span></div>
-                        @endif
-                    </div>
-
+                <div class="share-social">
+                    <span>Share:</span>
+                    <a class="platform" href="http://facebook.com" target="_blank"><i class="fab fa-facebook-f"></i></a>
+                    <a class="platform" href="http://twitter.com" target="_blank"><i class="fab fa-twitter"></i></a>
+                    <a class="platform" href="http://youtube.com" target="_blank"><i class="fab fa-youtube"></i></a>
+                    <a class="platform" href="http://linkedin.com" target="_blank"><i class="fab fa-linkedin"></i></a>
                 </div>
             </div>
         </div>

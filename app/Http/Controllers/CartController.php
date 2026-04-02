@@ -9,9 +9,30 @@ class CartController extends Controller
 {
     public function page()
     {
-        $cart  = session('cart', []);
-        $total = collect($cart)->sum(fn($i) => ($i['price'] ?? 0) * ($i['qty'] ?? 1));
-        return view('shop.cart', compact('cart', 'total'));
+        $cart = session('cart', []);
+        $subtotal = collect($cart)->sum(fn($i) => ($i['price'] ?? 0) * ($i['qty'] ?? 1));
+        
+        $appliedCoupons = session('applied_coupons', []);
+        $validCoupons = [];
+        $totalDiscount = 0;
+
+        foreach ($appliedCoupons as $couponId) {
+            $coupon = \App\Models\Coupon::find($couponId);
+            if ($coupon && $coupon->isValid($subtotal)) {
+                $discount = $coupon->calculateDiscount($subtotal);
+                $totalDiscount += $discount;
+                $validCoupons[] = [
+                    'id' => $coupon->id,
+                    'code' => $coupon->code,
+                    'discount' => $discount
+                ];
+            }
+        }
+
+        // Keep only valid ones in session
+        session(['applied_coupons' => collect($validCoupons)->pluck('id')->toArray()]);
+
+        return view('shop.cart', compact('cart', 'subtotal', 'validCoupons', 'totalDiscount'));
     }
 
     public function add(Request $request)
@@ -90,12 +111,96 @@ class CartController extends Controller
 
     public function total()
     {
-        $cart  = session('cart', []);
-        $total = collect($cart)->sum(fn($i) => ($i['price'] ?? 0) * ($i['qty'] ?? 1));
+        $cart = session('cart', []);
+        $subtotal = collect($cart)->sum(fn($i) => ($i['price'] ?? 0) * ($i['qty'] ?? 1));
+        
+        $appliedCoupons = session('applied_coupons', []);
+        $totalDiscount = 0;
+        $validCouponIds = [];
+        $validCoupons = [];
+
+        foreach ($appliedCoupons as $couponId) {
+            $coupon = \App\Models\Coupon::find($couponId);
+            if ($coupon && $coupon->isValid($subtotal)) {
+                $discount = $coupon->calculateDiscount($subtotal);
+                $totalDiscount += $discount;
+                $validCouponIds[] = $coupon->id;
+                $validCoupons[] = [
+                    'code' => $coupon->code,
+                    'discount_formatted' => '-' . number_format($discount, 0, ',', '.') . 'đ'
+                ];
+            }
+        }
+        
+        session(['applied_coupons' => $validCouponIds]);
+
+        $total = max(0, $subtotal - $totalDiscount);
+
         return response()->json([
-            'total'           => $total,
-            'total_formatted' => number_format($total, 0, ',', '.') . 'đ',
+            'subtotal'           => $subtotal,
+            'subtotal_formatted' => number_format($subtotal, 0, ',', '.') . 'đ',
+            'discount'           => $totalDiscount,
+            'discount_formatted' => number_format($totalDiscount, 0, ',', '.') . 'đ',
+            'total'              => $total,
+            'total_formatted'    => number_format($total, 0, ',', '.') . 'đ',
+            'coupons'            => $validCoupons
         ]);
+    }
+
+    public function applyCoupon(Request $request)
+    {
+        $request->validate(['code' => 'required']);
+        
+        $coupon = \App\Models\Coupon::where('code', $request->code)->first();
+        
+        if (!$coupon) {
+            return response()->json(['success' => false, 'message' => 'Mã giảm giá không tồn tại.']);
+        }
+
+        $appliedCoupons = session('applied_coupons', []);
+        if (in_array($coupon->id, $appliedCoupons)) {
+            return response()->json(['success' => false, 'message' => 'Mã giảm giá này đã được áp dụng.']);
+        }
+
+        $cart = session('cart', []);
+        $subtotal = collect($cart)->sum(fn($i) => ($i['price'] ?? 0) * ($i['qty'] ?? 1));
+
+        $reason = $coupon->getInvalidReason($subtotal);
+        if ($reason) {
+            $msg = match($reason) {
+                'Tạm dừng' => 'Mã giảm giá này đã bị tạm dừng.',
+                'Chưa đến ngày' => 'Mã giảm giá chưa đến ngày sử dụng.',
+                'Hết hạn' => 'Mã giảm giá đã hết hạn.',
+                'Hết lượt dùng' => 'Mã giảm giá đã hết lượt sử dụng.',
+                'Chưa đạt tối thiểu' => 'Đơn hàng chưa đạt giá trị tối thiểu ' . number_format($coupon->min_order_value, 0, ',', '.') . 'đ để áp dụng mã này.',
+                default => 'Mã giảm giá không hợp lệ.'
+            };
+            return response()->json(['success' => false, 'message' => $msg]);
+        }
+
+        $appliedCoupons[] = $coupon->id;
+        session(['applied_coupons' => $appliedCoupons]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Áp dụng mã giảm giá thành công!',
+            'coupon' => $coupon
+        ]);
+    }
+
+    public function removeCoupon(Request $request)
+    {
+        $couponId = $request->coupon_id;
+        $appliedCoupons = session('applied_coupons', []);
+        
+        if ($couponId) {
+            $appliedCoupons = array_filter($appliedCoupons, fn($id) => $id != $couponId);
+            session(['applied_coupons' => array_values($appliedCoupons)]);
+            return response()->json(['success' => true, 'message' => 'Đã gỡ mã giảm giá.']);
+        }
+
+        session()->forget('applied_coupons');
+        return response()->json(['success' => true, 'message' => 'Đã gỡ tất cả mã giảm giá.']);
     }
 
     public function clear()

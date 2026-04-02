@@ -32,7 +32,10 @@ class ProductController extends Controller
         $attributes = $this->attributeService->getAllAttributes();
         $categories = $this->categoryService->getCategoryTree('product');
         $languages  = Language::active()->get();
-        $allProducts = \App\Models\Product::active()->orderBy('name')->get(['id', 'name', 'price', 'image']);
+        $allProducts = \App\Models\Product::active()
+            ->with(['variants' => fn($q) => $q->where('is_active', true)])
+            ->orderBy('name')
+            ->get(['id', 'name', 'price', 'image', 'has_variants']);
         return view('admin.products.create', compact('attributes', 'categories', 'languages', 'allProducts'));
     }
 
@@ -42,6 +45,7 @@ class ProductController extends Controller
             'name'              => 'required|string|max:255',
             'short_description' => 'nullable|string',
             'description'       => 'nullable|string',
+            'additional_info'   => 'nullable|string',
             'price'             => 'nullable|numeric|min:0',
             'compare_price'     => 'nullable|numeric|min:0',
             'cost_price'        => 'nullable|numeric|min:0',
@@ -114,17 +118,17 @@ class ProductController extends Controller
 
         // Sync Combos
         if ($request->has('combos')) {
-            $comboData = [];
+            $product->combos()->detach();
             foreach ($request->input('combos') as $c) {
-                $comboData[$c['id']] = [
+                $product->combos()->attach($c['id'], [
+                    'combo_product_variant_id' => $c['variant_id'] ?? null,
                     'combo_price' => $c['price'] ?? 0,
                     'discount_type' => $c['discount_type'] ?? 'fixed',
                     'discount_value' => $c['discount_value'] ?? 0,
                     'is_active'   => $c['is_active'] ?? true,
                     'sort_order'  => $c['sort_order'] ?? 0
-                ];
+                ]);
             }
-            $product->combos()->sync($comboData);
         }
 
         return redirect()->route('admin.products.index')
@@ -148,7 +152,11 @@ class ProductController extends Controller
         $attributes = $this->attributeService->getAllAttributes();
         $categories = $this->categoryService->getCategoryTree('product');
         $languages  = Language::active()->get();
-        $allProducts = \App\Models\Product::active()->where('id', '!=', $id)->orderBy('name')->get(['id', 'name', 'price', 'image']);
+        $allProducts = \App\Models\Product::active()
+            ->with(['variants' => fn($q) => $q->where('is_active', true)])
+            ->where('id', '!=', $id)
+            ->orderBy('name')
+            ->get(['id', 'name', 'price', 'image', 'has_variants']);
 
         $currentAttributes = [];
         foreach ($product->productAttributes as $pa) {
@@ -164,6 +172,7 @@ class ProductController extends Controller
             'name'              => 'required|string|max:255',
             'short_description' => 'nullable|string',
             'description'       => 'nullable|string',
+            'additional_info'   => 'nullable|string',
             'price'             => 'nullable|numeric|min:0',
             'compare_price'     => 'nullable|numeric|min:0',
             'cost_price'        => 'nullable|numeric|min:0',
@@ -235,19 +244,19 @@ class ProductController extends Controller
         }
 
         // Sync Combos
-        $comboData = [];
+        $product->combos()->detach();
         if ($request->has('combos')) {
             foreach ($request->input('combos') as $c) {
-                $comboData[$c['id']] = [
+                $product->combos()->attach($c['id'], [
+                    'combo_product_variant_id' => $c['variant_id'] ?? null,
                     'combo_price' => $c['price'] ?? 0,
                     'discount_type' => $c['discount_type'] ?? 'fixed',
                     'discount_value' => $c['discount_value'] ?? 0,
                     'is_active'   => $c['is_active'] ?? true,
                     'sort_order'  => $c['sort_order'] ?? 0
-                ];
+                ]);
             }
         }
-        $product->combos()->sync($comboData);
 
         return redirect()->route('admin.products.index')
                          ->with('success', 'Đã cập nhật sản phẩm.');

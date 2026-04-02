@@ -8,6 +8,7 @@
     </a>
 @endsection
 
+@section('content')
 {{-- Filters --}}
 <form method="GET" action="{{ route('admin.flash-sales.index') }}" class="card mb-8">
     <div class="p-8 flex flex-wrap items-end gap-6">

@@ -525,6 +525,12 @@
                     Flash Sales
                 </a>
 
+                <a href="{{ route('admin.coupons.index') }}"
+                    class="nav-item {{ request()->routeIs('admin.coupons.*') ? 'active' : '' }}">
+                    <span class="nav-icon"><i class="fa-solid fa-ticket text-blue-400"></i></span>
+                    Mã giảm giá
+                </a>
+
                 <p class="nav-label">Content & UX</p>
                 <button @click="open = open === 'content' ? '' : 'content'"
                     class="nav-item {{ $inContent ? 'active' : '' }}">

@@ -10,7 +10,7 @@
                             <div class="icon"><i class="fa-solid fa-phone-rotary"></i></div>
                             <div class="info">
                                 <span>Have Question? Call Us 24/7</span>
-                                <a href="#" class="number">+258 3692 2569</a>
+                                <a href="tel:{{ setting('hotline') }}" class="number">{{ setting('hotline', '+258 3692 2569') }}</a>
                             </div>
                         </div>
                         <div class="opening-hour">
@@ -29,14 +29,11 @@
                         <h3 class="footer-title">Our Stores</h3>
                         <div class="footer-nav">
                             <ul>
-                                <li><a href="{{ route('shop.show', ['slug' => 'delivery-info']) }}">Delivery
-                                        Information</a></li>
-                                <li><a href="{{ route('shop.show', ['slug' => 'privacy-policy']) }}">Privacy Policy</a>
-                                </li>
-                                <li><a href="{{ route('shop.show', ['slug' => 'terms-conditions']) }}">Terms &
-                                        Conditions</a></li>
+                                <li><a href="{{ route('about') }}">Delivery Information</a></li>
+                                <li><a href="{{ route('about') }}">Privacy Policy</a></li>
+                                <li><a href="{{ route('about') }}">Terms & Conditions</a></li>
                                 <li><a href="{{ route('contact.index') }}">Support Center</a></li>
-                                <li><a href="{{ route('shop.show', ['slug' => 'careers']) }}">Careers</a></li>
+                                <li><a href="{{ route('about') }}">Careers</a></li>
                             </ul>
                         </div>
                     </div>
@@ -47,7 +44,7 @@
                                 <li><a href="{{ route('contact.index') }}">Contact Us</a></li>
                                 <li><a href="{{ route('about') }}">Information</a></li>
                                 <li><a href="{{ route('about') }}">About Us</a></li>
-                                <li><a href="{{ route('shop.show', ['slug' => 'careers']) }}">Careers</a></li>
+                                <li><a href="{{ route('about') }}">Careers</a></li>
                                 <li><a href="{{ route('blog.index') }}">Nest Stories</a></li>
                             </ul>
                         </div>
@@ -56,21 +53,18 @@
                         <h3 class="footer-title">Useful Links</h3>
                         <div class="footer-nav">
                             <ul>
-                                <li><a href="{{ route('shop.show', ['slug' => 'cancellation-returns']) }}">Cancellation
-                                        & Returns</a></li>
-                                <li><a href="{{ route('shop.show', ['slug' => 'cancellation-returns']) }}">Report
-                                        Infringement</a></li>
-                                <li><a href="{{ route('shop.show', ['slug' => 'payments']) }}">Payments</a></li>
-                                <li><a href="{{ route('shop.show', ['slug' => 'shipping']) }}">Shipping</a></li>
+                                <li><a href="{{ route('about') }}">Cancellation & Returns</a></li>
+                                <li><a href="{{ route('about') }}">Report Infringement</a></li>
+                                <li><a href="{{ route('about') }}">Payments</a></li>
+                                <li><a href="{{ route('about') }}">Shipping</a></li>
                                 <li><a href="{{ route('faq') }}">FAQ</a></li>
                             </ul>
                         </div>
                     </div>
                     <div class="single-footer-wized">
                         <h3 class="footer-title">Our Newsletter</h3>
-                        <p class="disc-news-letter">Subscribe to the mailing list to receive updates on the new arrivals
-                            and other discounts</p>
-                        <form class="footersubscribe-form" action="" method="POST">
+                        <p class="disc-news-letter">Subscribe to the mailing list to receive updates on the new arrivals and other discounts</p>
+                        <form class="footersubscribe-form" action="{{ route('newsletter.subscribe') }}" method="POST">
                             @csrf
                             <input name="email" type="email" placeholder="Your email address" required>
                             <button class="rts-btn btn-primary" type="submit">Subscribe</button>
@@ -82,11 +76,11 @@
                     <div class="social-one-wrapper">
                         <span>Follow Us:</span>
                         <ul>
-                            <li><a href="#"><i class="fa-brands fa-facebook-f"></i></a></li>
-                            <li><a href="#"><i class="fa-brands fa-twitter"></i></a></li>
-                            <li><a href="#"><i class="fa-brands fa-youtube"></i></a></li>
-                            <li><a href="#"><i class="fa-brands fa-whatsapp"></i></a></li>
-                            <li><a href="#"><i class="fa-brands fa-instagram"></i></a></li>
+                            <li><a href="{{ setting('facebook_url', '#') }}"><i class="fa-brands fa-facebook-f"></i></a></li>
+                            <li><a href="{{ setting('twitter_url', '#') }}"><i class="fa-brands fa-twitter"></i></a></li>
+                            <li><a href="{{ setting('youtube_url', '#') }}"><i class="fa-brands fa-youtube"></i></a></li>
+                            <li><a href="{{ setting('whatsapp_url', '#') }}"><i class="fa-brands fa-whatsapp"></i></a></li>
+                            <li><a href="{{ setting('instagram_url', '#') }}"><i class="fa-brands fa-instagram"></i></a></li>
                         </ul>
                     </div>
                     <div class="payment-access">
@@ -118,3 +112,8 @@
     </div>
 </div>
 <!-- rts copyright-area end -->
+
+<!-- Quick View Modal Container -->
+<div id="quick-view-modal-container"></div>
+<!-- Theme Overlay -->
+<div id="anywhere-home"></div>

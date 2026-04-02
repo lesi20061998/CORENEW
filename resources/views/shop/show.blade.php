@@ -117,16 +117,208 @@
                                                             <span class="tags product-unipue mb--10"><span style="font-weight: 400; margin-right: 10px;">Thương hiệu: </span> {{ $product->brand->name }}</span>
                                                         @endif
                                                     </div>
-                                                    <div class="share-option-shop-details mb--20">
-                                                        <div class="single-share-option">
-                                                            <div class="icon"><i class="fa-regular fa-heart"></i></div>
-                                                            <span>Yêu thích</span>
+                                                    @if($product->activeCombos && $product->activeCombos->isNotEmpty())
+                                                        <div class="product-combo-section mt--20 mb--20" x-data="comboManager()">
+                                                            <h6 class="title mb--15" style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #444; letter-spacing: 0.8px; border-bottom: 1px solid #efefef; padding-bottom: 8px;">THƯỜNG ĐƯỢC MUA CÙNG</h6>
+                                                            
+                                                            <div class="combo-list d-flex flex-column gap-2 mt-1">
+                                                                @foreach($product->activeCombos as $combo)
+                                                                    <div class="single-combo-item d-flex align-items-center gap-3 p-1 rounded-2 hover-shadow transition-all" style="border: 1px solid transparent;">
+                                                                        <div class="checkbox-area">
+                                                                            <input type="checkbox" 
+                                                                                   id="combo-{{ $combo->id }}" 
+                                                                                   value="{{ $combo->id }}"
+                                                                                   x-model="selectedCombos"
+                                                                                   class="form-check-input"
+                                                                                   style="width: 15px; height: 15px; cursor: pointer; border-color: #eee;"
+                                                                                   @change="updateSelectedItems()">
+                                                                        </div>
+                                                                        <div class="combo-img flex-shrink-0" style="width: 50px; height: 50px; border: 1px solid #f5f5f5; border-radius: 6px; overflow: hidden; background: #fff;">
+                                                                            <img src="{{ $combo->thumbnail_url }}" alt="{{ $combo->name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                                                        </div>
+                                                                        <div class="combo-info d-flex align-items-center justify-content-between flex-grow-1 gap-3">
+                                                                            <label for="combo-{{ $combo->id }}" class="m-0" style="cursor: pointer; max-width: 250px;">
+                                                                                <h6 class="name m-0" style="font-size: 12px; font-weight: 600; line-height: 1.3; color: #333; height: 1.3em; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">{{ $combo->name }}</h6>
+                                                                                <div class="pricing-area d-flex align-items-center gap-2">
+                                                                                    <span class="original-price text-decoration-line-through" style="font-size: 11px; color: #999;" x-text="getItemOriginalPriceDisplay({{ $combo->id }})"></span>
+                                                                                    <span class="combo-price" style="font-size: 12px; font-weight: 700; color: #d32f2f;" x-text="getItemDiscountPriceDisplay({{ $combo->id }})"></span>
+                                                                                </div>
+                                                                            </label>
+
+                                                                            @if($combo->activeVariants->isNotEmpty())
+                                                                                <select class="form-select form-select-sm py-0 px-2" 
+                                                                                        style="font-size: 11px; height: 26px; border-radius: 4px; border: 1px solid #ececec; background-color: #fcfcfc; width: auto; min-width: 120px;"
+                                                                                        x-model="itemVariants[{{ $combo->id }}]"
+                                                                                        @change="updateSelectedItems()">
+                                                                                    @foreach($combo->activeVariants as $v)
+                                                                                        <option value="{{ $v->id }}">
+                                                                                            {{ $v->label ?: ($v->sku ?: 'Biến thể') }} - {{ number_format($v->price, 0, ',', '.') }}₫
+                                                                                        </option>
+                                                                                    @endforeach
+                                                                                </select>
+                                                                            @endif
+                                                                        </div>
+                                                                    </div>
+                                                                @endforeach
+                                                            </div>
+
+                                                            <div class="combo-footer d-flex align-items-center justify-content-between mt--20 pt--15" style="border-top: 1px dashed #f0f0f0;">
+                                                                <div class="total-price-area">
+                                                                    <div class="mb-1" style="font-size: 11px; color: #999;">Đã chọn: <span class="fw-bold" x-text="selectedCombos.length + 1">1</span> sản phẩm</div>
+                                                                    <span style="font-size: 12px; color: #333; font-weight: 600;">Tổng cộng: </span>
+                                                                    <span class="total-val" style="font-size: 16px; font-weight: 800; color: #d32f2f; margin-left: 5px;" x-text="formatPrice(totalPrice)">0 đ</span>
+                                                                </div>
+                                                                <button type="button" 
+                                                                        class="btn btn-primary d-flex align-items-center gap-2" 
+                                                                        style="background: #e74c3c; border: none; border-radius: 4px; font-size: 12px; font-weight: 700; padding: 10px 20px !important; transition: all 0.2s;"
+                                                                        :class="adding ? 'opacity-70' : ''"
+                                                                        :disabled="adding"
+                                                                        @click="addCombosToCart()">
+                                                                    <i class="fa-solid fa-cart-shopping" style="font-size: 11px;" x-show="!adding"></i>
+                                                                    <i class="fa-solid fa-spinner fa-spin" style="font-size: 11px;" x-show="adding" x-cloak></i>
+                                                                    <span>MUA NGAY <span x-text="selectedCombos.length + 1">1</span> SP</span>
+                                                                </button>
+                                                            </div>
                                                         </div>
-                                                        <div class="single-share-option">
-                                                            <div class="icon"><i class="fa-solid fa-share"></i></div>
-                                                            <span>Chia sẻ</span>
-                                                        </div>
-                                                    </div>
+
+                                                        <style>
+                                                            .hover-shadow:hover { border-color: #f0f0f0 !important; background: #fafafa; }
+                                                            [x-cloak] { display: none !important; }
+                                                        </style>
+
+                                                        <script>
+                                                            function comboManager() {
+                                                                return {
+                                                                    selectedCombos: [],
+                                                                    adding: false,
+                                                                    // Main product context
+                                                                    mainProductId: {{ $product->id }},
+                                                                    // Helper: get current main price (accounting for variant if selected in top part - but here we assume base price or current price)
+                                                                    // In a real app we'd sync this with the main variant selector. 
+                                                                    // For simplicity, we use the price passed from controller.
+                                                                    mainPrice: {{ (float)$product->price }},
+                                                                    
+                                                                    itemVariants: {
+                                                                        @foreach($product->activeCombos as $combo)
+                                                                            {{ $combo->id }}: '{{ $combo->activeVariants->first()?->id ?? "" }}',
+                                                                        @endforeach
+                                                                    },
+                                                                    data: {
+                                                                        @foreach($product->activeCombos as $combo)
+                                                                            {{ $combo->id }}: {
+                                                                                base: {{ $combo->price }},
+                                                                                discount_type: '{{ $combo->pivot->discount_type }}',
+                                                                                discount_value: {{ $combo->pivot->discount_value }},
+                                                                                variants: {
+                                                                                    @foreach($combo->activeVariants as $v)
+                                                                                        {{ $v->id }}: {{ $v->price }},
+                                                                                    @endforeach
+                                                                                }
+                                                                            },
+                                                                        @endforeach
+                                                                    },
+                                                                    totalPrice: 0,
+
+                                                                    init() {
+                                                                        this.updateSelectedItems();
+                                                                    },
+
+                                                                    getItemOriginalPriceDisplay(id) {
+                                                                        const vId = this.itemVariants[id];
+                                                                        const price = vId && this.data[id].variants[vId] ? this.data[id].variants[vId] : this.data[id].base;
+                                                                        return this.formatPrice(price);
+                                                                    },
+
+                                                                    getItemDiscountPriceDisplay(id) {
+                                                                        const vId = this.itemVariants[id];
+                                                                        const basePrice = vId && this.data[id].variants[vId] ? this.data[id].variants[vId] : this.data[id].base;
+                                                                        const { discount_type, discount_value } = this.data[id];
+                                                                        
+                                                                        let final = basePrice;
+                                                                        if (discount_type === 'percent') {
+                                                                            final = basePrice * (1 - (discount_value / 100));
+                                                                        } else {
+                                                                            final = Math.max(0, basePrice - discount_value);
+                                                                        }
+                                                                        return this.formatPrice(final);
+                                                                    },
+
+                                                                    updateSelectedItems() {
+                                                                        // Get current main variant if available (sync from page or use base)
+                                                                        let currentMainPrice = parseFloat(this.mainPrice);
+                                                                        
+                                                                        // Try to sync with main product selector if possible
+                                                                        const mainVar = document.querySelector('input[name="variant_id"]:checked');
+                                                                        if (mainVar) {
+                                                                            // This would require more complex sync, but let's assume base for now 
+                                                                            // or use a global variable if the theme provides one.
+                                                                        }
+
+                                                                        let total = currentMainPrice;
+                                                                        this.selectedCombos.forEach(id => {
+                                                                            const vId = this.itemVariants[id];
+                                                                            const basePrice = vId && this.data[id].variants[vId] ? this.data[id].variants[vId] : this.data[id].base;
+                                                                            const { discount_type, discount_value } = this.data[id];
+                                                                            
+                                                                            let final = basePrice;
+                                                                            if (discount_type === 'percent') {
+                                                                                final = basePrice * (1 - (discount_value / 100));
+                                                                            } else {
+                                                                                final = Math.max(0, basePrice - discount_value);
+                                                                            }
+                                                                            total += final;
+                                                                        });
+                                                                        this.totalPrice = total;
+                                                                    },
+
+                                                                    formatPrice(val) {
+                                                                        return new Intl.NumberFormat('vi-VN').format(Math.round(val)) + '₫';
+                                                                    },
+
+                                                                    async addCombosToCart() {
+                                                                        this.adding = true;
+                                                                        
+                                                                        // 1. Prepare items starting with main product
+                                                                        const mainVariantId = document.querySelector('input[name="variant_id"]:checked')?.value || null;
+                                                                        const mainQty = parseInt(document.querySelector('.quantity-edit')?.value) || 1;
+
+                                                                        const items = [
+                                                                            { id: this.mainProductId, variant_id: mainVariantId, qty: mainQty }
+                                                                        ];
+
+                                                                        // 2. Add selected combo items
+                                                                        this.selectedCombos.forEach(id => {
+                                                                            items.push({
+                                                                                id: id,
+                                                                                variant_id: this.itemVariants[id] || null,
+                                                                                qty: 1
+                                                                            });
+                                                                        });
+                                                                        
+                                                                        for(const item of items) {
+                                                                            try {
+                                                                                await fetch('{{ route("cart.add") }}', {
+                                                                                    method: 'POST',
+                                                                                    headers: {
+                                                                                        'Content-Type': 'application/json',
+                                                                                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                                                                    },
+                                                                                    body: JSON.stringify({
+                                                                                        product_id: item.id,
+                                                                                        variant_id: item.variant_id,
+                                                                                        qty: item.qty
+                                                                                    })
+                                                                                });
+                                                                            } catch(e) {
+                                                                                console.error('Error adding to cart', e);
+                                                                            }
+                                                                        }
+                                                                        window.location.href = '{{ route("cart.page") }}';
+                                                                    }
+                                                                }
+                                                            }
+                                                        </script>
+                                                    @endif
                                                 </div>
                                             </div>
                                         </div>
@@ -173,7 +365,14 @@
                                 <div class="tab-pane fade" id="profile-tab-pane" role="tabpanel"
                                     aria-labelledby="profile-tab" tabindex="0">
                                     <div class="single-tab-content-shop-details">
+                                        @if($product->additional_info)
+                                            <div class="additional-info-content mb--30">
+                                                {!! $product->additional_info !!}
+                                            </div>
+                                        @endif
+
                                         @if($product->productAttributes && $product->productAttributes->isNotEmpty())
+                                            <h4 class="title mb--20">Thông số kỹ thuật</h4>
                                             <div class="table-responsive table-shop-details-pd">
                                                 <table class="table">
                                                     <tbody>
@@ -186,7 +385,9 @@
                                                     </tbody>
                                                 </table>
                                             </div>
-                                        @else
+                                        @endif
+
+                                        @if(!$product->additional_info && (!$product->productAttributes || $product->productAttributes->isEmpty()))
                                             <p class="disc">Đang cập nhật...</p>
                                         @endif
                                     </div>

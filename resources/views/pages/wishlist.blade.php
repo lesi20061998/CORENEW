@@ -3,96 +3,91 @@
 @section('title', 'Danh sách yêu thích - ' . setting('site_name'))
 
 @section('content')
-<!-- rts breadcrumb area start -->
-<div class="rts-breadcrumb-area">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-12">
-                <div class="breadcrumb-inner-area">
-                    <h1 class="title">Danh sách yêu thích</h1>
-                    <div class="navigation-area">
-                        <a href="{{ route('home') }}">Trang chủ</a>
-                        <i class="fa-solid fa-chevron-right"></i>
-                        <span>Wishlist</span>
+    <!-- rts breadcrumb area start -->
+    <x-breadcrumb :items="[['label' => 'Danh sách yêu thích']]" />
+    <!-- rts breadcrumb area end -->
+    <div class="rts-cart-area rts-section-gap bg_light-1">
+        <div class="container">
+            <div class="row g-5">
+                <div class="col-lg-12">
+                    <div class="rts-cart-list-area wishlist">
+                        @if($products->isEmpty())
+                            <div class="text-center py-5">
+                                <h4 class="title">Danh sách yêu thích đang trống</h4>
+                                <a href="{{ route('shop.index') }}" class="rts-btn btn-primary radious-sm mt--20">Tiếp tục mua hàng</a>
+                            </div>
+                        @else
+                            <div class="single-cart-area-list head">
+                                <div class="product-main">
+                                    <p>Sản phẩm</p>
+                                </div>
+                                <div class="price">
+                                    <p>Giá</p>
+                                </div>
+                                <div class="quantity">
+                                    <p>Tình trạng</p>
+                                </div>
+                                <div class="subtotal">
+                                    <p>Hành động</p>
+                                </div>
+                                <div class="button-area">
+                                    <!-- Empty for layout alignment -->
+                                </div>
+                            </div>
+                            @foreach($products as $product)
+                                <div class="single-cart-area-list main item-parent" x-data="{ qty: 1 }">
+                                    <div class="product-main-cart">
+                                        <form action="{{ route('wishlist.remove') }}" method="POST" id="remove-wishlist-{{ $product->id }}">
+                                            @csrf
+                                            <input type="hidden" name="product_id" value="{{ $product->id }}">
+                                            <div class="close" onclick="document.getElementById('remove-wishlist-{{ $product->id }}').submit();" style="cursor: pointer;">
+                                                <i class="fa-regular fa-xmark"></i>
+                                            </div>
+                                        </form>
+                                        <div class="thumbnail">
+                                            <img src="{{ $product->thumbnail_url ?: asset('theme/images/shop/01.png') }}" alt="{{ $product->name }}">
+                                        </div>
+                                        <div class="information">
+                                            <h6 class="title"><a href="{{ route('shop.show', $product->slug) }}">{{ $product->name }}</a></h6>
+                                            <span>SKU: {{ $product->sku ?? 'N/A' }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="price">
+                                        <p>{{ $product->formatted_price }}</p>
+                                    </div>
+                                    <div class="quantity">
+                                        <span class="badge {{ $product->stock > 0 ? 'instock' : 'outstock' }}" 
+                                              style="background: {{ $product->stock > 0 ? '#629d23' : '#dc2626' }}; color: #fff; padding: 5px 12px; border-radius: 20px; font-size: 12px;">
+                                            {{ $product->stock > 0 ? 'Còn hàng' : 'Hết hàng' }}
+                                        </span>
+                                    </div>
+                                    <div class="subtotal">
+                                        <div class="quantity-edit" style="width: 100px;">
+                                            <input type="text" class="input" x-model="qty" readonly>
+                                            <div class="button-wrapper-action">
+                                                <button class="button" @click="qty > 1 ? qty-- : 1"><i class="fa-regular fa-chevron-down"></i></button>
+                                                <button class="button plus" @click="qty++"><i class="fa-regular fa-chevron-up"></i></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="button-area">
+                                        @if($product->stock > 0 && !$product->has_contact_price)
+                                            <a href="javascript:void(0);" @click="cart.add({{ $product->id }}, $event.target, qty)" class="rts-btn btn-primary radious-sm with-icon">
+                                                <div class="btn-text">Thêm vào giỏ</div>
+                                                <div class="arrow-icon"><i class="fa-regular fa-cart-shopping"></i></div>
+                                                <div class="arrow-icon"><i class="fa-regular fa-cart-shopping"></i></div>
+                                            </a>
+                                        @else
+                                            <a href="tel:{{ setting('hotline') }}" class="rts-btn btn-primary radious-sm">Liên hệ ngay</a>
+                                        @endif
+                                    </div>
+                                </div>
+                            @endforeach
+                        @endif
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
-<!-- rts breadcrumb area end -->
 
-<!-- rts wishlist area start -->
-<div class="rts-wishlist-area rts-section-gap">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-12">
-                @if($products->isEmpty())
-                    <div class="text-center py-5 border rounded-3xl bg-light">
-                        <div class="mb-4"><i class="fa-light fa-heart h1 text-muted opacity-20"></i></div>
-                        <h4 class="mb-3">Danh sách yêu thích đang trống</h4>
-                        <p class="text-muted mb-4">Hãy thêm những sản phẩm bạn yêu thích để dễ dàng mua sắm sau này.</p>
-                        <a href="{{ route('shop.index') }}" class="rts-btn btn-primary px-5 rounded-pill">Khám phá cửa hàng</a>
-                    </div>
-                @else
-                    <div class="wishlist-table-area table-responsive">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>Sản phẩm</th>
-                                    <th>Giá tiền</th>
-                                    <th>Trình trạng</th>
-                                    <th>Thao tác</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($products as $product)
-                                <tr>
-                                    <td>
-                                        <div class="product-item">
-                                            <div class="product-thumb">
-                                                <img src="{{ $product->thumbnail_url ?: asset('theme/images/shop/01.png') }}" alt="{{ $product->name }}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 10px;">
-                                            </div>
-                                            <div class="product-info ml--20">
-                                                <h4 class="title"><a href="{{ route('shop.show', $product->slug) }}">{{ $product->name }}</a></h4>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span class="price text-primary font-bold">{{ $product->formatted_price }}</span>
-                                    </td>
-                                    <td>
-                                        <span class="badge {{ $product->stock_status == 'out_of_stock' ? 'outstock' : 'instock' }}">
-                                            {{ $product->stock_status == 'out_of_stock' ? 'Hết hàng' : 'Còn hàng' }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div class="actions d-flex gap-3 align-items-center">
-                                            @if($product->stock_status != 'out_of_stock' && !$product->has_contact_price)
-                                                <button onclick="cart.add({{ $product->id }}, this)" class="rts-btn btn-primary btn-sm rounded-pill px-4">Thêm vào giỏ</button>
-                                            @else
-                                                <a href="tel:{{ setting('hotline') }}" class="rts-btn btn-secondary btn-sm rounded-pill px-4">Liên hệ</a>
-                                            @endif
-                                            
-                                            <form action="{{ route('wishlist.remove') }}" method="POST">
-                                                @csrf
-                                                <input type="hidden" name="product_id" value="{{ $product->id }}">
-                                                <button type="submit" class="action-btn remove p-2 border-0 bg-transparent text-muted hover:text-danger"><i class="fa-regular fa-x"></i></button>
-                                            </form>
-                                        </div>
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="wishlist-action-area mt--30">
-                        <a href="{{ route('shop.index') }}" class="rts-btn btn-primary rounded-pill px-5">Tiếp tục mua hàng</a>
-                    </div>
-                @endif
-            </div>
-        </div>
-    </div>
-</div>
-<!-- rts wishlist area end -->
 @endsection

@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Route;
 // ─── CORE WEB ROUTES (SINGLE LOCALE MODE) ───────────────────────────────────
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
-Route::get('/shop/{slug}', [App\Http\Controllers\ShopController::class, 'show'])->name('shop.show');
+// Route::get('/shop/{slug}', [App\Http\Controllers\ShopController::class, 'show'])->name('shop.show'); // Removed duplicate name
 Route::post('/review/submit', [App\Http\Controllers\ReviewController::class, 'store'])->name('review.submit');
 Route::get('/cua-hang', [ShopController::class, 'index'])->name('shop.index');
 Route::get('/cua-hang/search-suggest', [ShopController::class, 'searchSuggest'])->name('shop.suggest');
@@ -31,7 +31,7 @@ Route::get('/lien-he', [ContactController::class, 'index'])->name('contact.index
 
 Route::prefix('tai-khoan')->middleware('auth')->group(function () {
     Route::get('/thong-tin', [AuthController::class, 'profile'])->name('profile');
-    Route::get('/don-hang', [AuthController::class, 'orders'])->name('orders');
+
     Route::get('/don-hang/{order}', [AuthController::class, 'orderDetail'])->name('order.detail');
 });
 
@@ -48,6 +48,8 @@ Route::post('/gio-hang/them', [CartController::class, 'add'])->name('cart.add');
 Route::post('/gio-hang/xoa', [CartController::class, 'remove'])->name('cart.remove');
 Route::post('/gio-hang/cap-nhat', [CartController::class, 'update'])->name('cart.update');
 Route::post('/gio-hang/xoa-het', [CartController::class, 'clear'])->name('cart.clear');
+Route::post('/gio-hang/apply-coupon', [CartController::class, 'applyCoupon'])->name('cart.apply-coupon');
+Route::post('/gio-hang/remove-coupon', [CartController::class, 'removeCoupon'])->name('cart.remove-coupon');
 
 Route::post('/newsletter/subscribe', [NewsletterController::class, 'subscribe'])->name('newsletter.subscribe');
 
