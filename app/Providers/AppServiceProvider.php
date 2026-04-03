@@ -12,6 +12,10 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         require_once app_path('Helpers/SettingHelper.php');
+
+        $this->app->bind('path.public', function() {
+            return base_path('public');
+        });
     }
 
     public function boot(): void

@@ -1,0 +1,31 @@
+<IfModule mod_rewrite.c>
+    <IfModule mod_negotiation.c>
+        Options -MultiViews -Indexes
+    </IfModule>
+
+    RewriteEngine On
+
+    # Handle Authorization Header
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+    # 1. Nếu file/thư mục tồn tại ở ROOT, dùng luôn (ví dụ index.php, .env...)
+    # Cảnh báo: Tốt nhất là chặn truy cập trực tiếp các file nhạy cảm ở đây.
+    RewriteRule ^(\.env|config|database|resources|storage|tests|vendor) - [F,L]
+    
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # 2. Nếu không có ở root, nhưng có ở /public/, serve từ /public/
+    # (Ví dụ: /theme/css/update.css -> /public/theme/css/update.css)
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteCond %{DOCUMENT_ROOT}/public/$1 -f [OR]
+    RewriteCond %{DOCUMENT_ROOT}/public/$1 -d
+    RewriteRule ^(.*)$ public/$1 [L]
+
+    # 3. Chuyển tất cả request còn lại vào index.php ở ROOT
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^ index.php [L]
+</IfModule>
