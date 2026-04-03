@@ -13,7 +13,7 @@ return new class extends Migration
             $table->string('key')->unique();
             $table->text('value')->nullable();
             $table->string('group')->default('general');
-            $table->enum('type', ['text', 'boolean', 'json', 'image', 'textarea', 'color', 'select'])->default('text');
+            $table->enum('type', ['text', 'boolean', 'json', 'image', 'textarea', 'color', 'select', 'integer', 'number'])->default('text');
             $table->string('label')->nullable();
             $table->text('description')->nullable();
             $table->timestamps();
