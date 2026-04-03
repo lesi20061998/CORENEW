@@ -1,6 +1,8 @@
 @extends('layouts.app')
 
-@section('title', 'Cửa hàng - ' . setting('site_name'))
+@section('title', setting('shop_meta_title', 'Cửa hàng - ' . setting('site_name')))
+@section('meta_description', setting('shop_meta_description'))
+@section('meta_keywords', setting('shop_meta_keywords'))
 
 @push('styles')
     <style>

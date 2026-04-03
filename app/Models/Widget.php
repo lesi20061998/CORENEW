@@ -76,4 +76,11 @@ class Widget extends Model
     {
         return 'widgets.' . $this->type;
     }
+
+    /** Helper for fetching menu items from Widget table */
+    public static function getMenu(string $area): array
+    {
+        $widget = static::where('type', 'menu')->where('area', $area)->active()->first();
+        return $widget->config['items'] ?? [];
+    }
 }

@@ -10,7 +10,9 @@
     <!-- Ekomart standard plugins (includes FontAwesome 6 Pro) -->
     <link rel="stylesheet" href="{{ asset('theme/css/plugins.css') }}">
     <!-- Custom Admin Typography -->
-    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@100;200;300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
 
     <style>
         [x-cloak] {
@@ -47,7 +49,12 @@
             font-family: inherit !important;
         }
 
-        h1, h2, h3, h4, h5, h6 {
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
             font-family: inherit !important;
             color: #0f172a;
         }
@@ -124,7 +131,7 @@
             color: #334155;
             opacity: 0.6;
         }
-        
+
         .nav-item {
             display: flex;
             align-items: center;
@@ -436,6 +443,7 @@
             font-weight: 500;
             color: #334155;
         }
+
         .custom-scroll::-webkit-scrollbar {
             width: 6px;
         }
@@ -703,7 +711,7 @@
             @endif
 
             // Smart Efficiency Order Poller
-            (function() {
+            (function () {
                 let lastSeenId = parseInt(localStorage.getItem('last_order_id')) || 0;
                 let pollerInterval = 60000; // Low frequency (1 minute) for background sync
                 let isPolling = false;
@@ -716,72 +724,72 @@
                     fetch(`{{ route('admin.orders.new-check') }}?after=${lastSeenId}&_t=${Date.now()}`, {
                         headers: { 'X-Requested-With': 'XMLHttpRequest' }
                     })
-                    .then(res => {
-                        if (res.status === 404) {
-                            console.warn('ADMIN SYSTEM: Vui lòng F5 để cập nhật route mới nhất.');
-                            return { orders: [], latest_id: lastSeenId };
-                        }
-                        return res.json();
-                    })
-                    .then(data => {
-                        const newOrders = data.orders || [];
-                        const serverLatestId = parseInt(data.latest_id);
+                        .then(res => {
+                            if (res.status === 404) {
+                                console.warn('ADMIN SYSTEM: Vui lòng F5 để cập nhật route mới nhất.');
+                                return { orders: [], latest_id: lastSeenId };
+                            }
+                            return res.json();
+                        })
+                        .then(data => {
+                            const newOrders = data.orders || [];
+                            const serverLatestId = parseInt(data.latest_id);
 
-                        if (lastSeenId === 0) {
-                            lastSeenId = serverLatestId;
-                            localStorage.setItem('last_order_id', lastSeenId);
-                            return;
-                        }
+                            if (lastSeenId === 0) {
+                                lastSeenId = serverLatestId;
+                                localStorage.setItem('last_order_id', lastSeenId);
+                                return;
+                            }
 
-                        if (newOrders.length > 0) {
-                            const activityList = document.getElementById('recent-activity-list');
-                            
-                            newOrders.forEach((order, index) => {
-                                setTimeout(() => {
-                                    adminToast('🔔 ĐƠN HÀNG MỚI!', `#${order.order_number} - ${order.customer_name}`, 'success');
-                                    
-                                    // 1. Play sound
-                                    if (index === 0) {
-                                        try { new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3').play(); } catch(e) {}
-                                    }
+                            if (newOrders.length > 0) {
+                                const activityList = document.getElementById('recent-activity-list');
 
-                                    // 2. Update dashboard list if on dashboard
-                                    if (activityList) {
-                                        const newItem = document.createElement('div');
-                                        newItem.className = 'flex items-center justify-between anim-new-order';
-                                        newItem.style.opacity = '0';
-                                        newItem.style.transform = 'translateX(-10px)';
-                                        newItem.style.transition = 'all 0.5s ease-out';
-                                        newItem.innerHTML = `
+                                newOrders.forEach((order, index) => {
+                                    setTimeout(() => {
+                                        adminToast('🔔 ĐƠN HÀNG MỚI!', `#${order.order_number} - ${order.customer_name}`, 'success');
+
+                                        // 1. Play sound
+                                        if (index === 0) {
+                                            try { new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3').play(); } catch (e) { }
+                                        }
+
+                                        // 2. Update dashboard list if on dashboard
+                                        if (activityList) {
+                                            const newItem = document.createElement('div');
+                                            newItem.className = 'flex items-center justify-between anim-new-order';
+                                            newItem.style.opacity = '0';
+                                            newItem.style.transform = 'translateX(-10px)';
+                                            newItem.style.transition = 'all 0.5s ease-out';
+                                            newItem.innerHTML = `
                                             <div class="flex items-center gap-2">
                                                 <span class="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-sm animate-pulse"></span>
                                                 <span class="text-[10px] font-bold">#${order.order_number}</span>
                                             </div>
                                             <span class="text-[9px] text-slate-400">Vừa xong</span>
                                         `;
-                                        activityList.prepend(newItem);
-                                        // Fade in
-                                        requestAnimationFrame(() => {
-                                            newItem.style.opacity = '1';
-                                            newItem.style.transform = 'translateX(0)';
-                                        });
+                                            activityList.prepend(newItem);
+                                            // Fade in
+                                            requestAnimationFrame(() => {
+                                                newItem.style.opacity = '1';
+                                                newItem.style.transform = 'translateX(0)';
+                                            });
 
-                                        // Keep list to 8 items max
-                                        if (activityList.children.length > 8) {
-                                            activityList.removeChild(activityList.lastChild);
+                                            // Keep list to 8 items max
+                                            if (activityList.children.length > 8) {
+                                                activityList.removeChild(activityList.lastChild);
+                                            }
                                         }
-                                    }
-                                }, index * 800);
-                            });
-                        }
+                                    }, index * 800);
+                                });
+                            }
 
-                        if (serverLatestId > lastSeenId) {
-                            lastSeenId = serverLatestId;
-                            localStorage.setItem('last_order_id', lastSeenId);
-                        }
-                    })
-                    .catch(err => {})
-                    .finally(() => { isPolling = false; });
+                            if (serverLatestId > lastSeenId) {
+                                lastSeenId = serverLatestId;
+                                localStorage.setItem('last_order_id', lastSeenId);
+                            }
+                        })
+                        .catch(err => { })
+                        .finally(() => { isPolling = false; });
                 }
 
                 // 1. Initial boot
@@ -820,6 +828,7 @@
                 }
             }
         </script>
+    </div>
 </body>
 
-</html>
+</html>

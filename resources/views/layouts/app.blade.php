@@ -2,15 +2,71 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
 <head>
+    <!-- Basic -->
     <meta charset="UTF-8">
-    <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="keywords" content="Grocery, Store, stores">
-    <title>{{ setting('site_name', 'VietTinMart') }} - @yield('title', 'Ekomart-Grocery-Store')</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="shortcut icon" type="image/x-icon" href="{{ asset('theme/images/fav.png') }}">
 
-    <!-- Theme Styles (Stable Static Distribution Mode) -->
+    @php
+        $siteName = setting('site_name');
+        $defaultTitle = setting('seo_meta_title');
+        $defaultDesc = setting('seo_meta_desc');
+        $defaultKeys = setting('seo_meta_keywords');
+
+        $yieldedTitle = $__env->yieldContent('title');
+        $yieldedDesc = $__env->yieldContent('meta_description');
+        $yieldedKeys = $__env->yieldContent('meta_keywords');
+        $yieldedOgImage = $__env->yieldContent('og_image');
+
+        $currentTitle = $yieldedTitle ?: ($siteName . ' - ' . $defaultTitle);
+        $currentDesc = $yieldedDesc ?: $defaultDesc;
+        $currentKeys = $yieldedKeys ?: $defaultKeys;
+        $currentOgImage = $yieldedOgImage ?: asset(setting('site_og_image', 'theme/images/logo/logo-01.svg'));
+
+    @endphp
+
+    <title>@yield('title', $currentTitle)</title>
+    <meta name="description" content="@yield('meta_description', $currentDesc)">
+    <meta name="keywords" content="@yield('meta_keywords', $currentKeys)">
+    <meta name="robots" content="@yield('robots', 'index, follow')">
+    <meta name="theme-color" content="{{ setting('theme_color', '#ffffff') }}">
+
+    <!-- Canonical -->
+    <link rel="canonical" href="@yield('canonical', url()->current())">
+
+    <!-- Favicon -->
+    <link rel="icon" href="{{ asset(setting('site_favicon', 'favicon.ico')) }}">
+    <link rel="apple-touch-icon" href="{{ asset(setting('site_apple_icon', 'apple-touch-icon.png')) }}">
+
+    <!-- Open Graph (Facebook, Zalo, LinkedIn) -->
+    <meta property="og:type" content="@yield('og_type', 'website')">
+    <meta property="og:title" content="@yield('og_title', $currentTitle)">
+    <meta property="og:description" content="@yield('og_description', $currentDesc)">
+    <meta property="og:image" content="@yield('og_image', $currentOgImage)">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:site_name" content="{{ $siteName }}">
+    <meta property="og:locale" content="vi_VN">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="@yield('twitter_title', $currentTitle)">
+    <meta name="twitter:description" content="@yield('twitter_description', $currentDesc)">
+    <meta name="twitter:image" content="@yield('twitter_image', $currentOgImage)">
+
+    <!-- SEO -->
+    <meta name="author" content="{{ setting('site_author', 'VietTin Mart') }}">
+    <meta name="revisit-after" content="1 days">
+
+    <!-- Preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <!-- Structured Data (Schema.org) -->
+
+
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+
+    <!-- Theme Styles -->
     <link rel="stylesheet" href="{{ asset('theme/css/plugins.css') }}">
     <link rel="stylesheet" href="{{ asset('theme/css/style.css') }}">
     <link rel="stylesheet" href="{{ asset('theme/css/update.css') }}">
@@ -21,7 +77,6 @@
         rel="stylesheet">
     <style>
         :root {
-            /* Core Design System Tokens */
             --color-primary:
                 {{ setting('color_primary', '#629D23') }}
             ;
@@ -47,8 +102,6 @@
             --color-info:
                 {{ setting('color_info', '#1BA2DB') }}
             ;
-
-            /* Social Tokens */
             --color-facebook:
                 {{ setting('color_facebook', '#3B5997') }}
             ;
@@ -76,48 +129,17 @@
             --color-discord:
                 {{ setting('color_discord', '#7289da') }}
             ;
-
-            /* Font Weights */
-            --p-light: 300;
-            --p-regular: 400;
-            --p-medium: 500;
-            --p-semi-bold: 600;
-            --p-bold: 700;
-            --p-extra-bold: 800;
-            --p-black: 900;
-
-            --s-light: 300;
-            --s-regular: 400;
-            --s-medium: 500;
-            --s-semi-bold: 600;
-            --s-bold: 700;
-            --s-extra-bold: 800;
-            --s-black: 900;
-
             --transition: 0.3s;
-
-            /* Global Typography */
             --font-primary: 'Be Vietnam Pro', sans-serif;
             --font-secondary: 'Be Vietnam Pro', sans-serif;
             --font-three: "FontAwesome";
-
-            --font-size-b1: 16px;
-            --font-size-b2: 16px;
-            --font-size-b3: 14px;
-            --line-height-b1: 1.3;
-            --line-height-b2: 1.3;
-            --line-height-b3: 1.3;
-            --h1: 60px;
-            --h2: 30px;
-            --h3: 26px;
-            --h4: 18px;
-            --h5: 16px;
-            --h6: 15px;
         }
     </style>
+    {!! setting('seo_script_header') !!}
 </head>
 
 <body class="@yield('body_class', 'shop-main-h')">
+    {!! setting('seo_script_body') !!}
 
     @include('layouts.partials.header')
 
@@ -127,7 +149,6 @@
 
     @include('layouts.partials.footer')
 
-    <!-- progress area start -->
     <div class="progress-wrap">
         <svg class="progress-circle svg-content" width="100%" height="100%" viewBox="-1 -1 102 102">
             <path d="M50,1 a49,49 0 0,1 0,98 a49,49 0 0,1 0,-98"
@@ -135,10 +156,6 @@
             </path>
         </svg>
     </div>
-    <!-- progress area end -->
-
-    <!-- Modal & Overlay managed in footer -->
-
 
     <!-- plugins js -->
     <script src="{{ asset('theme/js/plugins.js') }}"></script>
@@ -152,10 +169,9 @@
         };
     </script>
 
-
-
     @stack('scripts')
 
+    {!! setting('seo_script_footer') !!}
 </body>
 
 </html>

@@ -15,16 +15,32 @@ class CheckoutController extends Controller
         if (empty($cart)) {
             return redirect()->route('cart.page')->with('error', 'Giỏ hàng của bạn đang trống.');
         }
+
+        // Lấy tồn kho thực tế cho từng sản phẩm trong giỏ hàng
+        foreach ($cart as $key => $item) {
+            if (!empty($item['variant_id'])) {
+                $variant = \App\Models\ProductVariant::find($item['variant_id']);
+                $cart[$key]['current_stock'] = $variant ? $variant->stock : 0;
+            } else {
+                $product = \App\Models\Product::find($item['id']);
+                $cart[$key]['current_stock'] = $product ? $product->stock : 0;
+            }
+        }
+
         $subtotal = collect($cart)->sum(fn($i) => ($i['price'] ?? 0) * ($i['qty'] ?? 1));
         
+        $discountableSubtotal = collect($cart)
+            ->filter(fn($i) => empty($i['is_combo']))
+            ->sum(fn($i) => ($i['price'] ?? 0) * ($i['qty'] ?? 1));
+
         $appliedCoupons = session('applied_coupons', []);
         $couponList = [];
         $totalDiscount = 0;
 
         foreach ($appliedCoupons as $couponId) {
             $coupon = \App\Models\Coupon::find($couponId);
-            if ($coupon && $coupon->isValid($subtotal)) {
-                $discount = $coupon->calculateDiscount($subtotal);
+            if ($coupon && $coupon->isValid($discountableSubtotal)) {
+                $discount = $coupon->calculateDiscount($discountableSubtotal);
                 $totalDiscount += $discount;
                 $couponList[] = [
                     'code' => $coupon->code,
@@ -35,7 +51,14 @@ class CheckoutController extends Controller
 
         $total = max(0, $subtotal - $totalDiscount);
 
-        return view('shop.checkout', compact('cart', 'subtotal', 'totalDiscount', 'total', 'couponList'));
+        $availableCoupons = \App\Models\Coupon::where('is_active', true)
+            ->where(function($q) {
+                $q->whereNull('end_date')->orWhere('end_date', '>=', now());
+            })
+            ->orderBy('min_order_value', 'asc')
+            ->get();
+
+        return view('shop.checkout', compact('cart', 'subtotal', 'totalDiscount', 'total', 'couponList', 'availableCoupons'));
     }
 
     public function store(Request $request)
@@ -58,6 +81,22 @@ class CheckoutController extends Controller
 
         $fullName    = trim($request->first_name . ' ' . $request->last_name);
         $total       = collect($cart)->sum(fn($i) => ($i['price'] ?? 0) * ($i['qty'] ?? 1));
+
+        // Kiểm tra tồn kho trước khi tạo đơn
+        foreach ($cart as $item) {
+            if (!empty($item['variant_id'])) {
+                $variant = \App\Models\ProductVariant::find($item['variant_id']);
+                if (!$variant || $variant->stock < $item['qty']) {
+                    return back()->with('error', "Sản phẩm '{$item['name']}' ({$item['variant_label']}) đã hết hàng hoặc không đủ số lượng.")->withInput();
+                }
+            } else {
+                $product = \App\Models\Product::find($item['id']);
+                if (!$product || $product->stock < $item['qty']) {
+                    return back()->with('error', "Sản phẩm '{$item['name']}' đã hết hàng hoặc không đủ số lượng.")->withInput();
+                }
+            }
+        }
+
         $orderNumber = Order::generateOrderNumber();
         $shippingFee = $total >= 500000 ? 0 : 30000;
 
@@ -70,20 +109,48 @@ class CheckoutController extends Controller
 
         $user = auth()->user();
         if ($user) {
+            // Update basic profile if empty
             $user->update([
                 'phone' => $user->phone ?: $request->phone,
                 'email' => $user->email ?: $request->email,
             ]);
+
+            // Save this address as a UserAddress if it doesn't exist
+            $exists = $user->addresses()->where('province_code', $request->province_code)
+                                       ->where('ward_code', $request->ward_code)
+                                       ->where('address_detail', $request->street_address)
+                                       ->exists();
+            if (!$exists) {
+                $user->addresses()->create([
+                    'receiver_name' => $fullName,
+                    'receiver_phone' => $request->phone,
+                    'province_code' => $request->province_code,
+                    'ward_code' => $request->ward_code,
+                    'province_name' => $request->province_name,
+                    'district_name' => $request->district_name,
+                    'ward_name' => $request->ward_name,
+                    'address_detail' => $request->street_address,
+                    'full_address' => $fullAddress,
+                    'is_default' => $user->addresses()->count() === 0
+                ]);
+            }
         }
 
         $totalDiscount = 0;
         $appliedCouponCodes = [];
         $appliedCoupons = session('applied_coupons', []);
 
+        $discountableSubtotal = collect($cart)
+            ->filter(fn($i) => empty($i['is_combo']))
+            ->sum(fn($i) => ($i['price'] ?? 0) * ($i['qty'] ?? 1));
+
         foreach ($appliedCoupons as $couponId) {
             $coupon = \App\Models\Coupon::find($couponId);
-            if ($coupon && $coupon->isValid($total)) {
-                $totalDiscount += $coupon->calculateDiscount($total);
+            $totalForCoupon = collect($cart)->sum(fn($i) => ($i['price'] ?? 0) * ($i['qty'] ?? 1));
+            // We use the same filtering logic as index()
+            if ($coupon && $coupon->isValid($discountableSubtotal)) {
+                $discount = $coupon->calculateDiscount($discountableSubtotal);
+                $totalDiscount += $discount;
                 $appliedCouponCodes[] = $coupon->code;
                 $coupon->increment('usage_count');
             }

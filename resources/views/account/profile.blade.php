@@ -1,5 +1,8 @@
 @extends('layouts.app')
 
+@section('body_class', 'shop-main-h')
+
+
 @section('title', 'Thông tin tài khoản')
 
 @section('content')
@@ -8,8 +11,8 @@
             ['label' => 'Thông tin cá nhân']
         ]" />
 
-    <div class="account-tab-area-start rts-section-gap">
-        <div class="container-2">
+    <div class="account-area rts-section-gap bg-light">
+        <div class="container">
             <div class="row">
                 <div class="col-lg-3">
                     <div class="nav accout-dashborard-nav flex-column nav-pills me-3" id="v-pills-tab" role="tablist"
@@ -103,16 +106,106 @@
                             </div>
                         </div>
 
-                        <div class="tab-pane fade" id="v-pills-settings" role="tabpanel"
-                            aria-labelledby="v-pills-settings-tab" tabindex="0">
-                            <div class="shipping-address-billing-address-account">
-                                <div class="half">
-                                    <h2 class="title">Địa chỉ mặc định</h2>
-                                    <p class="address">
-                                        {{ $user->address ?: 'Chưa cập nhật địa chỉ.' }}
-                                    </p>
-                                    <a href="#"
-                                        onclick="document.getElementById('v-pills-settingsa-tab').click(); return false;">Sửa</a>
+                        <div class="tab-pane fade" id="v-pills-settings" role="tabpanel" aria-labelledby="v-pills-settings-tab" tabindex="0">
+                            <div class="address-management">
+                                <div class="d-flex justify-content-between align-items-center mb-4">
+                                    <h2 class="title mb-0">Địa chỉ của tôi</h2>
+                                    <button class="rts-btn btn-primary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#addAddressForm">
+                                        <i class="fa-regular fa-plus me-2"></i>Thêm địa chỉ mới
+                                    </button>
+                                </div>
+
+                                {{-- Error Display --}}
+                                @if ($errors->any())
+                                    <div class="alert alert-danger mb-4">
+                                        <ul class="mb-0">
+                                            @foreach ($errors->all() as $error)
+                                                <li>{{ $error }}</li>
+                                            @endforeach
+                                        </ul>
+                                    </div>
+                                @endif
+
+                                {{-- Success Display --}}
+                                @if (session('success'))
+                                    <div class="alert alert-success mb-4">
+                                        {{ session('success') }}
+                                    </div>
+                                @endif
+
+                                {{-- Add Address Form --}}
+                                <div class="collapse mb-5" id="addAddressForm">
+                                    <div class="card card-body border-0 shadow-sm p-4">
+                                        <h3 class="h5 mb-4">Địa chỉ mới</h3>
+                                        <form action="{{ route('address.store') }}" method="POST" id="newAddressForm">
+                                            @csrf
+                                            <div class="row">
+                                                <div class="col-md-6 mb-3">
+                                                    <label class="form-label">Tên người nhận*</label>
+                                                    <input type="text" name="receiver_name" class="form-control" placeholder="Ví dụ: Nguyễn Văn A" required>
+                                                </div>
+                                                <div class="col-md-6 mb-3">
+                                                    <label class="form-label">Số điện thoại*</label>
+                                                    <input type="text" name="receiver_phone" class="form-control" placeholder="0123 456 789" required>
+                                                </div>
+                                            </div>
+
+                                            <x-address-selector id="new-addr" />
+
+                                            <div class="mb-3">
+                                                <label class="form-label">Địa chỉ chi tiết (Sỗ nhà, tên đường...)*</label>
+                                                <input type="text" name="address_detail" id="new_address_detail" class="form-control" placeholder="Ví dụ: 123 Đường Nguyễn Trãi" required>
+                                            </div>
+
+                                            <input type="hidden" name="full_address" id="new_full_address">
+
+                                            <div class="form-check mb-4">
+                                                <input class="form-check-input" type="checkbox" name="is_default" id="set_as_default">
+                                                <label class="form-check-label" for="set_as_default">
+                                                    Đặt làm địa chỉ mặc định
+                                                </label>
+                                            </div>
+
+                                            <div class="d-flex gap-2">
+                                                <button type="submit" class="rts-btn btn-primary">Lưu địa chỉ</button>
+                                                <button type="button" class="rts-btn btn-secondary" data-bs-toggle="collapse" data-bs-target="#addAddressForm">Hủy</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+
+                                {{-- Address List --}}
+                                <div class="row g-4">
+                                    @forelse($user->addresses as $address)
+                                        <div class="col-md-6">
+                                            <div class="address-item p-4 border rounded bg-white position-relative {{ $address->is_default ? 'border-primary' : '' }}">
+                                                @if($address->is_default)
+                                                    <span class="badge bg-primary position-absolute top-0 end-0 m-3 px-2 py-1" style="font-size: 0.65rem;">Mặc định</span>
+                                                @endif
+                                                <h4 class="h6 mb-2">{{ $address->receiver_name }}</h4>
+                                                <p class="text-muted small mb-1"><i class="fa-regular fa-phone me-2"></i>{{ $address->receiver_phone }}</p>
+                                                <p class="text-dark small mb-3"><i class="fa-regular fa-location-dot me-2"></i>{{ $address->full_address }}</p>
+                                                
+                                                <div class="d-flex gap-3 align-items-center mt-auto pt-2 border-top">
+                                                    @if(!$address->is_default)
+                                                        <form action="{{ route('address.set-default', $address->id) }}" method="POST">
+                                                            @csrf
+                                                            <button type="submit" class="btn btn-link p-0 text-primary small text-decoration-none">Đặt mặc định</button>
+                                                        </form>
+                                                    @endif
+                                                    <form action="{{ route('address.destroy', $address->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn xóa địa chỉ này?')">
+                                                        @csrf
+                                                        <button type="submit" class="btn btn-link p-0 text-danger small text-decoration-none">Xóa</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @empty
+                                        <div class="col-12 text-center py-5 bg-white border rounded">
+                                            <i class="fa-light fa-location-dot fa-3x mb-3 text-muted"></i>
+                                            <p class="text-muted">Bạn chưa có địa chỉ nào lưu lại.</p>
+                                        </div>
+                                    @endforelse
                                 </div>
                             </div>
                         </div>
@@ -153,49 +246,40 @@
                                     @error('email') <span class="text-danger small">{{ $message }}</span> @enderror
                                 </div>
 
-                                <div class="half-input-wrapper">
-                                    <div class="single-input mb-4">
-                                        <label>Tỉnh / Thành phố*</label>
-                                        <select id="province" name="province_code" class="form-select" required>
-                                            <option value="">Chọn Tỉnh / Thành phố</option>
-                                        </select>
-                                        <input type="hidden" name="province_name" id="province_name">
-                                    </div>
-                                    <div class="single-input mb-4">
-                                        <label>Quận/Huyện - Phường/Xã*</label>
-                                        <select id="ward" name="ward_code" class="form-select" required disabled>
-                                            <option value="">Chọn địa chỉ</option>
-                                        </select>
-                                        <input type="hidden" name="ward_name" id="ward_name">
-                                        <input type="hidden" name="district_name" id="district_name">
-                                    </div>
-                                </div>
+                                <x-address-selector 
+                                    :selected-province="$user->province_code"
+                                    :selected-ward="$user->ward_code"
+                                />
 
                                 <div class="single-input mb-4">
                                     <label>Địa chỉ chi tiết (Số nhà, tên đường...)</label>
                                     <input type="text" name="address_detail" id="address_detail"
-                                        placeholder="Ví dụ: 123 Đường Nguyễn Trãi..." value="{{ old('address_detail') }}">
-                                    @error('address') <span class="text-danger small">{{ $message }}</span> @enderror
+                                        placeholder="Ví dụ: 123 Đường Nguyễn Trãi..." value="{{ old('address_detail', $user->address_detail) }}">
+                                    @error('address_detail') <span class="text-danger small">{{ $message }}</span> @enderror
                                 </div>
                                 <input type="hidden" name="address" id="full_address"
                                     value="{{ old('address', $user->address) }}">
 
-                                {{-- Password field placeholders (optional, can be implemented later) --}}
-                                {{-- <div class="border-top mt--30 pt--30">
-                                    <h2 class="title mb-4">Đổi mật khẩu</h2>
-                                    <div class="single-input mb-4 text-start">
-                                        <input type="password" name="current_password" placeholder="Mật khẩu hiện tại">
+                                <div class="border-top mt--30 pt--30">
+                                    <h2 class="title mb-4">Đổi mật khẩu (Chỉ nhập nếu muốn đổi)</h2>
+                                    <div class="single-input mb-4">
+                                        <label>Mật khẩu hiện tại</label>
+                                        <input type="password" name="current_password" placeholder="Nhập mật khẩu hiện tại để xác nhận">
+                                        @error('current_password') <span class="text-danger small">{{ $message }}</span> @enderror
                                     </div>
                                     <div class="input-half-area">
-                                        <div class="single-input text-start">
+                                        <div class="single-input">
+                                            <label>Mật khẩu mới</label>
                                             <input type="password" name="password" placeholder="Mật khẩu mới">
+                                            @error('password') <span class="text-danger small">{{ $message }}</span> @enderror
                                         </div>
-                                        <div class="single-input text-start">
+                                        <div class="single-input">
+                                            <label>Xác nhận mật khẩu mới</label>
                                             <input type="password" name="password_confirmation"
-                                                placeholder="Xác nhận mật khẩu mới">
+                                                placeholder="Nhập lại mật khẩu mới">
                                         </div>
                                     </div>
-                                </div> --}}
+                                </div>
 
                                 <button type="submit" class="rts-btn btn-primary">Lưu thay đổi</button>
                             </form>
@@ -229,76 +313,40 @@
                     }
                 }
 
-                // Address API Implementation
-                function initSelect2(selector, placeholder) {
-                    const $el = $(selector);
-                    $el.select2({
-                        placeholder: placeholder,
-                        allowClear: false,
-                        width: '100%',
-                        language: { noResults: () => "Không tìm thấy kết quả" }
-                    });
-                }
-
-                initSelect2('#province', 'Chọn Tỉnh / Thành phố');
-                initSelect2('#ward', 'Chọn địa chỉ');
-
-                // Load Provinces
-                $.getJSON(`${API_BASE}/p/`, function (data) {
-                    let html = '<option value=""></option>';
-                    data.forEach(p => {
-                        html += `<option value="${p.code}" data-name="${p.name}">${p.name}</option>`;
-                    });
-                    $('#province').html(html).trigger('change.select2');
+                // Address Selector Integration (Both forms)
+                // Use the custom 'address:changed' event from the component
+                $('#newAddressForm .address-selector-container').on('address:changed', function(e) {
+                    updateNewFullAddress();
                 });
 
-                // Province Change
-                $('#province').on('change', function () {
-                    const pCode = $(this).val();
-                    const pName = $(this).find(':selected').data('name');
-                    $('#province_name').val(pName);
-                    updateFullAddress();
-
-                    if (!pCode) {
-                        $('#ward').html('<option value=""></option>').prop('disabled', true).trigger('change.select2');
-                        return;
-                    }
-
-                    $('#ward').prop('disabled', true).html('<option value="">Đang tải...</option>').trigger('change.select2');
-
-                    $.getJSON(`${API_BASE}/p/${pCode}?depth=3`, function (data) {
-                        let html = '<option value=""></option>';
-                        if (data.districts) {
-                            data.districts.forEach(d => {
-                                if (d.wards) {
-                                    d.wards.forEach(w => {
-                                        html += `<option value="${w.code}" data-name="${w.name}" data-district="${d.name}">${w.name} (${d.name})</option>`;
-                                    });
-                                }
-                            });
-                        }
-                        $('#ward').prop('disabled', false).html(html).trigger('change.select2');
-                    });
+                $('.account-details-area .address-selector-container').on('address:changed', function(e) {
+                    updateProfileFullAddress();
                 });
 
-                // Ward Change
-                $('#ward').on('change', function () {
-                    const selected = $(this).find(':selected');
-                    $('#ward_name').val(selected.data('name'));
-                    $('#district_name').val(selected.data('district'));
-                    updateFullAddress();
+                // Standard change listeners for nice-select or vanilla select as fallback
+                $('#newAddressForm .address-province-select, #newAddressForm .address-ward-select').on('change', function() {
+                    updateNewFullAddress();
+                });
+
+                $('.account-details-area .address-province-select, .account-details-area .address-ward-select').on('change', function() {
+                    updateProfileFullAddress();
                 });
 
                 // Detail Change
-                $('#address_detail').on('input', function () {
-                    updateFullAddress();
+                $('#new_address_detail').on('input', function () {
+                    updateNewFullAddress();
                 });
 
-                function updateFullAddress() {
-                    const detail = $('#address_detail').val();
-                    const ward = $('#ward_name').val();
-                    const district = $('#district_name').val();
-                    const province = $('#province_name').val();
+                $('#address_detail').on('input', function () {
+                    updateProfileFullAddress();
+                });
+
+                function updateNewFullAddress() {
+                    const container = $('#newAddressForm .address-selector-container');
+                    const detail = $('#new_address_detail').val();
+                    const province = container.find('.address-province-name').val();
+                    const ward = container.find('.address-ward-name').val();
+                    const district = container.find('.address-district-name').val();
 
                     let parts = [];
                     if (detail) parts.push(detail);
@@ -306,8 +354,31 @@
                     if (district) parts.push(district);
                     if (province) parts.push(province);
 
-                    $('#full_address').val(parts.join(', '));
+                    const full = parts.join(', ');
+                    $('#new_full_address').val(full);
                 }
+
+                function updateProfileFullAddress() {
+                    const container = $('.account-details-area .address-selector-container');
+                    const detail = $('#address_detail').val();
+                    const province = container.find('.address-province-name').val();
+                    const ward = container.find('.address-ward-name').val();
+                    const district = container.find('.address-district-name').val();
+
+                    let parts = [];
+                    if (detail) parts.push(detail);
+                    if (ward) parts.push(ward);
+                    if (district) parts.push(district);
+                    if (province) parts.push(province);
+
+                    const full = parts.join(', ');
+                    $('#full_address').val(full);
+                }
+
+                // Initial sync for profile
+                setTimeout(() => {
+                    updateProfileFullAddress();
+                }, 1000);
             });
         </script>
     @endsection

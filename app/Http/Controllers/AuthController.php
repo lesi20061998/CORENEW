@@ -81,14 +81,37 @@ class AuthController extends Controller
     public function updateProfile(Request $request)
     {
         $user = Auth::user();
-        $request->validate([
+        $rules = [
             'name'  => 'required|string|max:100',
             'email' => 'required|email|unique:users,email,' . $user->id,
             'phone' => 'nullable|string|max:20',
             'address' => 'nullable|string|max:255',
-        ]);
+            'province_code' => 'nullable|string',
+            'ward_code' => 'nullable|string',
+            'address_detail' => 'nullable|string',
+        ];
 
-        $user->update($request->only('name', 'email', 'phone', 'address'));
+        // Password change logic
+        if ($request->filled('password')) {
+            $rules['current_password'] = [
+                'required',
+                function ($attribute, $value, $fail) use ($user) {
+                    if (!\Illuminate\Support\Facades\Hash::check($value, $user->password)) {
+                        $fail('Mật khẩu hiện tại không chính xác.');
+                    }
+                },
+            ];
+            $rules['password'] = 'required|string|min:8|confirmed';
+        }
+
+        $request->validate($rules);
+
+        $data = $request->only('name', 'email', 'phone', 'address', 'province_code', 'ward_code', 'address_detail');
+        if ($request->filled('password')) {
+            $data['password'] = \Illuminate\Support\Facades\Hash::make($request->password);
+        }
+
+        $user->update($data);
 
         return back()->with('success', 'Cập nhật thông tin thành công!');
     }

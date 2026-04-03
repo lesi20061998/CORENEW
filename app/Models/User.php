@@ -12,6 +12,7 @@ class User extends Authenticatable
 
     protected $fillable = [
         'name', 'email', 'password', 'role', 'phone', 'address', 'avatar',
+        'province_code', 'ward_code', 'address_detail'
     ];
 
     protected $hidden = ['password', 'remember_token'];
@@ -27,6 +28,16 @@ class User extends Authenticatable
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
+    }
+
+    public function addresses()
+    {
+        return $this->hasMany(UserAddress::class);
+    }
+
+    public function defaultAddress()
+    {
+        return $this->addresses()->where('is_default', true)->first() ?: $this->addresses()->first();
     }
 
     public function orders()

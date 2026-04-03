@@ -46,7 +46,7 @@
     flex-grow: 1 !important;
     display: flex !important;
     flex-direction: column !important;
-    padding: 15px !important;
+    padding: 0 !important;
 }
 
 .single-shopping-card-one .body-content .title {
@@ -255,7 +255,7 @@
    Editor Content Styling (Table, etc.) 
    =========================================
 */
-.disc table, 
+.disc table,
 .additional-info-content table {
     width: 100% !important;
     border-collapse: collapse !important;
@@ -263,9 +263,9 @@
     border: 1px solid #ddd !important;
 }
 
-.disc table th, 
+.disc table th,
 .disc table td,
-.additional-info-content table th, 
+.additional-info-content table th,
 .additional-info-content table td {
     border: 1px solid #ddd !important;
     padding: 12px 15px !important;
@@ -287,7 +287,7 @@
     background-color: #fcfcfc !important;
 }
 
-.disc img, 
+.disc img,
 .additional-info-content img {
     max-width: 100% !important;
     height: auto !important;

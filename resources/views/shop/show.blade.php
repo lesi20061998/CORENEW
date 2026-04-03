@@ -1,6 +1,13 @@
 @extends('layouts.app')
 
-@section('title', $product->name . ' - VietTin Mart')
+@section('title', ($product->meta_title ?: $product->name) . ' - ' . setting('site_name', 'VietTin Mart'))
+@section('meta_description', $product->meta_description ?: \Illuminate\Support\Str::limit(strip_tags($product->description), 160))
+@section('meta_keywords', $product->meta_keywords)
+@section('canonical', url('cua-hang/' . $product->slug))
+@section('og_type', 'product')
+@section('og_image', $product->image ? asset($product->image) : asset(setting('site_og_image')))
+
+
 
 @section('content')
 
@@ -280,7 +287,7 @@
                                                                         
                                                                         // 1. Prepare items starting with main product
                                                                         const mainVariantId = document.querySelector('input[name="variant_id"]:checked')?.value || null;
-                                                                        const mainQty = parseInt(document.querySelector('.quantity-edit')?.value) || 1;
+                                                                        const mainQty = parseInt(document.querySelector('.quantity-edit .input')?.value) || 1;
 
                                                                         const items = [
                                                                             { id: this.mainProductId, variant_id: mainVariantId, qty: mainQty }
@@ -306,7 +313,8 @@
                                                                                     body: JSON.stringify({
                                                                                         product_id: item.id,
                                                                                         variant_id: item.variant_id,
-                                                                                        qty: item.qty
+                                                                                        qty: item.qty,
+                                                                                        main_product_id: this.mainProductId
                                                                                     })
                                                                                 });
                                                                             } catch(e) {

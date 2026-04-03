@@ -10,10 +10,18 @@ use App\Http\Controllers\ContactController;
 use App\Http\Controllers\RouteController;
 use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\CustomerActionController;
+use App\Http\Controllers\SitemapController;
 use Illuminate\Support\Facades\Route;
 
 // ─── CORE WEB ROUTES (SINGLE LOCALE MODE) ───────────────────────────────────
 
+Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
+Route::get('/post-sitemap.xml', [SitemapController::class, 'posts']);
+Route::get('/page-sitemap.xml', [SitemapController::class, 'pages']);
+Route::get('/product-sitemap.xml', [SitemapController::class, 'products']);
+Route::get('/category-sitemap.xml', [SitemapController::class, 'categories']);
+
+Route::get('/sitemap', [SitemapController::class, 'htmlIndex'])->name('sitemap.html');
 Route::get('/', [HomeController::class, 'index'])->name('home');
 // Route::get('/shop/{slug}', [App\Http\Controllers\ShopController::class, 'show'])->name('shop.show'); // Removed duplicate name
 Route::post('/review/submit', [App\Http\Controllers\ReviewController::class, 'store'])->name('review.submit');
@@ -31,12 +39,15 @@ Route::get('/lien-he', [ContactController::class, 'index'])->name('contact.index
 
 Route::prefix('tai-khoan')->middleware('auth')->group(function () {
     Route::get('/thong-tin', [AuthController::class, 'profile'])->name('profile');
-
     Route::get('/don-hang/{order}', [AuthController::class, 'orderDetail'])->name('order.detail');
+
+    Route::prefix('dia-chi')->group(function () {
+        Route::post('/them', [App\Http\Controllers\AddressController::class, 'store'])->name('address.store');
+        Route::post('/xoa/{id}', [App\Http\Controllers\AddressController::class, 'destroy'])->name('address.destroy');
+        Route::post('/mac-dinh/{id}', [App\Http\Controllers\AddressController::class, 'setDefault'])->name('address.set-default');
+    });
 });
 
-Route::get('/gioi-thieu', fn() => view('pages.about'))->name('about');
-Route::get('/faq', fn() => view('pages.faq'))->name('faq');
 Route::get('/theo-doi-don', [CheckoutController::class, 'trackOrder'])->name('order.track');
 Route::get('/wishlist', [CustomerActionController::class, 'wishlistIndex'])->name('wishlist');
 Route::get('/so-sanh', [CustomerActionController::class, 'compareIndex'])->name('compare.index');
@@ -68,7 +79,7 @@ Route::post('/compare/remove', [CustomerActionController::class, 'removeFromComp
 // ─── DYNAMIC SLUG ROUTE (MUST BE LAST) ───────────────────────────────────
 
 Route::get('{slug}', [RouteController::class, 'index'])
-    ->where('slug', '^(?!admin|cua-hang|blog|gio-hang|dat-hang|lien-he|login|dang-nhap|dang-ky|register|dang-xuat|logout|tai-khoan|gioi-thieu|faq|theo-doi-don|wishlist|so-sanh|quick-view|san-pham|bai-viet)[^/]+$')
+    ->where('slug', '^(?!admin|cua-hang|blog|gio-hang|dat-hang|lien-he|login|register|logout|tai-khoan|wishlist|so-sanh|quick-view|san-pham|bai-viet|theo-doi-don)[^/]+$')
     ->name('shop.show');
 
 // Aliases

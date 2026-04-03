@@ -40,5 +40,17 @@ return Application::configure(basePath: dirname(__DIR__))
         });
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\NotFoundHttpException $e, \Illuminate\Http\Request $request) {
+            $mode = setting('seo_redirect_mode', 'manual');
+            if ($mode === 'homepage') {
+                return redirect()->route('home');
+            } elseif ($mode === 'manual') {
+                $url = setting('seo_redirect_url', 'trang-chu');
+                return redirect($url ?: '/');
+            }
+        });
+
+        $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException $e, \Illuminate\Http\Request $request) {
+            return redirect()->route('home');
+        });
     })->create();

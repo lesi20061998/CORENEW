@@ -51,5 +51,7 @@ class AppServiceProvider extends ServiceProvider
             $modelClass::saved($clearAdminCache);
             $modelClass::deleted($clearAdminCache);
         }
+
+        \App\Models\Order::observe(\App\Observers\OrderObserver::class);
     }
 }

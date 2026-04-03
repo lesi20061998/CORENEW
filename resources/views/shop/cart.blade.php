@@ -69,7 +69,7 @@
             @if(empty($cart))
                 <div class="row justify-content-center">
                     <div class="col-lg-6 text-center py-5">
-                        <div class="empty-cart-wrapper p-5 bg-white rounded shadow-sm">
+                        <div class="empty-cart-wrapper p-5 bg-white rounded shadow-sm d-flex align-item-center flex-column align-items-center ">
                             <i class="fa-light fa-cart-shopping-low-capacity mb-4" style="font-size: 80px; color: #ddd;"></i>
                             <h3 class="mb-3">Giỏ hàng đang trống</h3>
                             <p class="text-muted mb-4">Bạn chưa chọn được sản phẩm nào ưng ý. Hãy tiếp tục mua sắm nhé!</p>

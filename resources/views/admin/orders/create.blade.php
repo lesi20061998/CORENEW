@@ -124,10 +124,10 @@
                         <label class="form-label">Email (không bắt buộc)</label>
                         <input type="email" name="customer_email" class="form-input" placeholder="example@gmail.com">
                     </div>
-                    <x-location-selector
-                        :old-province="old('province_code')"
-                        :old-district="old('district_code')"
-                        :old-ward="old('ward_code')"
+                    <x-address-selector 
+                        container-class="grid grid-cols-1 md:grid-cols-2 gap-4"
+                        col-class=""
+                        select-class="form-select"
                     />
                     <div class="mt-4">
                         <label class="form-label">Số nhà, tên đường *</label>

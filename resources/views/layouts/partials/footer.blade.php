@@ -26,38 +26,33 @@
                         </div>
                     </div>
                     <div class="single-footer-wized">
-                        <h3 class="footer-title">Our Stores</h3>
+                        <h3 class="footer-title">{{ setting('footer_title_1', 'Thông tin') }}</h3>
                         <div class="footer-nav">
                             <ul>
-                                <li><a href="{{ route('about') }}">Delivery Information</a></li>
-                                <li><a href="{{ route('about') }}">Privacy Policy</a></li>
-                                <li><a href="{{ route('about') }}">Terms & Conditions</a></li>
-                                <li><a href="{{ route('contact.index') }}">Support Center</a></li>
-                                <li><a href="{{ route('about') }}">Careers</a></li>
+                                @foreach(\App\Models\Widget::getMenu('footer-info') as $item)
+                                    <li><a href="{{ $item['url'] }}">{{ $item['label'] }}</a></li>
+                                @endforeach
                             </ul>
                         </div>
                     </div>
                     <div class="single-footer-wized">
-                        <h3 class="footer-title">Shop Categories</h3>
+                        <h3 class="footer-title">{{ setting('footer_title_2', 'Danh mục cửa hàng') }}</h3>
                         <div class="footer-nav">
                             <ul>
-                                <li><a href="{{ route('contact.index') }}">Contact Us</a></li>
-                                <li><a href="{{ route('about') }}">Information</a></li>
-                                <li><a href="{{ route('about') }}">About Us</a></li>
-                                <li><a href="{{ route('about') }}">Careers</a></li>
-                                <li><a href="{{ route('blog.index') }}">Nest Stories</a></li>
+                                @foreach(\App\Models\Widget::getMenu('footer-categories') as $item)
+                                    <li><a href="{{ $item['url'] }}">{{ $item['label'] }}</a></li>
+                                @endforeach
                             </ul>
                         </div>
                     </div>
                     <div class="single-footer-wized">
-                        <h3 class="footer-title">Useful Links</h3>
+                        <h3 class="footer-title">{{ setting('footer_title_3', 'Liên kết hữu ích') }}</h3>
                         <div class="footer-nav">
                             <ul>
-                                <li><a href="{{ route('about') }}">Cancellation & Returns</a></li>
-                                <li><a href="{{ route('about') }}">Report Infringement</a></li>
-                                <li><a href="{{ route('about') }}">Payments</a></li>
-                                <li><a href="{{ route('about') }}">Shipping</a></li>
-                                <li><a href="{{ route('faq') }}">FAQ</a></li>
+                                @foreach(\App\Models\Widget::getMenu('footer-links') as $item)
+                                    <li><a href="{{ $item['url'] }}">{{ $item['label'] }}</a></li>
+                                @endforeach
+                                <li><a href="{{ route('sitemap.html') }}">Sitemap</a></li>
                             </ul>
                         </div>
                     </div>

@@ -1,6 +1,8 @@
 @extends('layouts.app')
 
-@section('title', ($page->title ?? 'Page') . ' - Ekomart-Grocery-Store')
+@section('title', ($page->meta_title ?: $page->title) . ' - ' . setting('site_name', 'VietTinMart'))
+@section('meta_description', $page->meta_description)
+@section('meta_keywords', $page->meta_keywords)
 
 @section('content')
 <!-- rts navigation bar area start -->
@@ -19,20 +21,15 @@
 </div>
 <!-- rts navigation bar area end -->
 
-<div class="rts-page-detail-area rts-section-gap">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-12">
-                <div class="page-content-wrapper p-4 border rounded bg-white shadow-sm">
-                    <h1 class="title mb--30">{{ $page->title ?? 'Untitled Page' }}</h1>
-                    <div class="content entry-content">
-                        {!! $page->content ?? 'No content available for this page.' !!}
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+@php
+    $template = $page->template ?? 'default';
+@endphp
+
+@includeIf('templates.' . $template, ['page' => $page])
+
+@if(!view()->exists('templates.' . $template))
+    @include('templates.default', ['page' => $page])
+@endif
 
 <style>
 .entry-content p {

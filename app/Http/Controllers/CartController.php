@@ -38,9 +38,10 @@ class CartController extends Controller
     public function add(Request $request)
     {
         $request->validate([
-            'product_id' => 'required|exists:products,id',
-            'variant_id' => 'nullable|exists:product_variants,id',
-            'qty'        => 'integer|min:1'
+            'product_id'      => 'required|exists:products,id',
+            'variant_id'      => 'nullable|exists:product_variants,id',
+            'qty'             => 'integer|min:1',
+            'main_product_id' => 'nullable|exists:products,id',
         ]);
 
         $product = Product::findOrFail($request->product_id);
@@ -49,8 +50,34 @@ class CartController extends Controller
             $variant = \App\Models\ProductVariant::find($request->variant_id);
         }
 
+        $price = $variant ? ($variant->price ?? $product->price) : $product->price;
+        $isCombo = false;
+
+        // Xử lý giá giảm khi mua cùng (Frequently Bought Together)
+        if ($request->filled('main_product_id') && $request->main_product_id != $product->id) {
+            $mainProduct = Product::find($request->main_product_id);
+            if ($mainProduct) {
+                $combo = $mainProduct->activeCombos()->where('combo_product_id', $product->id)->first();
+                if ($combo) {
+                    $isCombo = true;
+                    $discountType = $combo->pivot->discount_type;
+                    $discountValue = $combo->pivot->discount_value;
+                    
+                    if ($discountType === 'percent') {
+                        $price = $price * (1 - ($discountValue / 100));
+                    } else {
+                        $price = max(0, $price - $discountValue);
+                    }
+                }
+            }
+        }
+
         $cart = session('cart', []);
-        $key  = $variant ? ($product->id . '-' . $variant->id) : (string)$product->id;
+        // Nếu là hàng mua cùng, dùng key khác để tránh gộp với hàng thường (ví dụ: product_id-variant_id-combo)
+        $key = $variant ? ($product->id . '-' . $variant->id) : (string)$product->id;
+        if ($isCombo) {
+            $key .= '-combo';
+        }
 
         if (isset($cart[$key])) {
             $cart[$key]['qty'] += $request->qty ?? 1;
@@ -60,10 +87,11 @@ class CartController extends Controller
                 'variant_id'    => $variant?->id,
                 'name'          => $product->name,
                 'variant_label' => $variant?->label,
-                'price'         => $variant ? ($variant->price ?? $product->price) : $product->price,
+                'price'         => (float)$price,
                 'image'         => $this->normalizeImagePath($variant?->image ?? $product->image),
                 'slug'          => $product->slug,
                 'qty'           => $request->qty ?? 1,
+                'is_combo'      => $isCombo
             ];
         }
 
@@ -114,6 +142,11 @@ class CartController extends Controller
         $cart = session('cart', []);
         $subtotal = collect($cart)->sum(fn($i) => ($i['price'] ?? 0) * ($i['qty'] ?? 1));
         
+        // Tính tổng tiền các sản phẩm ĐƯỢC PHÉP giảm giá (không phải combo)
+        $discountableSubtotal = collect($cart)
+            ->filter(fn($i) => empty($i['is_combo']))
+            ->sum(fn($i) => ($i['price'] ?? 0) * ($i['qty'] ?? 1));
+
         $appliedCoupons = session('applied_coupons', []);
         $totalDiscount = 0;
         $validCouponIds = [];
@@ -121,8 +154,9 @@ class CartController extends Controller
 
         foreach ($appliedCoupons as $couponId) {
             $coupon = \App\Models\Coupon::find($couponId);
-            if ($coupon && $coupon->isValid($subtotal)) {
-                $discount = $coupon->calculateDiscount($subtotal);
+            // Coupon chỉ áp dụng trên giá trị các sản phẩm KHÔNG PHẢI combo
+            if ($coupon && $coupon->isValid($discountableSubtotal)) {
+                $discount = $coupon->calculateDiscount($discountableSubtotal);
                 $totalDiscount += $discount;
                 $validCouponIds[] = $coupon->id;
                 $validCoupons[] = [
@@ -134,15 +168,15 @@ class CartController extends Controller
         
         session(['applied_coupons' => $validCouponIds]);
 
-        $total = max(0, $subtotal - $totalDiscount);
+        $totalValue = max(0, $subtotal - $totalDiscount);
 
         return response()->json([
             'subtotal'           => $subtotal,
             'subtotal_formatted' => number_format($subtotal, 0, ',', '.') . 'đ',
             'discount'           => $totalDiscount,
             'discount_formatted' => number_format($totalDiscount, 0, ',', '.') . 'đ',
-            'total'              => $total,
-            'total_formatted'    => number_format($total, 0, ',', '.') . 'đ',
+            'total'              => $totalValue,
+            'total_formatted'    => number_format($totalValue, 0, ',', '.') . 'đ',
             'coupons'            => $validCoupons
         ]);
     }
@@ -163,9 +197,12 @@ class CartController extends Controller
         }
 
         $cart = session('cart', []);
-        $subtotal = collect($cart)->sum(fn($i) => ($i['price'] ?? 0) * ($i['qty'] ?? 1));
+        // Tính tổng tiền các sản phẩm ĐƯỢC PHÉP giảm giá (không phải combo)
+        $discountableSubtotal = collect($cart)
+            ->filter(fn($i) => empty($i['is_combo']))
+            ->sum(fn($i) => ($i['price'] ?? 0) * ($i['qty'] ?? 1));
 
-        $reason = $coupon->getInvalidReason($subtotal);
+        $reason = $coupon->getInvalidReason($discountableSubtotal);
         if ($reason) {
             $msg = match($reason) {
                 'Tạm dừng' => 'Mã giảm giá này đã bị tạm dừng.',
