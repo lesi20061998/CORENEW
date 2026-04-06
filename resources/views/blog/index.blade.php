@@ -18,7 +18,26 @@
                     <div class="col-lg-12">
                         <div class="single-blog-list-style">
                             <a href="{{ url($post->slug) }}" class="thumbnail">
-                                <img src="{{ $post->thumbnail ? asset($post->thumbnail) : asset('theme/images/blog/01.jpg') }}" alt="blog">
+                                @php
+                                    $th = $post->thumbnail;
+                                    $m  = [];
+                                    if (!$th) {
+                                        $thUrl = asset('theme/images/blog/01.jpg');
+                                    } elseif (str_starts_with($th, 'http')) {
+                                        if (preg_match('#/storage/(media/.+)$#', $th, $m)) {
+                                            $thUrl = asset('storage/' . $m[1]);
+                                        } elseif (preg_match('#/public/(storage/media/.+)$#', $th, $m)) {
+                                            $thUrl = asset($m[1]);
+                                        } else {
+                                            $thUrl = $th;
+                                        }
+                                    } elseif (str_starts_with($th, 'storage/') || str_starts_with($th, 'media/')) {
+                                        $thUrl = asset(ltrim($th, '/'));
+                                    } else {
+                                        $thUrl = asset('storage/' . ltrim($th, '/'));
+                                    }
+                                @endphp
+                                <img src="{{ $thUrl }}" alt="{{ $post->title }}">
                             </a>
                             <div class="blog-content">
                                 <div class="top-area">
@@ -74,7 +93,22 @@
                             @foreach($recentPosts ?? [] as $recent)
                             <div class="single-recent-post">
                                 <a href="{{ url($recent->slug) }}" class="thumbnail">
-                                    <img src="{{ $recent->thumbnail ? asset($recent->thumbnail) : asset('theme/images/blog/11.jpg') }}" alt="recent-post" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+                                    @php
+                                        $rth = $recent->thumbnail;
+                                        $m   = [];
+                                        if (!$rth) {
+                                            $rthUrl = asset('theme/images/blog/11.jpg');
+                                        } elseif (str_starts_with($rth, 'http')) {
+                                            if (preg_match('#/storage/(media/.+)$#', $rth, $m)) {
+                                                $rthUrl = asset('storage/' . $m[1]);
+                                            } else {
+                                                $rthUrl = $rth;
+                                            }
+                                        } else {
+                                            $rthUrl = asset('storage/' . ltrim($rth, '/'));
+                                        }
+                                    @endphp
+                                    <img src="{{ $rthUrl }}" alt="recent-post" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
                                 </a>
                                 <div class="content">
                                     <span class="date">{{ $recent->published_at ? $recent->published_at->format('d/m/Y') : $recent->created_at->format('d/m/Y') }}</span>

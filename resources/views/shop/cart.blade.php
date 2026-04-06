@@ -82,9 +82,9 @@
                     <div class="col-xl-9 col-lg-12 col-md-12 col-12 order-2 order-xl-1">
                         <div class="cart-area-main-wrapper">
                             @php
-                                $threshold = 500000;
+                                $threshold = (int)setting('free_shipping_threshold', 500000);
                                 $remaining = max(0, $threshold - $subtotal);
-                                $progress = min(100, ($subtotal / $threshold) * 100);
+                                $progress = $threshold > 0 ? min(100, ($subtotal / $threshold) * 100) : 100;
                             @endphp
                             <div class="cart-top-area-note">
                                 <p id="shipping-tracker-text">
@@ -329,7 +329,7 @@ $(document).ready(function() {
 
             // Update Shipping Tracker using subtotal (before discount)
             const total = data.subtotal;
-            const threshold = 500000;
+            const threshold = {{ (int)setting('free_shipping_threshold', 500000) }};
             const remaining = Math.max(0, threshold - total);
             const progress = Math.min(100, (total / threshold) * 100);
 
@@ -371,6 +371,9 @@ $(document).ready(function() {
     });
 
     function updateHeaderCount() {
+        if (typeof cart !== 'undefined' && cart.updateDropdown) {
+            cart.updateDropdown();
+        }
         $.get('/gio-hang/so-luong', function(data) {
             $('.cart .number').text(data.count);
         });

@@ -1,0 +1,234 @@
+/* 
+    Widget Management Modern Styles
+    Optimized for compact, premium UI
+*/
+
+.widget-builder-container {
+    display: flex;
+    gap: 2rem;
+    align-items: flex-start;
+}
+
+/* Left Panel: Available Widgets */
+.widgets-available-panel {
+    width: 320px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 2rem;
+    max-height: calc(100vh - 120px);
+    display: flex;
+    flex-direction: column;
+}
+
+/* Right Panel: Areas Management */
+.widgets-areas-panel {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Common Card Styles */
+.widget-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Available Widget Items */
+.available-widget-item {
+    padding: 0.85rem 1rem;
+    background: #ffffff;
+    border: 1px solid #f1f5f9;
+    border-radius: 10px;
+    cursor: grab;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+    transition: all 0.2s;
+}
+
+.available-widget-item:hover {
+    border-color: #3b82f6;
+    background: #f8fafc;
+    transform: translateX(4px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.08);
+}
+
+.widget-icon-box {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: #eff6ff;
+    color: #3b82f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+/* Area Cards */
+.area-card {
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+}
+
+.area-header {
+    padding: 1rem 1.25rem;
+    background: #ffffff;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+}
+
+.area-header:hover {
+    background: #fafafa;
+}
+
+.area-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #1e293b;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.area-body {
+    padding: 1rem;
+    background: #fcfcfc;
+    min-height: 80px;
+    transition: max-height 0.3s ease-out;
+}
+
+.area-body.collapsed {
+    display: none;
+}
+
+/* Placed Widget Item (Smaller than Available) */
+.placed-widget-item {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 0.65rem 0.85rem;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: grab;
+    position: relative;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.placed-widget-item:hover {
+    border-color: #3b82f6;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+}
+
+.widget-handle {
+    color: #cbd5e1;
+    cursor: grab;
+    padding: 4px;
+}
+
+.placed-widget-item:hover .widget-handle {
+    color: #94a3b8;
+}
+
+.widget-actions {
+    margin-left: auto;
+    display: flex;
+    gap: 0.25rem;
+}
+
+.action-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    color: #94a3b8;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.action-btn:hover {
+    background: #f1f5f9;
+    color: #3b82f6;
+}
+
+.action-btn.btn-delete:hover {
+    background: #fef2f2;
+    color: #ef4444;
+}
+
+/* Drag & Drop Classes (SortableJS) */
+.sortable-ghost {
+    opacity: 0.4;
+    background: #eff6ff !important;
+    border: 1.5px dashed #3b82f6 !important;
+}
+
+.sortable-chosen {
+    background: #ffffff;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+    border-color: #3b82f6 !important;
+}
+
+.sortable-drag {
+    opacity: 0.9;
+    transform: rotate(2deg);
+}
+
+/* Empty State */
+.empty-area-placeholder {
+    height: 60px;
+    border: 1.5px dashed #e2e8f0;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #94a3b8;
+    font-size: 0.85rem;
+    font-style: italic;
+    background: #fff;
+}
+
+/* Section Picker Search */
+.widget-search-wrap {
+    padding: 1rem;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.widget-search-input {
+    width: 100%;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+    outline: none;
+}
+
+.widget-search-input:focus {
+    border-color: #3b82f6;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Responsive Grid for Areas */
+@media (min-width: 1280px) {
+    .area-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+        align-items: flex-start;
+    }
+}

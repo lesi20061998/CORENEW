@@ -10,9 +10,9 @@
         <div class="container">
             <div class="row g-5">
                 <div class="col-lg-12">
-                    <div class="rts-cart-list-area wishlist">
+                    <div class="rts-cart-list-area wishlist d-flex align-items-center justify-content-center flex-column">
                         @if($products->isEmpty())
-                            <div class="text-center py-5">
+                            <div class="text-center py-5 d-flex align-items-center justify-content-center flex-column">
                                 <h4 class="title">Danh sách yêu thích đang trống</h4>
                                 <a href="{{ route('shop.index') }}" class="rts-btn btn-primary radious-sm mt--20">Tiếp tục mua hàng</a>
                             </div>

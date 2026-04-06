@@ -5,23 +5,23 @@
             <div class="col-lg-12">
                 <div class="footer-main-content-wrapper pb--70 pb_sm--30">
                     <div class="single-footer-wized">
-                        <h3 class="footer-title">About Company</h3>
+                        <h3 class="footer-title">{{ setting('footer_about_title', 'Về chúng tôi') }}</h3>
                         <div class="call-area">
                             <div class="icon"><i class="fa-solid fa-phone-rotary"></i></div>
                             <div class="info">
-                                <span>Have Question? Call Us 24/7</span>
-                                <a href="tel:{{ setting('hotline') }}" class="number">{{ setting('hotline', '+258 3692 2569') }}</a>
+                                <span>{{ setting('footer_hotline_label', 'Hotline hỗ trợ 24/7') }}</span>
+                                <a href="tel:{{ setting('hotline', setting('contact_phone', '')) }}" class="number">{{ setting('hotline', setting('contact_phone', '+258 3692 2569')) }}</a>
                             </div>
                         </div>
                         <div class="opening-hour">
                             <div class="single">
-                                <p>Monday - Friday: <span>8:00am - 6:00pm</span></p>
+                                <p>{{ setting('footer_hours_weekday', 'Thứ 2 - Thứ 6') }}: <span>{{ setting('footer_hours_weekday_time', '8:00am - 6:00pm') }}</span></p>
                             </div>
                             <div class="single">
-                                <p>Saturday: <span>8:00am - 6:00pm</span></p>
+                                <p>{{ setting('footer_hours_saturday', 'Thứ 7') }}: <span>{{ setting('footer_hours_saturday_time', '8:00am - 6:00pm') }}</span></p>
                             </div>
                             <div class="single">
-                                <p>Sunday: <span>Service Close</span></p>
+                                <p>{{ setting('footer_hours_sunday', 'Chủ nhật') }}: <span>{{ setting('footer_hours_sunday_time', 'Nghỉ') }}</span></p>
                             </div>
                         </div>
                     </div>
@@ -57,14 +57,14 @@
                         </div>
                     </div>
                     <div class="single-footer-wized">
-                        <h3 class="footer-title">Our Newsletter</h3>
-                        <p class="disc-news-letter">Subscribe to the mailing list to receive updates on the new arrivals and other discounts</p>
+                        <h3 class="footer-title">{{ setting('footer_newsletter_title', 'Bản tin của chúng tôi') }}</h3>
+                        <p class="disc-news-letter">{{ setting('footer_newsletter_desc', 'Đăng ký nhận thông báo về sản phẩm mới và ưu đãi đặc biệt.') }}</p>
                         <form class="footersubscribe-form" action="{{ route('newsletter.subscribe') }}" method="POST">
                             @csrf
-                            <input name="email" type="email" placeholder="Your email address" required>
-                            <button class="rts-btn btn-primary" type="submit">Subscribe</button>
+                            <input name="email" type="email" placeholder="{{ setting('footer_newsletter_placeholder', 'Địa chỉ email của bạn') }}" required>
+                            <button class="rts-btn btn-primary" type="submit">{{ setting('footer_newsletter_btn', 'Đăng ký') }}</button>
                         </form>
-                        <p class="dsic">I would like to receive news and special offer</p>
+                        <p class="dsic">{{ setting('footer_newsletter_note', 'Tôi muốn nhận tin tức và ưu đãi đặc biệt.') }}</p>
                     </div>
                 </div>
                 <div class="social-and-payment-area-wrapper">

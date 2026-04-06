@@ -47,7 +47,7 @@
                                 </li>
                                 <li><a href="{{ url('wishlist') }}">Wishlist</a></li>
                             </ul>
-                            <p class="para">We deliver to your everyday from 7:00 to 22:00</p>
+                            <p class="para">{{ setting('topbar_welcome_text', 'We deliver to your everyday from 7:00 to 22:00') }}</p>
                         </div>
                         <div class="nav-sm-left">
                             <ul class="nav-h_top language">
@@ -146,7 +146,7 @@
                                 <i class="fa-sharp fa-regular fa-cart-shopping"></i>
                                 <span class="text">My Cart</span>
                                 <span class="number">{{ count(session()->get('cart', [])) }}</span>
-                                <div class="category-sub-menu card-number-show cart-dropdown-container">
+                                <div class="cart-dropdown-container">
                                     @include('layouts.partials.cart-dropdown')
                                 </div>
                                 <a href="{{ route('cart.page') }}" class="over_link"></a>

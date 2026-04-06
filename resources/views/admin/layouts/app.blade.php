@@ -580,7 +580,7 @@
                     </a>
                     <a href="{{ route('admin.widgets.index') }}"
                         class="sub-item {{ request()->routeIs('admin.widgets.*') ? 'active' : '' }}">
-                        <span class="dot"></span> Widgets H.Page
+                        <span class="dot"></span> Widget Builder
                     </a>
                     <a href="{{ route('admin.media.index') }}"
                         class="sub-item {{ request()->routeIs('admin.media.*') ? 'active' : '' }}">

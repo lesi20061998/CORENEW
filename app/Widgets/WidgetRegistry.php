@@ -33,6 +33,15 @@ class WidgetRegistry
         'posts_latest' => \App\Widgets\Types\LatestPostsWidget::class,
         'promo_banners' => \App\Widgets\Types\PromoBannersWidget::class,
         'testimonials' => \App\Widgets\Types\TestimonialWidget::class,
+
+        // About Page Widgets
+        'about_hero' => \App\Widgets\Types\AboutHeroWidget::class,
+        'stats_counter' => \App\Widgets\Types\StatsCounterWidget::class,
+        'about_intro' => \App\Widgets\Types\AboutIntroWidget::class,
+        'team_list' => \App\Widgets\Types\TeamGridWidget::class,
+        'choosing_reason' => \App\Widgets\Types\ChoosingReasonWidget::class,
+        'about_testimonials' => \App\Widgets\Types\AboutTestimonialsWidget::class,
+        'section_sep' => \App\Widgets\Types\SectionSeparatorWidget::class,
     ];
 
     /**
@@ -43,6 +52,7 @@ class WidgetRegistry
     {
         return [
             'homepage' => ['label' => 'Homepage Layout', 'description' => 'Sắp xếp các Section trên trang chủ', 'icon' => 'fa-house-chimney-window'],
+            'about_page' => ['label' => 'About Page Layout', 'description' => 'Sắp xếp các Section trên trang Giới thiệu', 'icon' => 'fa-address-card'],
             'footer' => ['label' => 'Footer Columns', 'description' => 'Cài đặt chân trang', 'icon' => 'fa-table-columns'],
         ];
     }

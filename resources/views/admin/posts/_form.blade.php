@@ -53,6 +53,16 @@
                         <p class="text-xs text-gray-400">Hiển thị ở vị trí ưu tiên</p>
                     </div>
                 </label>
+
+                <div class="pt-2 border-t border-gray-50 mt-2">
+                    <label class="flex items-center gap-2.5 cursor-pointer mb-0">
+                        <input type="checkbox" name="has_toc" value="1" id="has_toc"
+                            {{ old('has_toc', $post?->id ? $post->has_toc : true) ? 'checked' : '' }}
+                            class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                        <span class="text-sm font-bold text-gray-700">Bật mục lục (TOC)</span>
+                    </label>
+                    <p class="text-[10px] text-gray-400 ml-7 mt-1 italic">Tự động tạo mục lục từ các thẻ H2, H3 trong nội dung.</p>
+                </div>
             </div>
         </div>
 

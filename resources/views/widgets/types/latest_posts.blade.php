@@ -33,14 +33,33 @@
             @forelse($posts as $post)
             <div class="{{ $gridClass }}">
                 <div class="single-blog-area-start">
-                    <a href="{{ $post->url ?? '#' }}" class="thumbnail">
-                        <img class="lazy" data-src="{{ $post->image ?? asset('assets/images/blog/blog-one.jpg') }}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="blog">
+                    <a href="{{ route('blog.show', $post->slug) }}" class="thumbnail">
+                        @php
+                            $thumb = $post->thumbnail;
+                            if (!$thumb) {
+                                $thumbUrl = asset('theme/images/blog/blog-01.jpg');
+                            } elseif (str_starts_with($thumb, 'http')) {
+                                // Full URL stored in DB — extract relative path (media/...) and rebuild
+                                if (preg_match('#/storage/(media/.+)$#', $thumb, $m)) {
+                                    $thumbUrl = asset('storage/' . $m[1]);
+                                } elseif (preg_match('#/public/(storage/media/.+)$#', $thumb, $m)) {
+                                    $thumbUrl = asset($m[1]);
+                                } else {
+                                    $thumbUrl = $thumb; // fallback: use as-is
+                                }
+                            } elseif (str_starts_with($thumb, 'storage/') || str_starts_with($thumb, 'media/')) {
+                                $thumbUrl = asset(ltrim($thumb, '/'));
+                            } else {
+                                $thumbUrl = asset('storage/' . ltrim($thumb, '/'));
+                            }
+                        @endphp
+                        <img src="{{ $thumbUrl }}" alt="{{ $post->title }}" loading="lazy" style="width:100%;height:200px;object-fit:cover;">
                     </a>
                     <div class="blog-body">
                         <div class="top-area">
                             <div class="single-meta">
                                 <i class="fa-light fa-clock"></i>
-                                <span>{{ $post->published_at ? $post->published_at->format('d M, Y') : '01 Jan, 2024' }}</span>
+                                <span>{{ $post->published_at ? $post->published_at->format('d M, Y') : $post->created_at->format('d M, Y') }}</span>
                             </div>
                             @if($post->category)
                                 <div class="single-meta">
@@ -49,11 +68,11 @@
                                 </div>
                             @endif
                         </div>
-                        <a href="{{ $post->url ?? '#' }}">
-                            <h4 class="title">{{ $post->name }}</h4>
+                        <a href="{{ route('blog.show', $post->slug) }}">
+                            <h4 class="title">{{ $post->title }}</h4>
                         </a>
                         @if($config['show_excerpt'] ?? false)
-                            <p class="disc">{{ $post->short_description ?? Str::limit(strip_tags($post->description), 100) }}</p>
+                            <p class="disc">{{ $post->excerpt }}</p>
                         @endif
                     </div>
                 </div>

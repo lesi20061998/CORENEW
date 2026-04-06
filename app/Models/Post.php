@@ -20,11 +20,12 @@ class Post extends Model
         'title', 'slug', 'content', 'excerpt', 'thumbnail',
         'category_id', 'author_id', 'status', 'is_featured', 'published_at',
         'meta_title', 'meta_description', 'meta_keywords', 'canonical_url', 
-        'seo_focus_keyword', 'robots_meta', 'schema_json',
+        'seo_focus_keyword', 'robots_meta', 'schema_json', 'has_toc',
     ];
 
     protected $casts = [
         'is_featured'  => 'boolean',
+        'has_toc'      => 'boolean',
         'published_at' => 'datetime',
         'schema_json'  => 'array',
         'robots_meta'  => 'array',

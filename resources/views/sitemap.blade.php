@@ -1,4 +1,4 @@
-@php echo '<?xm'.'l version="1.0" encoding="UTF-8"?>'; @endphp
+@php echo '<?xml version="1.0" encoding="UTF-8"?>'; @endphp
 <?xml-stylesheet type="text/xsl" href="https://cdnjs.cloudflare.com/ajax/libs/sitemap-generator/4.1.0/sitemap.xsl"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>

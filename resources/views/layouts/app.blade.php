@@ -8,21 +8,21 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     @php
-        $siteName = setting('site_name');
-        $defaultTitle = setting('seo_meta_title');
-        $defaultDesc = setting('seo_meta_desc');
-        $defaultKeys = setting('seo_meta_keywords');
+        $siteName   = setting('site_name');
+        $defaultTitle = setting('seo_meta_title', setting('meta_title', $siteName));
+        $defaultDesc  = setting('seo_meta_desc', setting('seo_meta_description', setting('meta_description', '')));
+        $defaultKeys  = setting('seo_meta_keywords', setting('meta_keywords', ''));
+        $defaultOgImg = setting('seo_og_image', setting('og_image', asset('theme/images/logo/logo-01.svg')));
 
-        $yieldedTitle = $__env->yieldContent('title');
-        $yieldedDesc = $__env->yieldContent('meta_description');
-        $yieldedKeys = $__env->yieldContent('meta_keywords');
+        $yieldedTitle   = $__env->yieldContent('title');
+        $yieldedDesc    = $__env->yieldContent('meta_description');
+        $yieldedKeys    = $__env->yieldContent('meta_keywords');
         $yieldedOgImage = $__env->yieldContent('og_image');
 
-        $currentTitle = $yieldedTitle ?: ($siteName . ' - ' . $defaultTitle);
-        $currentDesc = $yieldedDesc ?: $defaultDesc;
-        $currentKeys = $yieldedKeys ?: $defaultKeys;
-        $currentOgImage = $yieldedOgImage ?: asset(setting('site_og_image', 'theme/images/logo/logo-01.svg'));
-
+        $currentTitle   = $yieldedTitle   ?: ($siteName . ' - ' . $defaultTitle);
+        $currentDesc    = $yieldedDesc    ?: $defaultDesc;
+        $currentKeys    = $yieldedKeys    ?: $defaultKeys;
+        $currentOgImage = $yieldedOgImage ?: (filter_var($defaultOgImg, FILTER_VALIDATE_URL) ? $defaultOgImg : asset($defaultOgImg));
     @endphp
 
     <title>@yield('title', $currentTitle)</title>
@@ -38,7 +38,8 @@
     <link rel="icon" href="{{ asset(setting('site_favicon', 'favicon.ico')) }}">
     <link rel="apple-touch-icon" href="{{ asset(setting('site_apple_icon', 'apple-touch-icon.png')) }}">
 
-    <!-- Open Graph (Facebook, Zalo, LinkedIn) -->
+    {{-- Open Graph (Facebook, Zalo, LinkedIn) --}}
+    @if(seo_enabled('page', 'og'))
     <meta property="og:type" content="@yield('og_type', 'website')">
     <meta property="og:title" content="@yield('og_title', $currentTitle)">
     <meta property="og:description" content="@yield('og_description', $currentDesc)">
@@ -46,15 +47,23 @@
     <meta property="og:url" content="{{ url()->current() }}">
     <meta property="og:site_name" content="{{ $siteName }}">
     <meta property="og:locale" content="vi_VN">
+    @if(setting('seo_fb_app_id'))
+        <meta property="fb:app_id" content="{{ setting('seo_fb_app_id') }}">
+    @endif
+    @endif
 
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image">
+    {{-- Twitter Card --}}
+    @if(seo_enabled('page', 'twitter'))
+    <meta name="twitter:card" content="{{ setting('seo_twitter_card', 'summary_large_image') }}">
     <meta name="twitter:title" content="@yield('twitter_title', $currentTitle)">
     <meta name="twitter:description" content="@yield('twitter_description', $currentDesc)">
     <meta name="twitter:image" content="@yield('twitter_image', $currentOgImage)">
+    @if(setting('seo_twitter_site'))<meta name="twitter:site" content="{{ setting('seo_twitter_site') }}">@endif
+    @if(setting('seo_twitter_creator'))<meta name="twitter:creator" content="{{ setting('seo_twitter_creator') }}">@endif
+    @endif
 
-    <!-- SEO -->
-    <meta name="author" content="{{ setting('site_author', 'VietTin Mart') }}">
+    {{-- SEO --}}
+    <meta name="author" content="{{ setting('site_author', setting('site_name', 'VietTin Mart')) }}">
     <meta name="revisit-after" content="1 days">
 
     <!-- Preconnect -->
@@ -165,7 +174,12 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         window.VTM_CONFIG = {
-            baseUrl: "{{ url('/') }}"
+            baseUrl:  "{{ url('/') }}",
+            siteName: "{{ setting('site_name', 'VietTinMart') }}",
+            hotline:  "{{ setting('hotline', setting('contact_phone', '')) }}",
+            address:  "{{ setting('site_address', setting('address', '')) }}",
+            currency: "{{ setting('currency_symbol', 'đ') }}",
+            currencyPos: "{{ setting('currency_position', 'right') }}",
         };
     </script>
 

@@ -773,20 +773,3 @@
         </div>
     </div>
 @endsection
-="font-size: 9px; border-radius: 0 0 0 6px;">
-                                        Đã chọn
-                                    </div>
-                                    @endif
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
-                <div class="modal-footer border-top-0 p-4 pt-0">
-                    <button type="button" class="btn btn-secondary w-100 fw-bold py-3" data-bs-dismiss="modal">ĐÓNG</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    </style>
-@endsection
