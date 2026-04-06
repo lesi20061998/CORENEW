@@ -134,7 +134,7 @@ class WidgetService
             return $raw;
         }
 
-        $fields = $class::fields();
+        $fields = WidgetRegistry::getFields($type);
         return $this->processFields($fields, $raw);
     }
 

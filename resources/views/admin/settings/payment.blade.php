@@ -31,23 +31,24 @@ $gateways = [
         'icon_bg'     => '#f0f9ff',
         'enabled_key' => 'bank_transfer_enabled',
         'fields'      => [
-            ['key'=>'vietqr_bank_id',      'label'=>'Bank ID',                    'type'=>'text',   'placeholder'=>'vd: mbbank, vietinbank, 970415', 'desc'=>'Mã BIN hoặc tên ngân hàng'],
+            ['key'=>'vietqr_bank_id',      'label'=>'Ngân hàng',                  'type'=>'text',   'placeholder'=>'Chọn ngân hàng', 'desc'=>'Mã BIN hoặc tên ngân hàng'],
+            ['key'=>'vietqr_bank_name',    'label'=>'Tên ngân hàng (Lưu ẩn)',     'type'=>'hidden'],
             ['key'=>'vietqr_account_no',   'label'=>'Số tài khoản',               'type'=>'text',   'placeholder'=>'Số tài khoản nhận tiền'],
             ['key'=>'vietqr_account_name', 'label'=>'Tên người thụ hưởng',        'type'=>'text',   'placeholder'=>'Tên hiển thị trên QR'],
             ['key'=>'vietqr_template',     'label'=>'Template QR',                'type'=>'select', 'options'=>['compact2'=>'compact2 — 540×640 (khuyên dùng)','compact'=>'compact — 540×540','qr_only'=>'qr_only — 480×480 (chỉ QR)','print'=>'print — 600×776 (đầy đủ)']],
-            ['key'=>'vietqr_description',  'label'=>'Nội dung chuyển khoản mặc định', 'type'=>'text','placeholder'=>'Thanh toan don hang','desc'=>'Tối đa 50 ký tự, không ký tự đặc biệt'],
         ],
     ],
     [
-        'id'          => 'vnpay',
-        'name'        => 'VNPay',
-        'description' => 'Cổng thanh toán VNPay — thẻ ATM, Visa, MasterCard, QR Code.',
-        'icon'        => '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="1.8"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="10" y2="15"/></svg>',
-        'icon_bg'     => '#fef2f2',
-        'enabled_key' => 'vnpay_enabled',
+        'id'          => 'momo',
+        'name'        => 'Momo',
+        'description' => 'Cổng thanh toán Momo — Quét mã QR hoặc ví điện tử Momo.',
+        'icon'        => '<svg width="28" height="28" viewBox="0 0 100 100" style="fill:#a50064;"><rect width="100" height="100" rx="20"/><path d="M50 20c-16.5 0-30 13.5-30 30s13.5 30 30 30 30-13.5 30-30-13.5-30-30-30zm0 48c-9.9 0-18-8.1-18-18s8.1-18 18-18 18 8.1 18 18-8.1 18-18 18z" fill="#fff"/><circle cx="50" cy="50" r="10" fill="#fff"/></svg>',
+        'icon_bg'     => '#fdf2f8',
+        'enabled_key' => 'momo_enabled',
         'fields'      => [
-            ['key'=>'vnpay_tmn_code',    'label'=>'TMN Code',    'type'=>'text', 'placeholder'=>'Terminal ID từ VNPay'],
-            ['key'=>'vnpay_hash_secret', 'label'=>'Hash Secret', 'type'=>'text', 'placeholder'=>'Secret key từ VNPay'],
+            ['key'=>'momo_partner_code', 'label'=>'Partner Code', 'type'=>'text', 'placeholder'=>'Momo Partner Code'],
+            ['key'=>'momo_access_key',   'label'=>'Access Key',   'type'=>'text', 'placeholder'=>'Momo Access Key'],
+            ['key'=>'momo_secret_key',   'label'=>'Secret Key',   'type'=>'text', 'placeholder'=>'Momo Secret Key'],
         ],
     ],
 ];
@@ -129,7 +130,7 @@ $gateways = [
             <img src="{{ $qrUrl }}" alt="QR Preview" style="width:72px;height:72px;border-radius:8px;border:1px solid #e2e8f0;object-fit:contain;">
             <div style="font-size:12px;color:#64748b;line-height:1.6;">
                 <strong style="color:#1e293b;">{{ $s['vietqr_account_name'] ?? '' }}</strong><br>
-                {{ $s['vietqr_account_no'] ?? '' }} — {{ strtoupper($s['vietqr_bank_id'] ?? '') }}
+                {{ $s['vietqr_account_no'] ?? '' }} — {{ !empty($s['vietqr_bank_name']) ? $s['vietqr_bank_name'] : strtoupper($s['vietqr_bank_id']) }}
             </div>
         </div>
         @endif
@@ -178,53 +179,45 @@ $gateways = [
             <div style="padding:24px;display:flex;flex-direction:column;gap:16px;">
 
                 @foreach($gw['fields'] as $field)
-                <div>
+                <div style="{{ ($field['type'] ?? '') === 'hidden' ? 'display:none;' : '' }}">
+                    @if(($field['type'] ?? '') !== 'hidden')
                     <label style="display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:6px;">
                         {{ $field['label'] }}
                     </label>
-                    @if(!empty($field['desc']))
-                    <p style="font-size:11px;color:#94a3b8;margin:0 0 6px;">{{ $field['desc'] }}</p>
                     @endif
-
-                    @if($field['type'] === 'select')
-                    <select name="settings[{{ $field['key'] }}]" class="form-select" style="border-radius:10px;">
-                        @foreach($field['options'] as $val => $lbl)
-                        <option value="{{ $val }}" {{ ($s[$field['key']] ?? '') == $val ? 'selected' : '' }}>{{ $lbl }}</option>
-                        @endforeach
-                    </select>
+                    
+                    @if($gw['id'] === 'vietqr' && $field['key'] === 'vietqr_bank_id')
+                        <select name="settings[{{ $field['key'] }}]" id="vtm-input-field-{{ $gw['id'] }}-{{ $field['key'] }}" class="vtm-gateway-select vietqr-bank-select" style="border-radius:10px; width: 100%;">
+                            <option value="{{ $s[$field['key']] ?? '' }}">{{ $s['vietqr_bank_name'] ?? ($s[$field['key']] ?? 'Chọn ngân hàng') }}</option>
+                        </select>
+                        <p style="font-size:11px;color:#94a3b8;margin:6px 0 0;">{{ $field['desc'] ?? '' }}</p>
+                    @elseif($field['type'] === 'select')
+                        <select name="settings[{{ $field['key'] }}]" class="vtm-gateway-select" style="border-radius:10px; display: block; height: 42px;">
+                            @foreach($field['options'] as $val => $lbl)
+                            <option value="{{ $val }}" {{ ($s[$field['key']] ?? '') == $val ? 'selected' : '' }}>{{ $lbl }}</option>
+                            @endforeach
+                        </select>
                     @else
-                    <input type="text" name="settings[{{ $field['key'] }}]"
-                           value="{{ $s[$field['key']] ?? '' }}"
-                           placeholder="{{ $field['placeholder'] ?? '' }}"
-                           class="form-input" style="border-radius:10px;"
-                           id="modal-input-{{ $field['key'] }}">
+                        @if(!empty($field['desc']) && !($gw['id'] === 'vietqr' && $field['key'] === 'vietqr_bank_id'))
+                        <p style="font-size:11px;color:#94a3b8;margin:0 0 6px;">{{ $field['desc'] }}</p>
+                        @endif
+                        <input type="{{ $field['type'] ?? 'text' }}" name="settings[{{ $field['key'] }}]"
+                            value="{{ $s[$field['key']] ?? '' }}"
+                            placeholder="{{ $field['placeholder'] ?? '' }}"
+                            class="vtm-gateway-input" style="border-radius:10px; border: 1.5px solid #f1f5f9; padding: 10px 16px; width: 100%; font-size: 14px;"
+                            id="vtm-input-field-{{ $gw['id'] }}-{{ $field['key'] }}">
                     @endif
                 </div>
                 @endforeach
 
-                {{-- VietQR live preview inside modal --}}
-                @if($gw['id'] === 'vietqr')
-                <div style="border-top:1px solid #f1f5f9;padding-top:16px;">
-                    <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#94a3b8;margin-bottom:10px;">Xem trước QR</p>
-                    <div style="display:flex;gap:16px;align-items:flex-start;">
-                        <div id="modal-qr-box" style="width:120px;height:120px;border-radius:10px;border:2px dashed #e2e8f0;background:#f8fafc;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
-                            <span id="modal-qr-ph" style="font-size:11px;color:#94a3b8;text-align:center;padding:8px;">Nhập thông tin</span>
-                            <img id="modal-qr-img" src="" alt="" style="display:none;width:100%;height:100%;object-fit:contain;">
-                        </div>
-                        <div style="flex:1;font-size:12px;color:#64748b;">
-                            <p id="modal-qr-label" style="margin:0 0 6px;font-weight:600;color:#1e293b;"></p>
-                            <code id="modal-qr-url" style="font-size:10px;word-break:break-all;color:#3b82f6;background:#eff6ff;padding:6px;border-radius:6px;display:block;min-height:28px;"></code>
-                        </div>
-                    </div>
-                </div>
-                @endif
+
 
             </div>
 
             {{-- Modal footer --}}
             <div style="padding:16px 24px;border-top:1px solid #f1f5f9;display:flex;justify-content:flex-end;gap:10px;">
                 <button type="button" onclick="closeGatewayModal('{{ $gw['id'] }}')"
-                        style="padding:8px 20px;border-radius:10px;border:1px solid #e2e8f0;background:#f8fafc;color:#374151;font-size:13px;font-weight:600;cursor:pointer;"></button>
+                        style="padding:8px 20px;border-radius:10px;border:1px solid #e2e8f0;background:#f8fafc;color:#374151;font-size:13px;font-weight:600;cursor:pointer;">
                     Hủy
                 </button>
                 <button type="submit"
@@ -239,67 +232,95 @@ $gateways = [
 @endforeach
 @endpush
 
+@push('styles')
+<style>
+    .vtm-gateway-input, .vtm-gateway-select {
+        transition: all 0.2s ease-in-out;
+    }
+    .vtm-gateway-input:focus {
+        border-color: #3b82f6 !important;
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1) !important;
+        outline: none;
+    }
+    /* Fix Select2 conflict with NiceSelect */
+    .select2-container--default .select2-selection--single {
+        border-radius: 10px !important;
+        border: 1.5px solid #f1f5f9 !important;
+        height: 42px !important;
+        display: flex !important;
+        align-items: center !important;
+        padding-left: 8px !important;
+    }
+</style>
+@endpush
+
 @push('scripts')
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
+let bankListData = [];
+
+async function fetchBanks() {
+    try {
+        const response = await fetch('https://api.vietqr.io/v2/banks');
+        const data = await response.json();
+        if (data.code === '00') {
+            bankListData = data.data;
+            initBankSelect();
+        }
+    } catch (error) {
+        console.error('Failed to fetch banks:', error);
+    }
+}
+
+function initBankSelect() {
+    $('.vietqr-bank-select').select2({
+        data: bankListData.map(b => ({
+            id: b.bin || b.shortName,
+            text: `[${b.shortName}] ${b.name}`,
+            bankName: b.name,
+            shortName: b.shortName,
+            logo: b.logo
+        })),
+        templateResult: formatBankOption,
+        templateSelection: formatBankOption,
+        dropdownParent: $('#modal-vietqr')
+    }).on('change', function() {
+        // Set bank name hidden field
+        const data = $(this).select2('data')[0];
+        if (data && data.bankName) {
+            const nameInput = document.getElementById('vtm-input-field-vietqr-vietqr_bank_name');
+            if (nameInput) nameInput.value = data.bankName;
+        }
+    });
+}
+
+function formatBankOption(bank) {
+    if (!bank.id || !bank.logo) return bank.text;
+    return $(`<div style="display:flex;align-items:center;gap:10px;">
+        <img src="${bank.logo}" style="width:32px;height:20px;object-fit:contain;background:#fff;border-radius:2px;padding:1px;">
+        <span style="font-size:12px;">${bank.text}</span>
+    </div>`);
+}
+
 function openGatewayModal(id) {
     const modal = document.getElementById('modal-' + id);
     if (modal) { modal.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
-    if (id === 'vietqr') updateVietQRPreview();
+    if (id === 'vietqr' && bankListData.length === 0) {
+        fetchBanks();
+    }
 }
+
 function closeGatewayModal(id) {
     const modal = document.getElementById('modal-' + id);
     if (modal) { modal.style.display = 'none'; document.body.style.overflow = ''; }
 }
+
 // Close on backdrop click
 document.querySelectorAll('[id^="modal-"]').forEach(modal => {
     modal.addEventListener('click', function(e) {
         if (e.target === this) closeGatewayModal(this.id.replace('modal-',''));
     });
 });
-
-// VietQR live preview in modal
-function updateVietQRPreview() {
-    const get = key => (document.getElementById('modal-input-' + key)?.value || '').trim();
-    const sel = key => document.querySelector('[name="settings[' + key + ']"]')?.value || '';
-
-    const bankId  = get('vietqr_bank_id');
-    const accNo   = get('vietqr_account_no');
-    const accName = get('vietqr_account_name');
-    const tpl     = sel('vietqr_template') || 'compact2';
-    const desc    = get('vietqr_description') || 'Thanh toan don hang';
-
-    const img   = document.getElementById('modal-qr-img');
-    const ph    = document.getElementById('modal-qr-ph');
-    const label = document.getElementById('modal-qr-label');
-    const url   = document.getElementById('modal-qr-url');
-
-    if (!img) return;
-
-    if (bankId && accNo) {
-        const qrUrl = 'https://img.vietqr.io/image/'
-            + encodeURIComponent(bankId) + '-'
-            + encodeURIComponent(accNo) + '-'
-            + tpl + '.png'
-            + '?amount=0&addInfo=' + encodeURIComponent(desc)
-            + (accName ? '&accountName=' + encodeURIComponent(accName) : '');
-        img.src = qrUrl;
-        img.style.display = 'block';
-        ph.style.display  = 'none';
-        url.textContent   = qrUrl;
-        label.textContent = accName ? accName + ' — ' + accNo : accNo;
-    } else {
-        img.style.display = 'none';
-        ph.style.display  = 'block';
-        url.textContent   = '';
-        label.textContent = '';
-    }
-}
-
-['vietqr_bank_id','vietqr_account_no','vietqr_account_name','vietqr_description'].forEach(key => {
-    const el = document.getElementById('modal-input-' + key);
-    if (el) el.addEventListener('input', updateVietQRPreview);
-});
-const tplSel = document.querySelector('[name="settings[vietqr_template]"]');
-if (tplSel) tplSel.addEventListener('change', updateVietQRPreview);
 </script>
 @endpush

@@ -65,34 +65,43 @@ class WidgetRegistry
         $result = [];
         foreach (static::$widgetClasses as $key => $class) {
             if (class_exists($class)) {
-                $fields = $class::fields();
-                // Merge base common fields if method exists
-                if (method_exists($class, 'commonFields')) {
-                    $common = $class::commonFields();
-                    $keyedFields = [];
-                    // Load specific fields first
-                    foreach ($fields as $f) {
-                        $keyedFields[$f['key']] = $f;
-                    }
-                    // Overlay common fields only if key doesn't exist yet
-                    foreach ($common as $cf) {
-                        if (!isset($keyedFields[$cf['key']])) {
-                            $keyedFields[$cf['key']] = $cf;
-                        }
-                    }
-                    $fields = array_values($keyedFields);
-                }
-
                 $result[$key] = [
-                    'label' => $class::$label,
+                    'label'       => $class::$label,
                     'description' => $class::$description,
-                    'icon' => $class::$icon,
-                    'class' => $class,
-                    'fields' => $fields,
+                    'icon'        => $class::$icon,
+                    'class'       => $class,
+                    'fields'      => static::getFields($key),
                 ];
             }
         }
         return $result;
+    }
+
+    /**
+     * Lấy danh sách fields của một widget type (đã merge common fields)
+     */
+    public static function getFields(string $type): array
+    {
+        $class = static::$widgetClasses[$type] ?? null;
+        if (!$class || !class_exists($class)) return [];
+
+        $fields = $class::fields();
+
+        if (method_exists($class, 'commonFields')) {
+            $common = $class::commonFields();
+            $keyedFields = [];
+            foreach ($fields as $f) {
+                $keyedFields[$f['key'] ?? ''] = $f;
+            }
+            foreach ($common as $cf) {
+                if (!isset($keyedFields[$cf['key'] ?? ''])) {
+                    $keyedFields[$cf['key'] ?? ''] = $cf;
+                }
+            }
+            $fields = array_values($keyedFields);
+        }
+
+        return $fields;
     }
 
     /**

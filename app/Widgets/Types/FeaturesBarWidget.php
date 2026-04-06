@@ -28,7 +28,19 @@ class FeaturesBarWidget extends BaseWidget
                     ['key' => 'sub',   'label' => 'Mô tả ngắn', 'type' => 'text'],
                 ]
             ],
-            ['key' => 'grid_class', 'label' => 'CSS Class số cột', 'type' => 'text', 'default' => 'col-xl-20 col-lg-6 col-md-6 col-sm-6 col-12'],
+            [
+                'key' => 'columns',
+                'label' => 'Số cột hiển thị',
+                'type' => 'select',
+                'options' => [
+                    '2' => '2 cột',
+                    '3' => '3 cột',
+                    '4' => '4 cột',
+                    '5' => '5 cột',
+                    '6' => '6 cột'
+                ],
+                'default' => '5'
+            ],
         ];
     }
 

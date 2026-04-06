@@ -182,9 +182,43 @@ class SettingController extends Controller
             $settings['price_presets'] = json_encode($decoded, JSON_UNESCAPED_UNICODE);
         }
 
+        // Handle order_cancellation_reasons textarea — store raw JSON string
+        if ($group === 'notification' && isset($settings['order_cancellation_reasons'])) {
+            $decoded = json_decode($settings['order_cancellation_reasons'], true);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                return back()->withErrors(['order_cancellation_reasons' => 'Lý do hủy đơn không hợp lệ (JSON không đúng định dạng).'])->withInput();
+            }
+            $settings['order_cancellation_reasons'] = json_encode($decoded, JSON_UNESCAPED_UNICODE);
+        }
+
         $this->settingService->updateSettings($settings, $group);
 
         return redirect()->route('admin.settings.group', $group)
                          ->with('success', 'Đã lưu cài đặt "' . $module['title'] . '" thành công.');
+    }
+
+    public function testMail(Request $request)
+    {
+        $request->validate(['email' => 'required|email']);
+
+        try {
+            // Apply current settings from DB
+            \App\Services\MailConfigService::applySettings();
+            
+            \Illuminate\Support\Facades\Mail::raw('Email này được gửi để kiểm tra cấu hình SMTP trên website của bạn.', function($message) use ($request) {
+                $message->to($request->email)
+                        ->subject('Kiểm tra cấu hình SMTP - ' . config('app.name'));
+            });
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Email thử nghiệm đã được gửi đến ' . $request->email
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Lỗi gửi email: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

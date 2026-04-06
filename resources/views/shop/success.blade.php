@@ -37,11 +37,60 @@
                         </div>
                         <div class="col-md-6">
                             <p class="mb--5"><strong>Ngày đặt:</strong> {{ $order->created_at->format('d/m/Y H:i') }}</p>
-                            <p class="mb--5"><strong>Phương thức:</strong> {{ strtoupper($order->payment_method) }}</p>
+                            <p class="mb--5"><strong>Phương thức:</strong> {{ $order->payment_method === 'bank_transfer' ? 'Chuyển khoản ngân hàng (VietQR)' : strtoupper($order->payment_method) }}</p>
                             <p class="mb--5"><strong>Tổng thanh toán:</strong> <span class="text-primary font-black">{{ number_format($order->total, 0, ',', '.') }}₫</span></p>
                         </div>
                     </div>
                 </div>
+
+                @if($order->payment_method === 'bank_transfer')
+                <div class="bank-transfer-instruction mb--40 p-5 border rounded-3xl bg-white shadow-sm text-center">
+                    <h4 class="font-bold mb--20">Thông tin chuyển khoản</h4>
+                    
+                    @php
+                        $bankId = setting('vietqr_bank_id');
+                        $accNo = setting('vietqr_account_no');
+                        $accName = setting('vietqr_account_name');
+                        $template = setting('vietqr_template', 'compact2');
+                        
+                        // Use only order number for description
+                        $fullDesc = $order->order_number;
+                        
+                        $qrUrl = "https://img.vietqr.io/image/{$bankId}-{$accNo}-{$template}.png?amount={$order->total}&addInfo=" . urlencode($fullDesc) . "&accountName=" . urlencode($accName);
+                    @endphp
+
+                    <div class="qr-code-wrapper mb--20">
+                        <img src="{{ $qrUrl }}" alt="VietQR" style="max-width: 300px; border: 4px solid #f8f9fa; border-radius: 20px;">
+                    </div>
+                    
+                    <div class="bank-details text-start d-inline-block mx-auto" style="max-width: 400px; width: 100%;">
+                        <div class="d-flex justify-content-between border-bottom py-2">
+                            <span class="text-muted">Ngân hàng:</span>
+                            <strong class="text-primary">{{ strtoupper($bankId) }}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between border-bottom py-2">
+                            <span class="text-muted">Số tài khoản:</span>
+                            <strong class="text-dark">{{ $accNo }}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between border-bottom py-2">
+                            <span class="text-muted">Chủ tài khoản:</span>
+                            <strong class="text-dark">{{ strtoupper($accName) }}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between border-bottom py-2">
+                            <span class="text-muted">Số tiền:</span>
+                            <strong class="text-danger">{{ number_format($order->total, 0, ',', '.') }}₫</strong>
+                        </div>
+                        <div class="d-flex justify-content-between py-2">
+                            <span class="text-muted">Nội dung:</span>
+                            <strong class="text-dark">{{ $fullDesc }}</strong>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info mt--20 rounded-xl border-0" style="background: #e0f2fe; color: #0369a1;">
+                        <i class="fa-solid fa-circle-info me-2"></i> Vui lòng quét mã QR hoặc chuyển khoản chính xác nội dung trên để đơn hàng được xác nhận nhanh nhất.
+                    </div>
+                </div>
+                @endif
 
                 <div class="action-buttons d-flex gap-3 justify-content-center">
                     <a href="{{ route('shop.index') }}" class="rts-btn btn-primary px-5 py-3 rounded-pill">Tiếp tục mua sắm</a>

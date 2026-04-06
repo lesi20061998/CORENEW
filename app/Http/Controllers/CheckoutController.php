@@ -98,7 +98,11 @@ class CheckoutController extends Controller
         }
 
         $orderNumber = Order::generateOrderNumber();
-        $shippingFee = $total >= 500000 ? 0 : 30000;
+        
+        // Cấu hình phí vận chuyển từ hệ thống
+        $threshold = (float)setting('free_shipping_threshold', 500000);
+        $defaultFee = (float)setting('default_shipping_fee', 30000);
+        $shippingFee = $total >= $threshold ? 0 : $defaultFee;
 
         $fullAddress = implode(', ', array_filter([
             $request->street_address,
@@ -193,6 +197,14 @@ class CheckoutController extends Controller
         }
 
         session()->forget(['cart', 'applied_coupons']);
+
+        // Gửi Email thông báo NGAY LẬP TỨC tại đây để đảm bảo không bị bỏ sót
+        try {
+            \Illuminate\Support\Facades\Log::info("CLIENT CHECKOUT: Triggering mail for #{$orderNumber} to raw email: " . $request->email);
+            $order->sendOrderPlacedNotifications();
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Direct Mail Send Error for #' . $orderNumber . ': ' . $e->getMessage());
+        }
 
         return redirect()->route('checkout.success', $orderNumber);
     }

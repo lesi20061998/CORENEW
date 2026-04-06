@@ -172,6 +172,69 @@
                         })();
                         </script>
 
+                    @elseif($setting->key === 'order_cancellation_reasons')
+                        {{-- ── Order Cancellation Reasons Visual Editor ── --}}
+                        @php $reasons = json_decode($setting->value, true) ?: []; @endphp
+
+                        <textarea name="settings[order_cancellation_reasons]" id="reasons-json" style="display:none;">{{ $setting->value }}</textarea>
+
+                        <div id="reasons-list" class="space-y-3 mb-4">
+                            @foreach($reasons as $idx => $reason)
+                            <div class="reason-row flex items-center gap-3">
+                                <div class="flex-1">
+                                    <textarea class="reason-text form-input min-h-[60px]" placeholder="Nhập lý do hủy đơn...">{{ $reason }}</textarea>
+                                </div>
+                                <button type="button" class="btn-remove-reason btn btn-danger !p-2 w-10 h-10 flex items-center justify-center flex-shrink-0" title="Xóa">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            </div>
+                            @endforeach
+                        </div>
+
+                        <button type="button" id="btn-add-reason" class="btn btn-secondary !py-2 !px-4">
+                            <i class="fa-solid fa-plus text-xs"></i> Thêm Item
+                        </button>
+
+                        <script>
+                        (function(){
+                            const list    = document.getElementById('reasons-list');
+                            const jsonEl  = document.getElementById('reasons-json');
+
+                            function sync() {
+                                const data = [];
+                                list.querySelectorAll('.reason-row').forEach(row => {
+                                    const text = row.querySelector('.reason-text').value.trim();
+                                    if (text) data.push(text);
+                                });
+                                jsonEl.value = JSON.stringify(data);
+                            }
+
+                            function newRow() {
+                                const d = document.createElement('div');
+                                d.className = 'reason-row flex items-center gap-3';
+                                d.innerHTML = `
+                                    <div class="flex-1">
+                                        <textarea class="reason-text form-input min-h-[60px]" placeholder="Nhập lý do hủy đơn..."></textarea>
+                                    </div>
+                                    <button type="button" class="btn-remove-reason btn btn-danger !p-2 w-10 h-10 flex items-center justify-center flex-shrink-0" title="Xóa">
+                                        <i class="fa-solid fa-trash-can"></i>
+                                    </button>`;
+                                list.appendChild(d);
+                                d.querySelector('.reason-text').focus();
+                                sync();
+                            }
+
+                            list.addEventListener('input', sync);
+                            list.addEventListener('click', e => {
+                                if (e.target.closest('.btn-remove-reason')) {
+                                    e.target.closest('.reason-row').remove(); 
+                                    sync();
+                                }
+                            });
+                            document.getElementById('btn-add-reason').addEventListener('click', newRow);
+                        })();
+                        </script>
+
                     @elseif($setting->type === 'boolean')
                         <input type="hidden" name="settings[{{ $setting->key }}]" value="0">
                         <label class="inline-flex items-center gap-2 cursor-pointer">
@@ -242,6 +305,16 @@
                             @endforeach
                         </select>
 
+                    @elseif($setting->type === 'number' || $setting->type === 'integer')
+                        <input type="number" name="settings[{{ $setting->key }}]"
+                               value="{{ $setting->value }}"
+                               class="form-input">
+
+                    @elseif($setting->type === 'password' || str_contains($setting->key, 'password'))
+                        <input type="password" name="settings[{{ $setting->key }}]"
+                               value="{{ $setting->value }}"
+                               class="form-input">
+
                     @else
                         <input type="text" name="settings[{{ $setting->key }}]"
                                value="{{ $setting->value }}"
@@ -249,6 +322,71 @@
                     @endif
                 </div>
                 @endforeach
+
+                {{-- ── SMTP Test Section ── --}}
+                @if($sectionName === 'Thông tin SMTP')
+                <div style="border-top:1px solid #f1f5f9;padding-top:20px;margin-top:20px;">
+                    <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#94a3b8;margin-bottom:12px;">
+                        Kiểm tra cấu hình SMTP
+                    </p>
+                    <div style="display:flex;gap:12px;align-items:flex-end;max-width:500px;">
+                        <div style="flex:1;">
+                            <label style="font-size:12px;color:#64748b;margin-bottom:6px;display:block;">Email nhận test</label>
+                            <input type="email" id="test_mail_recipient" placeholder="example@gmail.com" class="form-input" style="height:38px;">
+                        </div>
+                        <button type="button" id="btn-test-mail" class="btn btn-secondary" style="height:38px;white-space:nowrap;">
+                            Gửi thử nghiệm
+                        </button>
+                    </div>
+                    <div id="test-mail-result" style="margin-top:12px;font-size:13px;display:none;padding:10px;border-radius:6px;"></div>
+                </div>
+
+                <script>
+                (function(){
+                    const btn = document.getElementById('btn-test-mail');
+                    if (btn) {
+                        btn.addEventListener('click', function() {
+                            const email = document.getElementById('test_mail_recipient').value;
+                            const resultDiv = document.getElementById('test-mail-result');
+                            
+                            if (!email) { alert('Vui lòng nhập email nhận test'); return; }
+                            
+                            btn.disabled = true;
+                            const originalText = btn.innerText;
+                            btn.innerText = 'Đang gửi...';
+                            resultDiv.style.display = 'none';
+                            
+                            fetch('{{ route("admin.settings.test-mail") }}', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                },
+                                body: JSON.stringify({ email: email })
+                            })
+                            .then(res => res.json())
+                            .then(data => {
+                                resultDiv.innerText = data.message;
+                                resultDiv.style.display = 'block';
+                                resultDiv.style.background = data.success ? '#ecfdf5' : '#fef2f2';
+                                resultDiv.style.color = data.success ? '#059669' : '#dc2626';
+                                resultDiv.style.border = data.success ? '1px solid #10b981' : '1px solid #ef4444';
+                            })
+                            .catch(err => {
+                                resultDiv.innerText = 'Lỗi hệ thống khi gửi: ' + err;
+                                resultDiv.style.display = 'block';
+                                resultDiv.style.background = '#fef2f2';
+                                resultDiv.style.color = '#dc2626';
+                            })
+                            .finally(() => {
+                                btn.disabled = false;
+                                btn.innerText = originalText;
+                            });
+                        });
+                    }
+                })();
+                </script>
+                @endif
 
                 {{-- ── VietQR Live Preview ── --}}
                 @if($sectionName === 'VietQR')

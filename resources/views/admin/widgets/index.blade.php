@@ -303,7 +303,8 @@
 
 @push('scripts')
     @php
-        $areasJson = array_map(fn($a) => $a['area']['label'], $widgetsByArea);
+        $areasJson = [];
+        foreach($widgetsByArea as $k => $v) $areasJson[$k] = $v['area']['label'];
         $categoriesJson = isset($categories) ? $categories->map(fn($c) => ['id' => $c->id, 'name' => $c->name])->values() : [];
     @endphp
 
@@ -323,6 +324,7 @@
         // Modal Global Vars
         let modalMode = null;
         let modalWidgetId = null;
+        let modalWidgetArea = 'homepage';
 
         function escHtml(str) {
             if (!str) return '';
@@ -352,6 +354,7 @@
             openModal();
             fetch(DATA_URL.replace('{id}', id)).then(r => r.json()).then(data => {
                 const t = TYPES[data.type];
+                modalWidgetArea = data.area;
                 document.getElementById('wm-modal-title').textContent = data.name;
                 document.getElementById('wm-modal-icon').innerHTML = `<i class="${t?.icon ?? 'fa-solid fa-puzzle-piece'}"></i>`;
                 renderModalForm(data);
@@ -393,12 +396,13 @@
                         </div>
                     </div>
                     <aside class="w-1/2 p-10 bg-slate-50/30 overflow-y-auto" id="wm-config-side">
-                        <div class="max-w-2xl mx-auto space-y-8">
-                            <label class="flex items-center gap-4 bg-white p-6 rounded-3xl shadow-sm border border-slate-150 cursor-pointer hover:border-blue-300 transition-all">
-                                <input type="checkbox" id="wm-active" value="1" ${data.is_active ? 'checked' : ''} class="w-6 h-6 rounded-lg text-blue-600 focus:ring-blue-500/20 border-slate-200">
-                                <span class="text-[12px] font-black text-slate-900 uppercase tracking-widest">Kích hoạt Widget</span>
-                            </label>
-                            <div id="wm-config-common" class="space-y-6"></div>
+                             <div id="wm-config-common" class="space-y-6"></div>
+                             <div class="bg-white p-6 rounded-3xl border border-slate-150">
+                                 <label class="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-3">Vị trí hiển thị (Area)</label>
+                                 <select id="wm-area" class="w-full bg-slate-50 border-none outline-none font-bold text-xs p-3 rounded-lg">
+                                     ${areaOpts}
+                                 </select>
+                             </div>
                         </div>
                     </aside>
                 </div>
@@ -510,11 +514,9 @@
 
             fd.append('name', document.getElementById('wm-name')?.value || 'Unnamed');
             fd.append('is_active', document.getElementById('wm-active')?.checked ? 1 : 0);
+            fd.append('area', document.getElementById('wm-area')?.value || modalWidgetArea);
 
-            // Handle area if creating, otherwise normally we keep the area from existing model
-            const areaVal = document.getElementById('wm-area')?.value || 'sidebar';
             if (modalMode === 'create') {
-                fd.append('area', areaVal);
                 fd.append('type', document.getElementById('wm-type')?.value);
             }
 

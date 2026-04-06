@@ -45,7 +45,18 @@ class PromoBannersWidget extends BaseWidget
                     ['key' => 'title',    'label' => 'Tiêu đề',      'type' => 'text', 'col' => 'col-md-6'],
                     ['key' => 'subtitle', 'label' => 'Phụ đề',       'type' => 'text'],
                     ['key' => 'image',    'label' => 'Ảnh nền',      'type' => 'image'],
-                    ['key' => 'bg_class', 'label' => 'CSS class nền (e.g. bg_image one)', 'type' => 'text'],
+                    [
+                        'key' => 'bg_style',
+                        'label' => 'Kiểu nền',
+                        'type' => 'select',
+                        'options' => [
+                            'one' => 'Style 1 (Xanh lá)',
+                            'two' => 'Style 2 (Cam)',
+                            'three' => 'Style 3 (Xanh dương)',
+                            'four' => 'Style 4 (Đỏ)',
+                        ],
+                        'default' => 'one'
+                    ],
                     ['key' => 'btn_text', 'label' => 'Nút CTA',      'type' => 'text', 'default' => 'Shop Now', 'col' => 'col-md-6'],
                     ['key' => 'btn_link', 'label' => 'Link',         'type' => 'text', 'default' => '/shop', 'col' => 'col-md-6'],
                 ],

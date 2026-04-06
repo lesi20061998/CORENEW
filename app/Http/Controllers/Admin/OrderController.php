@@ -100,6 +100,10 @@ class OrderController extends Controller
             ]);
 
             \DB::commit();
+
+            // Send Email AFTER items are saved and committed
+            $order->sendOrderPlacedNotifications();
+
             return redirect()->route('admin.orders.index')->with('success', 'Đã tạo đơn hàng thành công.');
         } catch (\Exception $e) {
             \DB::rollBack();

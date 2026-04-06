@@ -2,7 +2,18 @@
     <div class="container">
         <div class="row g-4">
             @foreach($features as $index => $f)
-            <div class="{{ $config['grid_class'] ?? 'col-xl-20 col-lg-6 col-md-6 col-sm-6 col-12' }}">
+            @php
+                $columns = $config['columns'] ?? '5';
+                $gridClass = match($columns) {
+                    '2' => 'col-lg-6 col-md-6',
+                    '3' => 'col-lg-4 col-md-6',
+                    '4' => 'col-lg-3 col-md-6',
+                    '6' => 'col-xxl-2 col-xl-2 col-lg-3 col-md-4 col-sm-6',
+                    '5' => 'col-xl-20 col-lg-4 col-md-6', // col-xl-20 is for 5 columns in this theme
+                    default => 'col-xl-20 col-lg-4 col-md-6',
+                };
+            @endphp
+            <div class="{{ $gridClass }} col-12">
                 <div class="single-feature-area">
                     <div class="icon">
                         @if($index == 0)

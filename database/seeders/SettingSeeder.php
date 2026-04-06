@@ -90,9 +90,10 @@ class SettingSeeder extends Seeder
             ['key' => 'bank_account_number',    'value' => '',   'group' => 'payment', 'section' => 'Thông tin ngân hàng','sort_order' => 2, 'type' => 'text',    'label' => 'Số tài khoản',                   'description' => ''],
             ['key' => 'bank_account_name',      'value' => '',   'group' => 'payment', 'section' => 'Thông tin ngân hàng','sort_order' => 3, 'type' => 'text',    'label' => 'Tên chủ tài khoản',              'description' => ''],
             ['key' => 'bank_branch',            'value' => '',   'group' => 'payment', 'section' => 'Thông tin ngân hàng','sort_order' => 4, 'type' => 'text',    'label' => 'Chi nhánh',                      'description' => ''],
-            ['key' => 'vnpay_enabled',          'value' => '0',  'group' => 'payment', 'section' => 'VNPay',             'sort_order' => 1, 'type' => 'boolean', 'label' => 'Bật VNPay',                      'description' => ''],
-            ['key' => 'vnpay_tmn_code',         'value' => '',   'group' => 'payment', 'section' => 'VNPay',             'sort_order' => 2, 'type' => 'text',    'label' => 'TMN Code',                       'description' => ''],
-            ['key' => 'vnpay_hash_secret',      'value' => '',   'group' => 'payment', 'section' => 'VNPay',             'sort_order' => 3, 'type' => 'text',    'label' => 'Hash Secret',                    'description' => ''],
+            ['key' => 'momo_enabled',           'value' => '0',  'group' => 'payment', 'section' => 'Momo',              'sort_order' => 1, 'type' => 'boolean', 'label' => 'Bật Momo',                       'description' => ''],
+            ['key' => 'momo_partner_code',      'value' => '',   'group' => 'payment', 'section' => 'Momo',              'sort_order' => 2, 'type' => 'text',    'label' => 'Partner Code',                   'description' => ''],
+            ['key' => 'momo_access_key',        'value' => '',   'group' => 'payment', 'section' => 'Momo',              'sort_order' => 3, 'type' => 'text',    'label' => 'Access Key',                     'description' => ''],
+            ['key' => 'momo_secret_key',        'value' => '',   'group' => 'payment', 'section' => 'Momo',              'sort_order' => 4, 'type' => 'text',    'label' => 'Secret Key',                     'description' => ''],
 
             // Section: VietQR
             ['key' => 'vietqr_bank_id',         'value' => '',   'group' => 'payment', 'section' => 'VietQR',            'sort_order' => 1, 'type' => 'text',    'label' => 'Bank ID',                        'description' => 'Mã BIN hoặc tên ngân hàng, vd: mbbank, vietinbank, 970415'],

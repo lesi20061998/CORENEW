@@ -20,6 +20,9 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        if (!app()->runningInConsole() && \Illuminate\Support\Facades\Schema::hasTable('settings')) {
+            \App\Services\MailConfigService::applySettings();
+        }
         // @widgetArea('homepage') — render tất cả widgets trong area
         Blade::directive('widgetArea', function ($area) {
             return "<?php echo app(\App\Services\WidgetService::class)->renderArea($area); ?>";

@@ -229,7 +229,7 @@
                                             <div class="voucher-left bg-primary d-flex flex-column align-items-center justify-content-center text-white px-2 py-1 position-relative" 
                                                  style="width: 80px; border-radius: 3px 0 0 3px;">
                                                 <img src="{{ asset('theme/images/logo/logo-small.png') }}" alt="VTM" style="width: 30px; margin-bottom: 2px; filter: brightness(0) invert(1);">
-                                                <span style="font-size: 8px; font-weight: 700;">VietTinMart</span>
+                                                <span style="font-size: 8px; font-weight: 700;">{{ setting('site_name', 'VietTinMart') }}</span>
                                             </div>
                                             <!-- Right side (Content) -->
                                             <div class="voucher-right flex-grow-1 bg-white p-2 d-flex flex-column justify-content-center position-relative" 
@@ -297,7 +297,13 @@
 
                             <div class="single-shop-list">
                                 <div class="left-area"><span>Phí vận chuyển</span></div>
-                                <span class="price shipping-fee">{{ $subtotal >= 500000 ? 'Miễn phí' : '30.000đ' }}</span>
+                                <span class="price shipping-fee">
+                                    @php
+                                        $threshold = (float)setting('free_shipping_threshold', 500000);
+                                        $defaultFee = (float)setting('default_shipping_fee', 30000);
+                                    @endphp
+                                    {{ $subtotal >= $threshold ? 'Miễn phí' : number_format($defaultFee, 0, ',', '.') . 'đ' }}
+                                </span>
                             </div>
 
                             <div class="single-shop-list border-top pt--20">
@@ -306,7 +312,9 @@
                                 </div>
                                 <span class="price" style="color: #629D23; font-size: 20px; font-weight: 700;">
                                     @php
-                                        $shipping = $subtotal >= 500000 ? 0 : 30000;
+                                        $threshold = (float)setting('free_shipping_threshold', 500000);
+                                        $defaultFee = (float)setting('default_shipping_fee', 30000);
+                                        $shipping = $subtotal >= $threshold ? 0 : $defaultFee;
                                         $finalTotal = max(0, $subtotal - $totalDiscount + $shipping);
                                     @endphp
                                     {{ number_format($finalTotal, 0, ',', '.') }}đ
@@ -317,16 +325,29 @@
                                 <h4 class="mb--20 h6 text-uppercase fw-extrabold" style="letter-spacing: 1px;">Phương thức
                                     thanh toán</h4>
                                 <ul class="list-unstyled p-0 m-0">
+                                    @if(setting('cod_enabled', true))
                                     <li class="mb--15 d-flex align-items-center">
                                         <input type="radio" id="cod" name="payment_method" value="cod" checked
                                             style="width: auto; margin-right: 10px;">
                                         <label for="cod" class="m-0 pointer">Thanh toán khi nhận hàng (COD)</label>
                                     </li>
+                                    @endif
+
+                                    @if(setting('bank_transfer_enabled', true))
                                     <li class="mb--20 d-flex align-items-center">
                                         <input type="radio" id="bacs" name="payment_method" value="bank_transfer"
                                             style="width: auto; margin-right: 10px;">
                                         <label for="bacs" class="m-0 pointer">Chuyển khoản ngân hàng</label>
                                     </li>
+                                    @endif
+
+                                    @if(setting('momo_enabled', false))
+                                    <li class="mb--20 d-flex align-items-center">
+                                        <input type="radio" id="momo" name="payment_method" value="momo"
+                                            style="width: auto; margin-right: 10px;">
+                                        <label for="momo" class="m-0 pointer">Thanh toán qua Ví Momo</label>
+                                    </li>
+                                    @endif
                                 </ul>
 
                                 <p class="mb--25 small text-muted lh-base">
@@ -436,10 +457,6 @@
                     $('#district_name').val(dName);
                 });
 
-                // 4. Form Validation & Loading State
-                $('#checkout-form').on('submit', function (e) {
-                    const $form = $(this);
-                    const $btn = $form.find('button[type="submit"]');
                 // Saved Address Card Selection Handler
                 const handleAddressCardSelection = function($card) {
                     $('.address-card').removeClass('selected border-primary bg_light-2 text-primary');
@@ -736,7 +753,7 @@
                                      style="height: 110px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.05)); border-radius: 6px; overflow: hidden; border: 1px solid {{ $isApplied ? 'var(--color-primary)' : '#fff' }};">
                                     <div class="voucher-left bg-primary d-flex flex-column align-items-center justify-content-center text-white px-3" style="width: 100px;">
                                         <img src="{{ asset('theme/images/logo/logo-small.png') }}" style="width: 40px; filter: brightness(0) invert(1);">
-                                        <span style="font-size: 9px; font-weight: 700; margin-top: 5px;">VietTinMart</span>
+                                        <span style="font-size: 9px; font-weight: 700; margin-top: 5px;">{{ setting('site_name', 'VietTinMart') }}</span>
                                     </div>
                                     <div class="voucher-right flex-grow-1 bg-white p-3 d-flex flex-column justify-content-between">
                                         <div>

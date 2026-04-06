@@ -14,7 +14,7 @@
         <div class="row g-4">
             @foreach($config['items'] ?? [] as $item)
             <div class="{{ $gridClass }}">
-                <div class="single-feature-card lazy {{ $item['bg_class'] ?? 'bg_image one' }}"
+                <div class="single-feature-card lazy bg_image {{ $item['bg_style'] ?? 'one' }}"
                      @if(!empty($item['image'])) data-bg="{{ $item['image'] }}" @endif>
                     <div class="content-area">
                         @if(!empty($item['badge']))

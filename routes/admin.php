@@ -56,6 +56,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // Settings group (wildcard — đặt SAU các route cụ thể)
         Route::get('/settings/{group}', [SettingController::class, 'show'])->name('settings.group');
         Route::put('/settings/{group}', [SettingController::class, 'update'])->name('settings.group.update');
+        Route::post('/settings/test-mail', [SettingController::class, 'testMail'])->name('settings.test-mail');
 
         // Products
         Route::patch('/products/bulk-update', [ProductController::class, 'bulkUpdate'])->name('products.bulk-update');
