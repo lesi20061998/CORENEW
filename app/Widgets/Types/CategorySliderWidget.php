@@ -34,7 +34,11 @@ class CategorySliderWidget extends BaseWidget
         if (!empty($categoryIds)) {
             $query->whereIn('id', $categoryIds);
         } else {
-            $query->whereHas('products')->limit((int)($config['slidesPerView'] ?? 10));
+            // Kiểm tra nếu bảng category_product tồn tại mới thực hiện lọc, tránh lỗi SQL log bạn gặp
+            if (\Illuminate\Support\Facades\Schema::hasTable('category_product')) {
+                $query->whereHas('products');
+            }
+            $query->limit((int)($config['slidesPerView'] ?? 10));
         }
 
         $categories = $query->get();

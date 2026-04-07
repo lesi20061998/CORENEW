@@ -21,7 +21,7 @@ Route::get('/page-sitemap.xml', [SitemapController::class, 'pages']);
 Route::get('/product-sitemap.xml', [SitemapController::class, 'products']);
 Route::get('/category-sitemap.xml', [SitemapController::class, 'categories']);
 
-Route::get('/sitemap', [SitemapController::class, 'htmlIndex'])->name('sitemap.html');
+Route::get('/sitemap', [SitemapController::class, 'htmlIndex'])->name('sitemap_html');
 Route::get('/', [HomeController::class, 'index'])->name('home');
 // Route::get('/shop/{slug}', [App\Http\Controllers\ShopController::class, 'show'])->name('shop.show'); // Removed duplicate name
 Route::post('/review/submit', [App\Http\Controllers\ReviewController::class, 'store'])->name('review.submit');

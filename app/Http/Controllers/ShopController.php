@@ -10,12 +10,20 @@ class ShopController extends Controller
 {
     public function index(Request $request, $category_slug = null)
     {
-        $categories = Category::active()->withCount(['products' => function($q) {
-            $q->active();
-        }])->get();
+        $categoriesQuery = Category::active();
+        if (\Illuminate\Support\Facades\Schema::hasTable('category_product')) {
+            $categoriesQuery->withCount(['products' => function($q) {
+                $q->active();
+            }]);
+        }
+        $categories = $categoriesQuery->get();
         
         // Fetch ALL active products for frontend filtering
-        $allProducts = Product::active()->with('categories')->get();
+        $productsQuery = Product::active();
+        if (\Illuminate\Support\Facades\Schema::hasTable('category_product')) {
+            $productsQuery->with('categories');
+        }
+        $allProducts = $productsQuery->get();
 
         $productsJson = $allProducts->map(function($p) {
             $effectivePrice = (float)$p->effective_price;
@@ -75,7 +83,7 @@ class ShopController extends Controller
             $query->where('name', 'like', '%' . $q . '%');
         }
 
-        if ($category) {
+        if ($category && \Illuminate\Support\Facades\Schema::hasTable('category_product')) {
             $cat = Category::where('slug', $category)->first();
             if ($cat) {
                 $query->whereHas('categories', function($q) use ($cat) {
@@ -99,11 +107,13 @@ class ShopController extends Controller
             ->with(['categories', 'productAttributes.attribute', 'productAttributes.attributeValue', 'variants.attributeValues.attribute'])
             ->firstOrFail();
 
-        $relatedProducts = Product::where('status', 'active')
-            ->whereHas('categories', function($q) use ($product) {
+        $relatedQuery = Product::where('status', 'active');
+        if (\Illuminate\Support\Facades\Schema::hasTable('category_product')) {
+            $relatedQuery->whereHas('categories', function($q) use ($product) {
                 $q->whereIn('categories.id', $product->categories->pluck('id'));
-            })
-            ->where('id', '!=', $product->id)
+            });
+        }
+        $relatedProducts = $relatedQuery->where('id', '!=', $product->id)
             ->limit(4)
             ->get();
 

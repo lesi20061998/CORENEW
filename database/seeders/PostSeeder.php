@@ -11,7 +11,9 @@ class PostSeeder extends Seeder
 {
     public function run(): void
     {
+        DB::statement('SET FOREIGN_KEY_CHECKS=0');
         Post::truncate();
+        DB::statement('SET FOREIGN_KEY_CHECKS=1');
 
         $admin = User::where('role', 'admin')->first() ?? User::first();
         $cats  = Category::where('type', 'blog')->pluck('id', 'slug');

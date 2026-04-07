@@ -52,7 +52,11 @@
                                 @foreach(\App\Models\Widget::getMenu('footer-links') as $item)
                                     <li><a href="{{ $item['url'] }}">{{ $item['label'] }}</a></li>
                                 @endforeach
-                                <li><a href="{{ route('sitemap.html') }}">Sitemap</a></li>
+                                @if(Route::has('sitemap_html'))
+                                    <li><a href="{{ route('sitemap_html') }}">Sitemap</a></li>
+                                @else
+                                    <li><a href="/sitemap">Sitemap</a></li>
+                                @endif
                             </ul>
                         </div>
                     </div>
