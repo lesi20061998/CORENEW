@@ -50,6 +50,40 @@
                             {!! $post->content !!}
                         </div>
 
+                        {{-- Table of Contents --}}
+                        @if(setting('toc_enabled', true))
+                        <div id="vtm-toc-container" style="display:none;" class="mb--40 p-4 bg_light-1 rounded">
+                            <h5 class="title mb--15" style="font-size:16px;font-weight:700;">{{ setting('toc_title', 'Mục lục') }}</h5>
+                            <ul id="vtm-toc-list" class="list-unstyled mb-0" style="padding-left:0;"></ul>
+                        </div>
+                        @push('scripts')
+                        <script>
+                        (function(){
+                            const minH   = {{ (int) setting('toc_min_headings', 3) }};
+                            const tags   = '{{ setting('toc_heading_tags', 'h2,h3') }}'.split(',').map(t => t.trim()).filter(Boolean);
+                            const content = document.querySelector('.entry-content');
+                            if (!content) return;
+
+                            const headings = content.querySelectorAll(tags.join(','));
+                            if (headings.length < minH) return;
+
+                            const list = document.getElementById('vtm-toc-list');
+                            headings.forEach(function(h, i) {
+                                if (!h.id) h.id = 'toc-heading-' + i;
+                                const li = document.createElement('li');
+                                li.style.paddingLeft = h.tagName === 'H3' ? '16px' : '0';
+                                li.style.marginBottom = '6px';
+                                li.innerHTML = '<a href="#' + h.id + '" style="color:var(--color-primary);text-decoration:none;font-size:14px;">'
+                                    + (h.tagName === 'H3' ? '↳ ' : '') + h.textContent + '</a>';
+                                list.appendChild(li);
+                            });
+
+                            document.getElementById('vtm-toc-container').style.display = 'block';
+                        })();
+                        </script>
+                        @endpush
+                        @endif
+
                         <div
                             class="blog-footer border-top pt--30 d-flex flex-wrap justify-content-between align-items-center gap-3">
                             <div class="tags-area">

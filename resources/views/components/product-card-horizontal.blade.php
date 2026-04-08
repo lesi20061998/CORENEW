@@ -25,29 +25,37 @@
         <span class="availability">{{ $product->unit ?? 'Gói' }}</span>
         <div class="price-area">
             <span class="current">{{ $product->formatted_price }}</span>
-            @if($product->compare_price > $product->price)
-                <div class="previous">{{ number_format($product->compare_price) }}đ</div>
+            @if($product->old_price > $product->effective_price)
+                <div class="previous">{{ number_format($product->old_price) }}đ</div>
             @endif
         </div>
-        <div class="cart-counter-action" x-data="{ qty: 1 }">
-            <div class="quantity-edit">
-                <input type="text" class="input" x-model="qty" readonly>
-                <div class="button-wrapper-action">
-                    <button class="button" @click="qty > 1 ? qty-- : 1"><i class="fa-regular fa-chevron-down"></i></button>
-                    <button class="button plus" @click="qty++"><i class="fa-regular fa-chevron-up"></i></button>
+        @if(!$product->has_contact_price)
+            <div class="cart-counter-action" x-data="{ qty: 1 }">
+                <div class="quantity-edit">
+                    <input type="text" class="input" x-model="qty" readonly>
+                    <div class="button-wrapper-action">
+                        <button class="button" @click="qty > 1 ? qty-- : 1"><i class="fa-regular fa-chevron-down"></i></button>
+                        <button class="button plus" @click="qty++"><i class="fa-regular fa-chevron-up"></i></button>
+                    </div>
                 </div>
+                <a href="javascript:void(0);" @click="cart.add({{ $product->id }}, $event.target, qty)" class="rts-btn btn-primary radious-sm with-icon">
+                    <div class="btn-text">
+                        Thêm
+                    </div>
+                    <div class="arrow-icon">
+                        <i class="fa-regular fa-cart-shopping"></i>
+                    </div>
+                    <div class="arrow-icon">
+                        <i class="fa-regular fa-cart-shopping"></i>
+                    </div>
+                </a>
             </div>
-            <a href="javascript:void(0);" @click="cart.add({{ $product->id }}, $event.target, qty)" class="rts-btn btn-primary radious-sm with-icon">
-                <div class="btn-text">
-                    Thêm
-                </div>
-                <div class="arrow-icon">
-                    <i class="fa-regular fa-cart-shopping"></i>
-                </div>
-                <div class="arrow-icon">
-                    <i class="fa-regular fa-cart-shopping"></i>
-                </div>
-            </a>
-        </div>
+        @else
+            <div class="cart-counter-action">
+                <a href="tel:{{ setting('site_phone') }}" class="rts-btn btn-primary radious-sm w-100 text-center">
+                    Liên hệ ngay
+                </a>
+            </div>
+        @endif
     </div>
 </div>

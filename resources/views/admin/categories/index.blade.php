@@ -65,7 +65,7 @@
                 <td class="tbl-td">
                     <div style="display:flex;align-items:center;gap:10px;">
                         @if($cat->image)
-                            <img src="{{ $cat->image }}" style="width:36px;height:36px;border-radius:8px;object-fit:cover;border:1.5px solid #f1f5f9;flex-shrink:0;" alt="">
+                            <img src="{{ $cat->image_url }}" style="width:36px;height:36px;border-radius:8px;object-fit:cover;border:1.5px solid #f1f5f9;flex-shrink:0;" alt="">
                         @else
                             <span style="width:36px;height:36px;border-radius:8px;background:#fef3c7;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
                                 <i class="fa-solid fa-folder" style="color:#f59e0b;font-size:13px;"></i>
@@ -110,7 +110,7 @@
                     <div style="display:flex;align-items:center;gap:10px;padding-left:18px;">
                         <i class="fa-solid fa-turn-up fa-rotate-90 text-[#cbd5e1] text-[10px] flex-shrink-0"></i>
                         @if($child->image)
-                            <img src="{{ $child->image }}" style="width:30px;height:30px;border-radius:6px;object-fit:cover;border:1.5px solid #f1f5f9;flex-shrink:0;" alt="">
+                            <img src="{{ $child->image_url }}" style="width:30px;height:30px;border-radius:6px;object-fit:cover;border:1.5px solid #f1f5f9;flex-shrink:0;" alt="">
                         @else
                             <span style="width:30px;height:30px;border-radius:6px;background:#eff6ff;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
                                 <i class="fa-solid fa-folder-open" style="color:#3b82f6;font-size:10px;"></i>
@@ -310,10 +310,18 @@ function bindImagePicker(pickerId, inputId, previewId) {
     });
 }
 
-function updateImagePreview(picker, preview, url) {
+function updateImgPreview(pickerOrId, url) {
+    let picker = (typeof pickerOrId === 'string') ? document.getElementById(pickerOrId) : pickerOrId;
+    if (!picker) return;
+
+    let displayUrl = url;
+    if (url && !url.startsWith('http') && url.startsWith('media/')) {
+        displayUrl = '/storage/' + url;
+    }
+
     if (url) {
         picker.classList.add('has-img');
-        picker.innerHTML = `<img src="${url}" style="width:100%;max-height:140px;object-fit:cover;border-radius:8px;" onerror="this.parentElement.innerHTML='<span style=color:#ef4444;font-size:12px;>URL không hợp lệ</span>'">
+        picker.innerHTML = `<img src="${displayUrl}" style="width:100%;max-height:140px;object-fit:cover;border-radius:8px;" onerror="this.parentElement.innerHTML='<span style=color:#ef4444;font-size:12px;>URL không hợp lệ</span>'">
             <p style="font-size:11px;color:#94a3b8;margin-top:6px;">Nhấn để thay đổi</p>`;
     } else {
         picker.classList.remove('has-img');
@@ -322,6 +330,9 @@ function updateImagePreview(picker, preview, url) {
             <p style="font-size:11px;color:#cbd5e1;margin-top:4px;">Nhập URL hình ảnh</p>`;
     }
 }
+
+// Map the old name too for compatibility
+const updateImagePreview = updateImgPreview;
 
 // ── Tab switch ────────────────────────────────────────────────────────
 function switchTab(tab) {

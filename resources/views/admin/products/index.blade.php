@@ -120,7 +120,7 @@
             </div>
 
             <div class="overflow-x-auto custom-scroll">
-                <table class="w-full">
+                <table class="w-full min-w-[1200px]">
                     <thead>
                         <tr class="bg-slate-50/50">
                             <th class="tbl-th w-14 text-center">
@@ -148,8 +148,8 @@
                                     <div class="flex items-center gap-5">
                                         <div
                                             class="w-20 h-20 rounded-[28px] border-2 border-slate-50 overflow-hidden bg-white shadow-sm flex-shrink-0 group-hover:scale-105 transition-transform duration-500">
-                                            @if($product->image)
-                                                <img src="{{ $product->image }}" class="w-full h-full object-cover">
+                                            @if($product->thumbnail_url)
+                                                <img src="{{ $product->thumbnail_url }}" class="w-full h-full object-cover">
                                             @else
                                                 <div
                                                     class="w-full h-full flex items-center justify-center text-slate-100 bg-slate-50">
@@ -178,6 +178,11 @@
                                                         } catch (e) { adminToast('Lỗi', 'Không thể cập nhật!', 'error'); }
                                                     }
                                                 }">
+                                                <span @click="toggle('isFeatured')"
+                                                    :class="isFeatured ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-slate-50 text-slate-300 border-slate-100'"
+                                                    class="px-2.5 py-0.5 rounded-lg text-[9px] font-black uppercase border cursor-pointer transition-all hover:scale-105 select-none tracking-widest">
+                                                    <i class="fa-solid fa-star mr-1"></i> Nổi bật
+                                                </span>
                                                 <span @click="toggle('isFavorite')"
                                                     :class="isFavorite ? 'bg-rose-50 text-rose-600 border-rose-100' : 'bg-slate-50 text-slate-300 border-slate-100'"
                                                     class="px-2.5 py-0.5 rounded-lg text-[9px] font-black uppercase border cursor-pointer transition-all hover:scale-105 select-none tracking-widest">
@@ -194,11 +199,13 @@
                                 </td>
                                 <td class="tbl-td">
                                     @if($product->categories->count() > 0)
-                                        <div class="flex flex-col gap-1.5">
-                                            @foreach($product->categories->take(2) as $cat)
-                                                <span
-                                                    class="text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">{{ $cat->name }}</span>
+                                        <div class="flex flex-wrap gap-1 max-w-[150px]">
+                                            @foreach($product->categories->take(5) as $cat)
+                                                <span class="px-1.5 py-0.5 bg-slate-100 text-[9px] font-black text-slate-500 uppercase tracking-tighter rounded-md whitespace-nowrap">{{ $cat->name }}</span>
                                             @endforeach
+                                            @if($product->categories->count() > 5)
+                                                <span class="px-1.5 py-0.5 bg-blue-50 text-[9px] font-black text-blue-500 uppercase tracking-tighter rounded-md">+{{ $product->categories->count() - 5 }}</span>
+                                            @endif
                                         </div>
                                     @else
                                         <span class="text-[10px] font-black text-slate-200 tracking-widest uppercase">Không
@@ -266,7 +273,7 @@
                                 </td>
                                 <td class="tbl-td text-right pr-6">
                                     <div
-                                        class="flex items-center justify-end gap-2 opacity-30 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">
+                                        class="flex items-center justify-end gap-2 opacity-100 transition-all">
                                         <form
                                             action="{{ route('admin.duplicate.item', ['type' => 'product', 'id' => $product->id]) }}"
                                             method="POST">
@@ -384,6 +391,55 @@
                                     <option value="inactive">Tạm ẩn khỏi gian hàng</option>
                                     <option value="draft">Chuyển thành bản nháp</option>
                                 </select>
+                            </div>
+
+                            {{-- Promotions --}}
+                            <div class="p-6 bg-white rounded-3xl border border-slate-100 shadow-sm space-y-6">
+                                <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest pl-1">Gắn thẻ khuyến mãi (Hàng loạt)</label>
+                                
+                                <div class="grid grid-cols-1 gap-4">
+                                    <div class="flex items-center justify-between p-3 bg-slate-50/50 rounded-2xl border border-slate-100/50">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
+                                                <i class="fa-solid fa-star text-xs"></i>
+                                            </div>
+                                            <span class="text-xs font-black text-slate-700 uppercase tracking-tight">Sản phẩm Nổi bật</span>
+                                        </div>
+                                        <select id="m-bulk-featured" class="form-select rounded-xl border-slate-100 text-xs font-bold py-2 w-44">
+                                            <option value="">Giữ nguyên</option>
+                                            <option value="1">Bật (Hàng loạt)</option>
+                                            <option value="0">Tắt (Hàng loạt)</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="flex items-center justify-between p-3 bg-slate-50/50 rounded-2xl border border-slate-100/50">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center">
+                                                <i class="fa-solid fa-heart text-xs"></i>
+                                            </div>
+                                            <span class="text-xs font-black text-slate-700 uppercase tracking-tight">Sản phẩm Yêu thích</span>
+                                        </div>
+                                        <select id="m-bulk-favorite" class="form-select rounded-xl border-slate-100 text-xs font-bold py-2 w-44">
+                                            <option value="">Giữ nguyên</option>
+                                            <option value="1">Bật (Hàng loạt)</option>
+                                            <option value="0">Tắt (Hàng loạt)</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="flex items-center justify-between p-3 bg-slate-50/50 rounded-2xl border border-slate-100/50">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center">
+                                                <i class="fa-solid fa-crown text-xs"></i>
+                                            </div>
+                                            <span class="text-xs font-black text-slate-700 uppercase tracking-tight">Sản phẩm Bán chạy</span>
+                                        </div>
+                                        <select id="m-bulk-bestseller" class="form-select rounded-xl border-slate-100 text-xs font-bold py-2 w-44">
+                                            <option value="">Giữ nguyên</option>
+                                            <option value="1">Bật (Hàng loạt)</option>
+                                            <option value="0">Tắt (Hàng loạt)</option>
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="flex flex-col gap-4 p-6 bg-white rounded-3xl border border-slate-100 shadow-sm">
@@ -534,11 +590,14 @@
                     const priceRule = document.getElementById('m-bulk-price-rule').value;
                     const stock = document.getElementById('m-bulk-stock').value;
                     const stockRule = document.getElementById('m-bulk-stock-rule').value;
+                    const featured = document.getElementById('m-bulk-featured').value;
+                    const favorite = document.getElementById('m-bulk-favorite').value;
+                    const bestseller = document.getElementById('m-bulk-bestseller').value;
 
                     const catInputs = document.querySelectorAll('input[name="bulk_category[]"]:checked');
                     const categoryIds = Array.from(catInputs).map(cb => cb.value);
 
-                    if (!status && !price && !stock && categoryIds.length === 0) {
+                    if (!status && !price && !stock && categoryIds.length === 0 && !featured && !favorite && !bestseller) {
                         return alert('Vui lòng chọn ít nhất một thông tin cần thay đổi');
                     }
 
@@ -559,6 +618,9 @@
                                 price_rule: priceRule,
                                 stock: stock,
                                 stock_rule: stockRule,
+                                is_featured: featured,
+                                is_favorite: favorite,
+                                is_best_seller: bestseller,
                                 category_ids: categoryIds
                             })
                         });

@@ -141,7 +141,7 @@ window.productFormManager = function(existingVariants, existingAttrMap) {
                 id: p.id,
                 variant_id: vId || null,
                 name: name,
-                image: image ? (image.startsWith('http') ? image : '/'+image) : null,
+                image: image ? (image.startsWith('http') ? image : (image.startsWith('media/') ? '/storage/'+image : '/'+image)) : null,
                 original_price: price,
                 discount_type: discountType || 'percent',
                 discount_value: discountVal || '0',
@@ -329,7 +329,7 @@ window.productFormManager = function(existingVariants, existingAttrMap) {
 window.productInitData = {
     variants: @json($isEdit ? $product->variants : []),
     attrMap: @json($isEdit ? $product->productAttributes->groupBy('attribute_id')->map(fn($g) => $g->pluck('attribute_value_id')) : new \stdClass()),
-    gallery: @json($product?->images ?? [])
+    gallery: @json($product?->images_urls ?? [])
 };
 </script>
 
@@ -961,7 +961,7 @@ window.productInitData = {
                 {{-- Ảnh chính --}}
                 <div class="group relative aspect-square rounded-[32px] border-4 border-dashed border-slate-100 bg-white p-2 flex items-center justify-center overflow-hidden transition-all hover:border-blue-400 hover:shadow-2xl hover:shadow-blue-500/10 active:scale-95">
                     <input type="hidden" name="image" id="product_main_image" value="{{ old('image', $product?->image) }}">
-                    <img id="main_img_preview" src="{{ $product?->image ?: asset('admin/images/placeholder.webp') }}"
+                    <img id="main_img_preview" src="{{ $product?->thumbnail_url ?: asset('admin/images/placeholder.webp') }}"
                          class="w-full h-full rounded-[24px] object-cover transition-transform duration-500 group-hover:scale-110 {{ !$product?->image ? 'opacity-20 grayscale' : '' }}">
 
                     <div class="absolute inset-0 bg-slate-900/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all backdrop-blur-[2px]">
@@ -993,30 +993,47 @@ window.productInitData = {
         </div>
 
         {{-- Phân loại --}}
-        <div class="card shadow-sm border-slate-200">
-             <div class="card-header bg-slate-50 py-3.5">
+        <div class="card shadow-sm border-slate-200" x-data="{ catSearch: '' }">
+             <div class="card-header bg-slate-50 py-3.5 flex items-center justify-between">
                 <p class="text-[11px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
                     <i class="fa-solid fa-tags text-teal-400"></i> Cấu trúc danh mục
                 </p>
+                <div class="flex gap-2">
+                    <button type="button" @click="$el.closest('.card').querySelectorAll('input[type=checkbox]').forEach(cb => cb.checked = true)" 
+                            class="text-[9px] font-black text-blue-600 uppercase hover:underline">Tất cả</button>
+                    <span class="text-slate-300">|</span>
+                    <button type="button" @click="$el.closest('.card').querySelectorAll('input[type=checkbox]').forEach(cb => cb.checked = false)" 
+                            class="text-[9px] font-black text-rose-600 uppercase hover:underline">Bỏ chọn</button>
+                </div>
             </div>
-            <div class="card-body">
+            <div class="card-body space-y-4">
+                <div class="relative">
+                    <input type="text" x-model="catSearch" placeholder="Tìm nhanh danh mục..." 
+                           class="form-input !py-2 !text-[11px] bg-slate-50 border-none shadow-inner pl-8">
+                    <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-300 text-[10px]"></i>
+                </div>
+
                 @if(isset($categories) && count($categories) > 0)
-                <div class="max-h-[300px] overflow-y-auto space-y-2 bg-slate-50/30 p-4 rounded-2xl border border-slate-50 pr-2 custom-scroll">
+                <div class="max-h-[350px] overflow-y-auto space-y-1 bg-slate-50/30 p-4 rounded-2xl border border-slate-50 pr-2 custom-scroll">
                     @php $selectedCats = old('category_ids', $isEdit ? $product->categories->pluck('id')->toArray() : []); @endphp
                     @foreach($categories as $cat)
-                    <div class="flex items-center gap-2.5 py-1">
+                    <div class="flex items-center gap-2.5 py-1.5 hover:bg-white rounded-lg px-2 transition-colors group"
+                         x-show="!catSearch || '{{ strtolower($cat->name) }}'.includes(catSearch.toLowerCase())">
                         <input type="checkbox" name="category_ids[]" value="{{ $cat->id }}" 
                                id="cat_{{ $cat->id }}"
                                {{ in_array($cat->id, $selectedCats) ? 'checked' : '' }}
-                               class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
-                        <label for="cat_{{ $cat->id }}" class="text-xs font-bold text-slate-600 hover:text-slate-900 cursor-pointer select-none">
+                               class="w-4.5 h-4.5 rounded-lg border-slate-200 text-blue-600 focus:ring-blue-500 transition-all checked:scale-110">
+                        <label for="cat_{{ $cat->id }}" class="text-xs font-bold text-slate-600 group-hover:text-slate-900 cursor-pointer select-none truncate">
                             {{ $cat->label_indented ?? $cat->name }}
                         </label>
                     </div>
                     @endforeach
                 </div>
                 @else
-                    <p class="text-xs text-slate-400 font-bold">Chưa tạo danh mục nào.</p>
+                    <div class="py-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-100">
+                        <i class="fa-solid fa-folder-open text-slate-200 text-xl mb-2 block"></i>
+                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Chưa tạo danh mục nào</p>
+                    </div>
                 @endif
             </div>
         </div>

@@ -167,6 +167,30 @@ class MediaController extends Controller
         return response()->json(['success' => true, 'folder' => $folder]);
     }
 
+    public function renameFile(Request $request, int $id)
+    {
+        $request->validate([
+            'name' => 'required|string|max:100'
+        ]);
+
+        $media = Media::findOrFail($id);
+        $media->update(['name' => trim($request->input('name'))]);
+
+        return response()->json(['success' => true]);
+    }
+
+    public function renameFolder(Request $request, int $id)
+    {
+        $request->validate([
+            'name' => 'required|string|max:100'
+        ]);
+
+        $folder = \App\Models\MediaFolder::findOrFail($id);
+        $folder->update(['name' => trim($request->input('name'))]);
+
+        return response()->json(['success' => true]);
+    }
+
     public function deleteFolder(int $id)
     {
         $folder = \App\Models\MediaFolder::findOrFail($id);

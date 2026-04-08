@@ -93,7 +93,7 @@
                         <tr class="hover:bg-slate-50/50 transition-colors">
                             <td class="px-6 py-3">
                                 <div class="flex items-center gap-3">
-                                    <img src="{{ $p->image ? asset($p->image) : asset('theme/images/no-image.png') }}" class="w-8 h-8 rounded-lg object-cover border border-slate-100">
+                                    <img src="{{ $p->image_url }}" class="w-8 h-8 rounded-lg object-cover border border-slate-100">
                                     <span class="text-[11px] font-bold text-slate-700 truncate max-w-[200px]">{{ $p->product_name }}</span>
                                 </div>
                             </td>
@@ -125,7 +125,7 @@
                 @forelse($stats['low_selling'] as $lp)
                 <div class="flex items-center justify-between p-3 rounded-2xl border border-slate-50 hover:bg-slate-50 transition-all group">
                     <div class="flex items-center gap-3">
-                        <img src="{{ $lp->image ? asset($lp->image) : asset('theme/images/no-image.png') }}" class="w-8 h-8 rounded-lg object-cover grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-all">
+                        <img src="{{ $lp->thumbnail_url ?: asset('theme/images/no-image.png') }}" class="w-8 h-8 rounded-lg object-cover grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-all">
                         <div class="flex flex-col">
                             <span class="text-[10px] font-bold text-slate-700 truncate max-w-[120px]">{{ $lp->name }}</span>
                             <span class="text-[8px] text-slate-400 uppercase tracking-widest">{{ $lp->sku ?? 'NO SKU' }}</span>

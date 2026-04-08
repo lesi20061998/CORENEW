@@ -73,21 +73,21 @@
 
         {{-- Icon danh mục --}}
         <div>
-            <label class="form-label">Icon danh mục</label>
+            <label class="form-label">Icon danh mục (FontAwesome hoặc Ảnh)</label>
             <input type="hidden" name="icon" id="{{ $p }}_icon">
             <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">
-                <input type="text" id="{{ $p }}_icon_url" placeholder="https:// hoặc /theme/images/icons/..."
+                <input type="text" id="{{ $p }}_icon_url" placeholder="VD: fa-solid fa-apple-whole hoặc https://..."
                        class="form-input"
                        oninput="document.getElementById('{{ $p }}_icon').value=this.value; updateImgPreview('{{ $p }}_icon_preview', this.value)">
                 <button type="button"
                         onclick="openMediaPicker('{{ $p }}_icon_url', function(url){ document.getElementById('{{ $p }}_icon').value=url; updateImgPreview('{{ $p }}_icon_preview', url); })"
                         style="flex-shrink:0;padding:8px 14px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:8px;font-size:13px;font-weight:600;color:#374151;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:6px;"
                         onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'">
-                    <i class="fa-solid fa-images" style="color:#3b82f6;"></i> Chọn
+                    <i class="fa-solid fa-images" style="color:#3b82f6;"></i> Chọn Ảnh
                 </button>
             </div>
             <div id="{{ $p }}_icon_preview"></div>
-            <p class="form-hint">Icon nhỏ hiển thị trong dropdown danh mục (khuyến nghị 32×32px)</p>
+            <p class="form-hint">Nhập <b>class FontAwesome</b> hoặc <b>chọn ảnh</b> từ thư viện. Khuyến nghị SVG hoặc 32×32px.</p>
         </div>
 
         {{-- Danh mục cha --}}

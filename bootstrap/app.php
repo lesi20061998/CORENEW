@@ -41,13 +41,11 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions) {
         $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\NotFoundHttpException $e, \Illuminate\Http\Request $request) {
-            $mode = setting('seo_redirect_mode', 'manual');
-            if ($mode === 'homepage') {
-                return redirect()->route('home');
-            } elseif ($mode === 'manual') {
-                $url = setting('seo_redirect_url', 'trang-chu');
-                return redirect($url ?: '/');
+            if (!setting('redirect_404_enabled', false)) {
+                return null; // Let Laravel handle default 404
             }
+            $url = setting('redirect_404_default', '/');
+            return redirect($url ?: '/');
         });
 
         $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException $e, \Illuminate\Http\Request $request) {

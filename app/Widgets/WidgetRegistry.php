@@ -20,18 +20,22 @@ class WidgetRegistry
      */
     protected static array $widgetClasses = [
         // Homepage Sections (The Builder)
-        'hero_main' => \App\Widgets\Types\HeroSliderWidget::class,
-        'cat_swiper' => \App\Widgets\Types\CategorySliderWidget::class,
-        'feature_icons' => \App\Widgets\Types\FeaturesBarWidget::class,
-        'prod_featured' => \App\Widgets\Types\ProductGridWidget::class,
-        'deal_flash' => \App\Widgets\Types\DealCountdownWidget::class,
-        'prod_tabs' => \App\Widgets\Types\ProductTabsWidget::class,
+        'hero_main'       => \App\Widgets\Types\BannerSectionWidget::class,
+        'hero_slider'     => \App\Widgets\Types\HeroSliderWidget::class,
+        'cat_swiper'      => \App\Widgets\Types\CategorySliderWidget::class,
+        'feature_icons'   => \App\Widgets\Types\FeaturesBarWidget::class,
+        'prod_featured'   => \App\Widgets\Types\ProductSectionWidget::class,
+        'deal_flash'      => \App\Widgets\Types\DealCountdownWidget::class,
+        'prod_tabs'       => \App\Widgets\Types\ProductTabsWidget::class,
+        'product_section' => \App\Widgets\Types\ProductSectionWidget::class,
+        'product_grid'    => \App\Widgets\Types\ProductGridWidget::class,
 
         // Advanced
         'html_custom' => \App\Widgets\Types\HtmlBlockWidget::class,
         'newsletter_bar' => \App\Widgets\Types\NewsletterWidget::class,
         'posts_latest' => \App\Widgets\Types\LatestPostsWidget::class,
-        'promo_banners' => \App\Widgets\Types\PromoBannersWidget::class,
+        'promo_banners' => \App\Widgets\Types\BannerSectionWidget::class,
+        'banner_section' => \App\Widgets\Types\BannerSectionWidget::class,
         'testimonials' => \App\Widgets\Types\TestimonialWidget::class,
 
         // About Page Widgets
@@ -42,6 +46,7 @@ class WidgetRegistry
         'choosing_reason' => \App\Widgets\Types\ChoosingReasonWidget::class,
         'about_testimonials' => \App\Widgets\Types\AboutTestimonialsWidget::class,
         'section_sep' => \App\Widgets\Types\SectionSeparatorWidget::class,
+        'footer_column' => \App\Widgets\Types\FooterColumnWidget::class,
     ];
 
     /**

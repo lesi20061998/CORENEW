@@ -185,13 +185,21 @@
     padding: 40px;
 }
 
-.product-thumb-area {
-    flex: 0 0 45%;
-    max-width: 45%;
-}
 
 .contents {
     flex: 1;
+}
+
+.qv-description-text {
+    display: -webkit-box !important;
+    -webkit-line-clamp: 4 !important;
+    line-clamp: 4 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+    font-size: 14px !important;
+    line-height: 1.6 !important;
+    color: #666 !important;
+    margin-bottom: 20px !important;
 }
 
 /* Gallery Section */
@@ -293,4 +301,96 @@
     height: auto !important;
     border-radius: 8px !important;
     margin: 10px 0 !important;
+}
+
+/* 
+   Hero Section Variants 
+   =========================================
+*/
+.h1-hero-variant .banner-bg-image {
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.rts-banner-area-two .banner-bg-iamge-area {
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.rts-banner-area-two .banner-bg-iamge-area::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.4) 50%, transparent 100%);
+    z-index: 1;
+}
+
+.rts-banner-area-two .content {
+    position: relative;
+    z-index: 2;
+}
+
+.rts-banner-area-three .banner-bg-image {
+    background-size: cover;
+    background-position: center;
+    position: relative;
+}
+
+.rts-banner-area-three .banner-content {
+    background: rgba(255, 255, 255, 0.85);
+    padding: 50px;
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+}
+
+.rts-banner-area-three .banner-content .title {
+    color: var(--color-heading-1);
+    line-height: 1.1;
+    font-weight: 800;
+}
+
+/* 
+   Premium Global Scrollbar 
+   =========================================
+*/
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f8fafc;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--color-primary, #629D23);
+    border-radius: 10px;
+    transition: all 0.3s;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--color-secondary, #1F1F25);
+}
+
+/* Firefox Support */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-primary, #629D23) #f8fafc;
+}
+
+/* Specific elements that need scroll */
+.custom-scroll, 
+.category-sub-menu, 
+.search-results-dropdown,
+.modal-body {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-primary, #629D23) #f8fafc;
 }

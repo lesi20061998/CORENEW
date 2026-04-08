@@ -129,9 +129,16 @@
                                     </div>
                                     <div class="thumbnail">
                                         @php
-                                            $imgSrc = $item['image'] 
-                                                ? (str_starts_with($item['image'], 'http') ? $item['image'] : asset($item['image'])) 
-                                                : asset('theme/images/shop/default.png');
+                                            $imgRaw = $item['image'];
+                                            if ($imgRaw && !str_starts_with($imgRaw, 'http')) {
+                                                if (str_starts_with($imgRaw, 'media/')) {
+                                                    $imgSrc = asset('storage/' . $imgRaw);
+                                                } else {
+                                                    $imgSrc = asset($imgRaw);
+                                                }
+                                            } else {
+                                                $imgSrc = $imgRaw ?: asset('theme/images/shop/default.png');
+                                            }
                                         @endphp
                                         <img src="{{ $imgSrc }}" alt="{{ $item['name'] }}">
                                     </div>

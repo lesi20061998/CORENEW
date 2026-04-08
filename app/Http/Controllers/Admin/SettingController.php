@@ -191,10 +191,54 @@ class SettingController extends Controller
             $settings['order_cancellation_reasons'] = json_encode($decoded, JSON_UNESCAPED_UNICODE);
         }
 
+        // Auto-generate font_import_urls from selected fonts (appearance group)
+        if ($group === 'appearance' && empty($settings['font_import_urls'])) {
+            $settings['font_import_urls'] = $this->buildFontImportUrls(
+                $settings['font_main'] ?? null,
+                $settings['font_heading'] ?? null,
+                $settings['nav_font'] ?? null,
+            );
+        }
+
         $this->settingService->updateSettings($settings, $group);
 
         return redirect()->route('admin.settings.group', $group)
                          ->with('success', 'Đã lưu cài đặt "' . $module['title'] . '" thành công.');
+    }
+
+    /**
+     * Map font CSS value → Google Fonts family name + weights
+     */
+    protected array $googleFontMap = [
+        "'Be Vietnam Pro', sans-serif"  => 'Be+Vietnam+Pro',
+        "'Roboto', sans-serif"          => 'Roboto',
+        "'Outfit', sans-serif"          => 'Outfit',
+        "'Montserrat', sans-serif"      => 'Montserrat',
+        "'Barlow', sans-serif"          => 'Barlow',
+        "'Playfair Display', serif"     => 'Playfair+Display',
+        "'Open Sans', sans-serif"       => 'Open+Sans',
+        // Inter is a system font / already loaded by default — skip
+    ];
+
+    protected function buildFontImportUrls(?string ...$fonts): string
+    {
+        $families = [];
+        foreach ($fonts as $font) {
+            if (!$font) continue;
+            $font = trim($font);
+            if (isset($this->googleFontMap[$font])) {
+                $families[] = $this->googleFontMap[$font] . ':wght@300;400;500;600;700;800;900';
+            }
+        }
+
+        if (empty($families)) {
+            // Default fallback
+            return '<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">';
+        }
+
+        $unique = array_unique($families);
+        $query  = implode('&family=', $unique);
+        return '<link href="https://fonts.googleapis.com/css2?family=' . $query . '&display=swap" rel="stylesheet">';
     }
 
     public function testMail(Request $request)

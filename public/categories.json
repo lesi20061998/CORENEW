@@ -1,0 +1,648 @@
+[
+    {
+        "id": 159,
+        "name": "Bạch Tuộc",
+        "slug": "bach-tuoc",
+        "parent": 143,
+        "description": "",
+        "display": "default",
+        "image": "assets/images/category/categories/5.-Bach-Tuoc-lam-sach-cap-dong-Frozen-Whole-clean-Octopus-540x540.jpg",
+        "menu_order": 0,
+        "count": 2,
+        "_links": {
+            "self": [
+                {
+                    "href": "https://viettinfood.com/wp-json/wc/v2/products/categories/159",
+                    "targetHints": {
+                        "allow": [
+                            "GET",
+                            "POST",
+                            "PUT",
+                            "PATCH",
+                            "DELETE"
+                        ]
+                    }
+                }
+            ],
+            "collection": [
+                {
+                    "href": "https://viettinfood.com/wp-json/wc/v2/products/categories"
+                }
+            ],
+            "up": [
+                {
+                    "href": "https://viettinfood.com/wp-json/wc/v2/products/categories/143"
+                }
+            ]
+        }
+    },
+    {
+        "id": 146,
+        "name": "Cá Basa",
+        "slug": "ca-basa",
+        "parent": 143,
+        "description": "",
+        "display": "default",
+        "image": "assets/images/category/categories/4.-Ca-Basa-Fillet-cap-dong-Frozen-UT.-Pangasius-Fillet-scaled-e1772871487726-540x540.jpg",
+        "menu_order": 0,
+        "count": 5,
+        "_links": {
+            "self": [
+                {
+                    "href": "https://viettinfood.com/wp-json/wc/v2/products/categories/146",
+                    "targetHints": {
+                        "allow": [
+                            "GET",
+                            "POST",
+                            "PUT",
+                            "PATCH",
+                            "DELETE"
+                        ]
+                    }
+                }
+            ],
+            "collection": [
+                {
+                    "href": "https://viettinfood.com/wp-json/wc/v2/products/categories"
+                }
+            ],
+            "up": [
+                {
+                    "href": "https://viettinfood.com/wp-json/wc/v2/products/categories/143"
+                }
+            ]
+        }
+    },
+    {
+        "id": 160,
+        "name": "Cá Chẽm",
+        "slug": "ca-chem",
+        "parent": 143,
+        "description": "",
+        "display": "default",
+        "image": "assets/images/category/categories/3.-Ca-Chem-Nguyen-con-lam-sach-cap-dong-Frozen-Whole-clean-Barramundi-540x540.jpg",
+        "menu_order": 0,
+        "count": 2,
+        "_links": {
+            "self": [
+                {
+                    "href": "https://viettinfood.com/wp-json/wc/v2/products/categories/160",
+                    "targetHints": {
+                        "allow": [
+                            "GET",
+                            "POST",
+                            "PUT",
+                            "PATCH",
+                            "DELETE"
+                        ]
+                    }
+                }
+            ],
+            "collection": [
+                {
+                    "href": "https://viettinfood.com/wp-json/wc/v2/products/categories"
+                }
+            ],
+            "up": [
+                {
+                    "href": "https://viettinfood.com/wp-json/wc/v2/products/categories/143"
+                }
+            ]
+        }
+    },
+    {
+        "id": 149,
+        "name": "Cá Rô Phi",
+        "slug": "ca-ro-phi",
+        "parent": 143,
+        "description": "",
+        "display": "default",
+        "image": "assets/images/category/categories/2.-Ca-Ro-Phi-Fillet-cap-dong-Frozen-Tilapia-Fillet-540x540.jpg",
+        "menu_order": 0,
+        "count": 2,
+        "_links": {
+            "self": [
+                {
+                    "href": "https://viettinfood.com/wp-json/wc/v2/products/categories/149",
+                    "targetHints": {
+                        "allow": [
+                            "GET",
+                            "POST",
+                            "PUT",
+                            "PATCH",
+                            "DELETE"
+                        ]
+                    }
+                }
+            ],
+            "collection": [
+                {
+                    "href": "https://viettinfood.com/wp-json/wc/v2/products/categories"
+                }
+            ],
+            "up": [
+                {
+                    "href": "https://viettinfood.com/wp-json/wc/v2/products/categories/143"
+                }
+            ]
+        }
+    },
+    {
+        "id": 148,
+        "name": "Mực Nang",
+        "slug": "muc-nang",
+        "parent": 143,
+        "description": "",
+        "display": "default",
+        "image": "assets/images/category/categories/1.-Muc-Nang-lam-sach-cap-dong-Frozen-Whole-clean-Cuttle-Fish-scaled-e1772874504625-540x540.jpg",
+        "menu_order": 0,
+        "count": 3,
+        "_links": {
+            "self": [
+                {
+                    "href": "https://viettinfood.com/wp-json/wc/v2/products/categories/148",
+                    "targetHints": {
+                        "allow": [
+                            "GET",
+                            "POST",
+                            "PUT",
+                            "PATCH",
+                            "DELETE"
+                        ]
+                    }
+                }
+            ],
+            "collection": [
+                {
+                    "href": "https://viettinfood.com/wp-json/wc/v2/products/categories"
+                }
+            ],
+            "up": [
+                {
+                    "href": "https://viettinfood.com/wp-json/wc/v2/products/categories/143"
+                }
+            ]
+        }
+    },
+    {
+        "id": 147,
+        "name": "Mực Ống",
+        "slug": "muc-ong",
+        "parent": 143,
+        "description": "",
+        "display": "default",
+        "image": "assets/images/category/categories/3.-Muc-Cat-lam-sach-cap-dong-Frozen-Cut-Squid-scaled-e1772874204872-540x540.jpg",
+        "menu_order": 0,
+        "count": 4,
+        "_links": {
+            "self": [
+                {
+                    "href": "https://viettinfood.com/wp-json/wc/v2/products/categories/147",
+                    "targetHints": {
+                        "allow": [
+                            "GET",
+                            "POST",
+                            "PUT",
+                            "PATCH",
+                            "DELETE"
+                        ]
+                    }
+                }
+            ],
+            "collection": [
+                {
+                    "href": "https://viettinfood.com/wp-json/wc/v2/products/categories"
+                }
+            ],
+            "up": [
+                {
+                    "href": "https://viettinfood.com/wp-json/wc/v2/products/categories/143"
+                }
+            ]
+        }
+    },
+    {
+        "id": 143,
+        "name": "Sản Phẩm Cấp Đông",
+        "slug": "san-pham-cap-dong",
+        "parent": 0,
+        "description": "",
+        "display": "default",
+        "image": "assets/images/category/categories/san-pham-cap-dong.jpg",
+        "menu_order": 0,
+        "count": 37,
+        "_links": {
+            "self": [
+                {
+                    "href": "https://viettinfood.com/wp-json/wc/v2/products/categories/143",
+                    "targetHints": {
+                        "allow": [
+                            "GET",
+                            "POST",
+                            "PUT",
+                            "PATCH",
+                            "DELETE"
+                        ]
+                    }
+                }
+            ],
+            "collection": [
+                {
+                    "href": "https://viettinfood.com/wp-json/wc/v2/products/categories"
+                }
+            ]
+        }
+    },
+    {
+        "id": 152,
+        "name": "Sản Phẩm Hấp Luộc",
+        "slug": "san-pham-hap-luoc",
+        "parent": 0,
+        "description": "",
+        "display": "default",
+        "image": "assets/images/category/categories/Sushi Cấp Đông.jpg",
+        "menu_order": 0,
+        "count": 12,
+        "_links": {
+            "self": [
+                {
+                    "href": "https://viettinfood.com/wp-json/wc/v2/products/categories/152",
+                    "targetHints": {
+                        "allow": [
+                            "GET",
+                            "POST",
+                            "PUT",
+                            "PATCH",
+                            "DELETE"
+                        ]
+                    }
+                }
+            ],
+            "collection": [
+                {
+                    "href": "https://viettinfood.com/wp-json/wc/v2/products/categories"
+                }
+            ]
+        }
+    },
+    {
+        "id": 150,
+        "name": "Sản Phẩm Khác",
+        "slug": "san-pham-khac",
+        "parent": 0,
+        "description": "",
+        "display": "default",
+        "image": "assets/images/category/categories/00.-Other-Products-1.png",
+        "menu_order": 0,
+        "count": 6,
+        "_links": {
+            "self": [
+                {
+                    "href": "https://viettinfood.com/wp-json/wc/v2/products/categories/150",
+                    "targetHints": {
+                        "allow": [
+                            "GET",
+                            "POST",
+                            "PUT",
+                            "PATCH",
+                            "DELETE"
+                        ]
+                    }
+                }
+            ],
+            "collection": [
+                {
+                    "href": "https://viettinfood.com/wp-json/wc/v2/products/categories"
+                }
+            ]
+        }
+    },
+    {
+        "id": 151,
+        "name": "Sản Phẩm Tẩm Bột",
+        "slug": "san-pham-tam-bot",
+        "parent": 0,
+        "description": "",
+        "display": "default",
+        "image": "assets/images/category/categories/0.-Hang-tam-Bot-Breaded-Products-1.png",
+        "menu_order": 0,
+        "count": 8,
+        "_links": {
+            "self": [
+                {
+                    "href": "https://viettinfood.com/wp-json/wc/v2/products/categories/151",
+                    "targetHints": {
+                        "allow": [
+                            "GET",
+                            "POST",
+                            "PUT",
+                            "PATCH",
+                            "DELETE"
+                        ]
+                    }
+                }
+            ],
+            "collection": [
+                {
+                    "href": "https://viettinfood.com/wp-json/wc/v2/products/categories"
+                }
+            ]
+        }
+    },
+    {
+        "id": 145,
+        "name": "Tôm Sú",
+        "slug": "tom-su",
+        "parent": 143,
+        "description": "",
+        "display": "default",
+        "image": "assets/images/category/categories/2.-Frozen-Giant-BT.-Prawn-Tom-Su-Bien-cap-dong-scaled-e1772868423513-540x540.jpg",
+        "menu_order": 0,
+        "count": 9,
+        "_links": {
+            "self": [
+                {
+                    "href": "https://viettinfood.com/wp-json/wc/v2/products/categories/145",
+                    "targetHints": {
+                        "allow": [
+                            "GET",
+                            "POST",
+                            "PUT",
+                            "PATCH",
+                            "DELETE"
+                        ]
+                    }
+                }
+            ],
+            "collection": [
+                {
+                    "href": "https://viettinfood.com/wp-json/wc/v2/products/categories"
+                }
+            ],
+            "up": [
+                {
+                    "href": "https://viettinfood.com/wp-json/wc/v2/products/categories/143"
+                }
+            ]
+        }
+    },
+    {
+        "id": 162,
+        "name": "Tôm Sú Hấp Cấp Đông",
+        "slug": "tom-su-hap-cap-dong",
+        "parent": 152,
+        "description": "",
+        "display": "default",
+        "image": "assets/images/category/categories/2.-Tom-Su-NC-Luoc-Cap-dong-Roi-IQF-Frozen-cooked-Hoso-BT.-Shrimp-1.png",
+        "menu_order": 0,
+        "count": 3,
+        "_links": {
+            "self": [
+                {
+                    "href": "https://viettinfood.com/wp-json/wc/v2/products/categories/162",
+                    "targetHints": {
+                        "allow": [
+                            "GET",
+                            "POST",
+                            "PUT",
+                            "PATCH",
+                            "DELETE"
+                        ]
+                    }
+                }
+            ],
+            "collection": [
+                {
+                    "href": "https://viettinfood.com/wp-json/wc/v2/products/categories"
+                }
+            ],
+            "up": [
+                {
+                    "href": "https://viettinfood.com/wp-json/wc/v2/products/categories/152"
+                }
+            ]
+        }
+    },
+    {
+        "id": 154,
+        "name": "Tôm Sú Luộc Cấp Đông",
+        "slug": "tom-su-luoc-cap-dong",
+        "parent": 152,
+        "description": "",
+        "display": "subcategories",
+        "image": "assets/images/category/categories/2.-Tom-Su-NC-Luoc-Cap-dong-Roi-IQF-Frozen-cooked-Hoso-BT.-Shrimp-1.png",
+        "menu_order": 0,
+        "count": 2,
+        "_links": {
+            "self": [
+                {
+                    "href": "https://viettinfood.com/wp-json/wc/v2/products/categories/154",
+                    "targetHints": {
+                        "allow": [
+                            "GET",
+                            "POST",
+                            "PUT",
+                            "PATCH",
+                            "DELETE"
+                        ]
+                    }
+                }
+            ],
+            "collection": [
+                {
+                    "href": "https://viettinfood.com/wp-json/wc/v2/products/categories"
+                }
+            ],
+            "up": [
+                {
+                    "href": "https://viettinfood.com/wp-json/wc/v2/products/categories/152"
+                }
+            ]
+        }
+    },
+    {
+        "id": 164,
+        "name": "Tôm Sú Sushi Cấp Đông",
+        "slug": "tom-su-sushi-cap-dong",
+        "parent": 152,
+        "description": "",
+        "display": "default",
+        "image": "assets/images/category/categories/Sushi Cấp Đông.jpg",
+        "menu_order": 0,
+        "count": 1,
+        "_links": {
+            "self": [
+                {
+                    "href": "https://viettinfood.com/wp-json/wc/v2/products/categories/164",
+                    "targetHints": {
+                        "allow": [
+                            "GET",
+                            "POST",
+                            "PUT",
+                            "PATCH",
+                            "DELETE"
+                        ]
+                    }
+                }
+            ],
+            "collection": [
+                {
+                    "href": "https://viettinfood.com/wp-json/wc/v2/products/categories"
+                }
+            ],
+            "up": [
+                {
+                    "href": "https://viettinfood.com/wp-json/wc/v2/products/categories/152"
+                }
+            ]
+        }
+    },
+    {
+        "id": 144,
+        "name": "Tôm Thẻ",
+        "slug": "tom-the",
+        "parent": 143,
+        "description": "",
+        "display": "default",
+        "image": "assets/images/category/categories/3.-Frozen-HLSO-Van.-Shrimp-Tom-the-HL-cap-dong-e1772856362596-540x540.jpg",
+        "menu_order": 0,
+        "count": 10,
+        "_links": {
+            "self": [
+                {
+                    "href": "https://viettinfood.com/wp-json/wc/v2/products/categories/144",
+                    "targetHints": {
+                        "allow": [
+                            "GET",
+                            "POST",
+                            "PUT",
+                            "PATCH",
+                            "DELETE"
+                        ]
+                    }
+                }
+            ],
+            "collection": [
+                {
+                    "href": "https://viettinfood.com/wp-json/wc/v2/products/categories"
+                }
+            ],
+            "up": [
+                {
+                    "href": "https://viettinfood.com/wp-json/wc/v2/products/categories/143"
+                }
+            ]
+        }
+    },
+    {
+        "id": 161,
+        "name": "Tôm Thẻ Hấp Cấp Đông",
+        "slug": "tom-the-hap-cap-dong",
+        "parent": 152,
+        "description": "",
+        "display": "default",
+        "image": "assets/images/category/categories/Sushi Cấp Đông.jpg",
+        "menu_order": 0,
+        "count": 3,
+        "_links": {
+            "self": [
+                {
+                    "href": "https://viettinfood.com/wp-json/wc/v2/products/categories/161",
+                    "targetHints": {
+                        "allow": [
+                            "GET",
+                            "POST",
+                            "PUT",
+                            "PATCH",
+                            "DELETE"
+                        ]
+                    }
+                }
+            ],
+            "collection": [
+                {
+                    "href": "https://viettinfood.com/wp-json/wc/v2/products/categories"
+                }
+            ],
+            "up": [
+                {
+                    "href": "https://viettinfood.com/wp-json/wc/v2/products/categories/152"
+                }
+            ]
+        }
+    },
+    {
+        "id": 153,
+        "name": "Tôm Thẻ Luộc Cấp Đông",
+        "slug": "tom-the-luoc-cap-dong",
+        "parent": 152,
+        "description": "",
+        "display": "default",
+        "image": "assets/images/category/categories/Sushi Cấp Đông.jpg",
+        "menu_order": 0,
+        "count": 2,
+        "_links": {
+            "self": [
+                {
+                    "href": "https://viettinfood.com/wp-json/wc/v2/products/categories/153",
+                    "targetHints": {
+                        "allow": [
+                            "GET",
+                            "POST",
+                            "PUT",
+                            "PATCH",
+                            "DELETE"
+                        ]
+                    }
+                }
+            ],
+            "collection": [
+                {
+                    "href": "https://viettinfood.com/wp-json/wc/v2/products/categories"
+                }
+            ],
+            "up": [
+                {
+                    "href": "https://viettinfood.com/wp-json/wc/v2/products/categories/152"
+                }
+            ]
+        }
+    },
+    {
+        "id": 163,
+        "name": "Tôm Thẻ Sushi Cấp Đông",
+        "slug": "tom-the-sushi-cap-dong",
+        "parent": 152,
+        "description": "",
+        "display": "default",
+        "image": "assets/images/category/categories/Sushi Cấp Đông.jpg",
+        "menu_order": 0,
+        "count": 1,
+        "_links": {
+            "self": [
+                {
+                    "href": "https://viettinfood.com/wp-json/wc/v2/products/categories/163",
+                    "targetHints": {
+                        "allow": [
+                            "GET",
+                            "POST",
+                            "PUT",
+                            "PATCH",
+                            "DELETE"
+                        ]
+                    }
+                }
+            ],
+            "collection": [
+                {
+                    "href": "https://viettinfood.com/wp-json/wc/v2/products/categories"
+                }
+            ],
+            "up": [
+                {
+                    "href": "https://viettinfood.com/wp-json/wc/v2/products/categories/152"
+                }
+            ]
+        }
+    }
+]

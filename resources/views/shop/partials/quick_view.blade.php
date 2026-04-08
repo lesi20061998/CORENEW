@@ -6,12 +6,12 @@
                 <div class="cursor"></div>
                 @php
                     $allImages = [];
-                    if ($product->image) {
-                        $allImages[] = str_starts_with($product->image, 'http') ? $product->image : asset($product->image);
+                    if ($product->thumbnail_url) {
+                        $allImages[] = $product->thumbnail_url;
                     }
-                    if ($product->images && is_array($product->images)) {
-                        foreach ($product->images as $img) {
-                            $allImages[] = str_starts_with($img, 'http') ? $img : asset($img);
+                    if ($product->images_urls && is_array($product->images_urls)) {
+                        foreach ($product->images_urls as $imgUrl) {
+                            if ($imgUrl) $allImages[] = $imgUrl;
                         }
                     }
                     if (empty($allImages)) {
@@ -54,7 +54,7 @@
                         <span>{{ $reviewCount }} Reviews</span>
                     </div>
                 </div>
-                <h2 class="product-title">{{ $product->name }} <span class="stock">@if($product->stock > 0) In Stock @else Out of Stock @endif</span></h2>
+                <h1 class="product-title">{{ $product->name }} <span class="stock">@if($product->stock > 0) In Stock @else Out of Stock @endif</span></h1>
                 <span class="product-price">
                     @if($product->compare_price > $product->price)
                         <span class="old-price">{{ number_format($product->compare_price) }}đ</span>
@@ -62,24 +62,24 @@
                     <span class="current-price">{{ $product->formatted_price }}</span>
                 </span>
                 <div class="qv-description-text mb--20">
-                    {!! $product->short_description ?: \Illuminate\Support\Str::limit(strip_tags($product->description), 200) !!}
+                    {!! \Illuminate\Support\Str::limit(strip_tags($product->short_description ?: $product->description), 150) !!}
                 </div>
                 <div class="product-bottom-action">
-                    <div class="cart-edit">
-                        <div class="quantity-edit action-item">
-                            <button class="button qv-qty-btn qv-minus">-</button>
-                            <input type="text" class="input qv-qty-input" value="1">
-                            <button class="button plus qv-qty-btn qv-plus">+</button>
-                        </div>
-                    </div>
                     @if(!$product->has_contact_price)
+                        <div class="cart-edit">
+                            <div class="quantity-edit action-item">
+                                <button class="button qv-qty-btn qv-minus">-</button>
+                                <input type="text" class="input qv-qty-input" value="1">
+                                <button class="button plus qv-qty-btn qv-plus">+</button>
+                            </div>
+                        </div>
                         <a href="javascript:void(0);" onclick="cart.add({{ $product->id }}, this)" class="rts-btn btn-primary radious-sm with-icon">
                             <div class="btn-text">Thêm vào giỏ</div>
                             <div class="arrow-icon"><i class="fa-regular fa-cart-shopping"></i></div>
                             <div class="arrow-icon"><i class="fa-regular fa-cart-shopping"></i></div>
                         </a>
                     @else
-                        <a href="tel:{{ setting('site_phone') }}" class="rts-btn btn-primary radious-sm">Liên hệ ngay</a>
+                        <a href="tel:{{ setting('site_phone') }}" class="rts-btn btn-primary radious-sm">Liên hệ: {{ setting('site_phone') }}</a>
                     @endif
                     <a href="javascript:void(0);" onclick="cwAction.addWishlist({{ $product->id }}, this)" class="rts-btn btn-primary ml--20"><i
                             class="fa-light fa-heart"></i></a>

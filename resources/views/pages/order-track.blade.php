@@ -137,7 +137,7 @@
                                                 <div class="product-item d-flex align-items-center p-3 border-radius-8 mb-3 border border-light-2 hover-shadow transition">
                                                     <div class="product-thumb border-radius-5 overflow-hidden me-3 shadow-sm border" style="width: 70px; height: 70px; flex-shrink: 0; background: #fff;">
                                                         @if($item->image)
-                                                            <img src="{{ asset(str_starts_with($item->image, 'http') ? $item->image : (str_starts_with($item->image, 'storage') ? $item->image : 'storage/'.$item->image)) }}" alt="" style="width: 100%; height: 100%; object-fit: cover;">
+                                                            <img src="{{ $item->image_url }}" alt="" style="width: 100%; height: 100%; object-fit: cover;">
                                                         @else
                                                             <img src="{{ asset('theme/images/no-image.png') }}" alt="" style="width: 100%; height: 100%; object-fit: cover;">
                                                         @endif

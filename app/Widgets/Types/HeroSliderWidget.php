@@ -17,14 +17,14 @@ class HeroSliderWidget extends BaseWidget
             ['key' => 'slides', 'label' => 'Danh sách Slide', 'type' => 'repeater',
                 'default' => [
                     [
-                        'bg_class'    => 'bg_one-banner',
+                        'image'       => 'theme/images/banner/banner-01.png',
                         'pre_title'   => 'Giảm đến 30% cho đơn hàng đầu tiên từ 1.500.000đ',
                         'title'       => "Đừng bỏ lỡ những ưu đãi\nthực phẩm tuyệt vời",
                         'btn_text'    => 'Mua ngay',
                         'btn_link'    => '/shop',
                     ],
                     [
-                        'bg_class'    => 'bg_one-banner two',
+                        'image'       => 'theme/images/banner/banner-02.png',
                         'pre_title'   => 'Giảm đến 30% cho đơn hàng đầu tiên từ 1.500.000đ',
                         'title'       => "Thực phẩm tươi sạch\nmỗi ngày cho gia đình bạn",
                         'btn_text'    => 'Khám phá ngay',
@@ -32,13 +32,12 @@ class HeroSliderWidget extends BaseWidget
                     ],
                 ],
                 'fields' => [
-                    ['key' => 'image',    'label' => 'Ảnh nền (URL)', 'type' => 'image'],
-                    ['key' => 'bg_class',  'label' => 'CSS Class nền', 'type' => 'text', 'placeholder' => 'bg_one-banner', 'col' => 'col-md-6'],
+                    ['key' => 'image',     'label' => 'Ảnh nền', 'type' => 'image'],
                     ['key' => 'pre_title', 'label' => 'Text nhỏ (Pre)', 'type' => 'text', 'col' => 'col-md-6'],
-                    ['key' => 'title',    'label' => 'Tiêu đề chính', 'type' => 'text'],
-                    ['key' => 'description', 'label' => 'Mô tả',     'type' => 'text'],
-                    ['key' => 'btn_text', 'label' => 'Text nút',      'type' => 'text', 'default' => 'Shop Now', 'col' => 'col-md-6'],
-                    ['key' => 'btn_link', 'label' => 'Link nút',      'type' => 'text', 'default' => '/shop', 'col' => 'col-md-6'],
+                    ['key' => 'title',     'label' => 'Tiêu đề chính', 'type' => 'text', 'col' => 'col-md-6'],
+                    ['key' => 'description', 'label' => 'Mô tả ngắn',     'type' => 'text'],
+                    ['key' => 'btn_text',  'label' => 'Text trên nút',   'type' => 'text', 'default' => 'Shop Now', 'col' => 'col-md-6'],
+                    ['key' => 'btn_link',  'label' => 'Link đính kèm',   'type' => 'text', 'default' => '/shop', 'col' => 'col-md-6'],
                 ]
             ],
             ['key' => 'autoplay_delay', 'label' => 'Tốc độ tự chạy (ms)', 'type' => 'number', 'default' => 4000],

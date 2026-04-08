@@ -350,9 +350,9 @@ class ProductController extends Controller
 
             $p->save();
 
-            // Sync danh mục nếu có
+            // Sync danh mục nếu có (Thêm mới chứ không thay thế hoàn toàn nếu là bulk)
             if ($request->has('category_ids')) {
-                $p->categories()->sync($request->input('category_ids'));
+                $p->categories()->syncWithoutDetaching($request->input('category_ids'));
             }
         }
 

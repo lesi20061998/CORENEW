@@ -142,22 +142,26 @@ class WidgetService
     {
         $config = [];
         foreach ($fields as $field) {
-            $key = $field['key'];
+            $key = $field['key'] ?? null;
+            $type = $field['type'] ?? null;
+
+            if (!$key || !$type) continue;
+
             $val = $raw[$key] ?? ($field['default'] ?? null);
 
-            if ($field['type'] === 'repeater' && is_array($val)) {
+            if ($type === 'repeater' && is_array($val)) {
                 $subFields = $field['fields'] ?? [];
                 $config[$key] = array_map(
                     fn($row) => $this->processFields($subFields, $row),
                     $val
                 );
-            } elseif ($field['type'] === 'category_select') {
+            } elseif ($type === 'category_select') {
                 $config[$key] = array_values(array_filter(array_map('intval', (array)$val)));
-            } elseif ($field['type'] === 'toggle') {
+            } elseif ($type === 'toggle') {
                 $config[$key] = filter_var($val, FILTER_VALIDATE_BOOLEAN);
-            } elseif ($field['type'] === 'number') {
+            } elseif ($type === 'number') {
                 $config[$key] = $val !== null ? (int)$val : null;
-            } elseif ($field['type'] === 'box_model' && is_array($val)) {
+            } elseif ($type === 'box_model' && is_array($val)) {
                 $config[$key] = array_map(fn($v) => is_numeric($v) ? (int)$v : $v, $val);
             } else {
                 $config[$key] = $val;

@@ -5,7 +5,7 @@
 @section('meta_keywords', $product->meta_keywords)
 @section('canonical', url('cua-hang/' . $product->slug))
 @section('og_type', 'product')
-@section('og_image', $product->image ? asset($product->image) : asset(setting('site_og_image')))
+@section('og_image', $product->thumbnail_url ?: asset(setting('site_og_image')))
 
 
 
@@ -31,14 +31,9 @@
                                                     <div class="cursor"></div>
                                                     @php
                                                         $numberClasses = ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
-                                                        $allImages = [];
-                                                        if ($product->image) {
-                                                            $allImages[] = \Illuminate\Support\Str::contains($product->image, 'http') ? $product->image : asset($product->image);
-                                                        }
-                                                        if ($product->images && is_array($product->images)) {
-                                                            foreach ($product->images as $img) {
-                                                                $allImages[] = \Illuminate\Support\Str::contains($img, 'http') ? $img : asset($img);
-                                                            }
+                                                        $allImages = $product->images_urls;
+                                                        if ($product->thumbnail_url && !in_array($product->thumbnail_url, $allImages)) {
+                                                            array_unshift($allImages, $product->thumbnail_url);
                                                         }
                                                         if (empty($allImages)) {
                                                             $allImages[] = asset('theme/images/grocery/01.jpg');
@@ -81,14 +76,14 @@
                                                             <span>{{ $reviewCount }} Đánh giá</span>
                                                         </div>
                                                     </div>
-                                                    <h2 class="product-title">{{ $product->name }}</h2>
+                                                    <h1 class="product-title">{{ $product->name }}</h1>
                                                     <p class="mt--20 mb--20">
                                                         {!! $product->short_description ?: \Illuminate\Support\Str::limit(strip_tags($product->description), 150) !!}
                                                     </p>
                                                     <span class="product-price mb--15 d-block"
                                                         style="color: #DC2626; font-weight: 600;"> {{ $product->formatted_price }}
-                                                        @if(!$product->has_contact_price && $product->compare_price > $product->price)
-                                                            <span class="old-price ml--15">{{ $product->formatted_compare_price }}</span>
+                                                        @if($product->old_price > $product->effective_price)
+                                                            <span class="old-price ml--15" style="text-decoration: line-through; color: #999; font-weight: 400; font-size: 0.8em;">{{ number_format($product->old_price) }}đ</span>
                                                         @endif
                                                     </span>
 
@@ -110,7 +105,7 @@
                                                         @else
                                                             <a href="tel:{{ setting('site_phone') }}" class="rts-btn btn-primary radious-sm">Liên hệ: {{ setting('site_phone') }}</a>
                                                         @endif
-                                                        <a href="javascript:void(0);" class="rts-btn btn-primary ml--20"><i class="fa-light fa-heart"></i></a>
+                                                        <a href="javascript:void(0);" onclick="cwAction.addWishlist({{ $product->id }}, this)" class="rts-btn btn-primary ml--20"><i class="fa-light fa-heart"></i></a>
                                                     </div>
 
                                                     <div class="product-uniques">

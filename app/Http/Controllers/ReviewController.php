@@ -11,6 +11,11 @@ class ReviewController extends Controller
 {
     public function store(Request $request)
     {
+        // Check if reviews are enabled
+        if (!setting('review_enabled', true)) {
+            return response()->json(['success' => false, 'message' => 'Tính năng đánh giá hiện đang tắt.'], 403);
+        }
+
         $validator = Validator::make($request->all(), [
             'product_id'    => 'required|exists:products,id',
             'rating'        => 'required|integer|min:1|max:5',
@@ -47,9 +52,30 @@ class ReviewController extends Controller
         $review->customer_email = $request->customer_email;
         $review->user_id = auth()->id();
         $review->comment = $request->comment;
-        $review->status = 'approved';
+        $review->status = setting('review_auto_approve', false) ? 'approved' : 'pending';
         $review->ip_address = $request->ip();
         
+        // Check require_purchase setting
+        if (setting('review_require_purchase', true)) {
+            if (!auth()->check()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Bạn cần đăng nhập để đánh giá sản phẩm.'
+                ], 401);
+            }
+            $hasOrdered = \App\Models\Order::where('user_id', auth()->id())
+                ->where('status', 'completed')
+                ->whereHas('items', function($q) use($request) {
+                    $q->where('product_id', $request->product_id);
+                })->exists();
+            if (!$hasOrdered) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Bạn cần mua sản phẩm này trước khi đánh giá.'
+                ], 403);
+            }
+        }
+
         // Simple verified purchase check: if user is logged in and has a completed order with this product
         if (auth()->check()) {
             $hasOrdered = \App\Models\Order::where('user_id', auth()->id())

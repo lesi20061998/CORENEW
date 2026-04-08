@@ -498,7 +498,7 @@
                 <p class="nav-label">Shop Management</p>
                 <button @click="open = open === 'shop' ? '' : 'shop'" class="nav-item {{ $inShop ? 'active' : '' }}">
                     <span class="nav-icon"><i class="fa-solid fa-box"></i></span>
-                    <span class="flex-1">Quản lý Kho</span>
+                    <span class="flex-1">Quản lý sản phẩm</span>
                     <i class="fa-solid fa-chevron-down nav-chevron text-[10px]"
                         :class="open==='shop' ? 'rotate-180' : ''"></i>
                 </button>
@@ -833,4 +833,4 @@
     </div>
 </body>
 
-</html>
+</html>

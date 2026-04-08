@@ -69,6 +69,12 @@
                     class="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all text-left">
                     <i class="fa-solid fa-window-minimize w-5 text-center"></i> Footer
                 </button>
+                <div class="h-px bg-slate-100 my-2"></div>
+                <button @click="activeTab = 'logo_icons'"
+                    :class="activeTab === 'logo_icons' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30' : 'text-slate-600 hover:bg-slate-50'"
+                    class="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all text-left">
+                    <i class="fa-solid fa-icons w-5 text-center"></i> Logo & Icons
+                </button>
 
             </nav>
         </div>
@@ -250,11 +256,58 @@
                                 </div>
                                 <div>
                                     <label
-                                        class="form-label text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3 block">Liên
-                                        kết Chữ dưới hotline</label>
+                                        class="form-label text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3 block">Placeholder ô tìm kiếm</label>
+                                    <input type="text" name="settings[search_placeholder]"
+                                        value="{{ $settingsMap['search_placeholder'] ?? 'Search for products, categories or brands' }}"
+                                        class="form-input rounded-2xl border-slate-100 py-4 font-bold text-slate-700">
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 gap-8">
+                                <div>
+                                    <label
+                                        class="form-label text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3 block">Liên kết Chữ dưới hotline</label>
                                     <input type="text" name="settings[header_hotline_link]"
                                         value="{{ $settingsMap['header_hotline_link'] ?? '' }}"
                                         class="form-input rounded-2xl border-slate-100 py-4 font-bold text-slate-700">
+                                </div>
+                            </div>
+
+                            {{-- Icon Header --}}
+                            <div class="border-t border-slate-100 pt-8">
+                                <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-6">Icon Header</h3>
+                                <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                                    @foreach([
+                                        'icon_search'       => 'Icon Tìm kiếm',
+                                        'icon_user'         => 'Icon Tài khoản',
+                                        'icon_wishlist'     => 'Icon Wishlist',
+                                        'icon_cart'         => 'Icon Giỏ hàng',
+                                        'icon_category_bar' => 'Icon Category Bar',
+                                    ] as $iconKey => $iconLabel)
+                                    <div>
+                                        <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3 block">{{ $iconLabel }}</label>
+                                        <div class="flex gap-2 mb-2">
+                                            <input type="text"
+                                                name="settings[{{ $iconKey }}]"
+                                                id="{{ $iconKey }}"
+                                                value="{{ $settingsMap[$iconKey] ?? '' }}"
+                                                class="form-input rounded-2xl border-slate-100 py-3 text-xs font-mono w-full"
+                                                placeholder="Đường dẫn ảnh SVG/PNG">
+                                            <button type="button" onclick="openMediaPicker('{{ $iconKey }}')"
+                                                class="bg-blue-600 text-white px-4 rounded-2xl font-black text-[10px] uppercase flex-shrink-0 active:scale-95 transition-all">
+                                                <i class="fa-solid fa-image"></i>
+                                            </button>
+                                        </div>
+                                        @if(!empty($settingsMap[$iconKey]))
+                                        <div class="p-2 bg-slate-50 rounded-xl border border-slate-100 inline-flex items-center justify-center w-10 h-10">
+                                            <img src="{{ asset($settingsMap[$iconKey]) }}" alt="{{ $iconLabel }}" class="w-6 h-6 object-contain">
+                                        </div>
+                                        @else
+                                        <div class="p-2 bg-slate-50 rounded-xl border border-dashed border-slate-200 inline-flex items-center justify-center w-10 h-10 text-slate-300">
+                                            <i class="fa-regular fa-image text-sm"></i>
+                                        </div>
+                                        @endif
+                                    </div>
+                                    @endforeach
                                 </div>
                             </div>
                         </div>
@@ -565,13 +618,14 @@
                                 <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-6 border-b border-slate-100 pb-2">Hệ thống Typography (Fonts)</h3>
                                 @php
                                     $fontOptions = [
-                                        'Inter, sans-serif' => 'Inter (Hiện đại, tối giản)',
-                                        '\'Roboto\', sans-serif' => 'Roboto (Google Standard)',
-                                        '\'Outfit\', sans-serif' => 'Outfit (Premium Design)',
-                                        '\'Montserrat\', sans-serif' => 'Montserrat (Mạnh mẽ)',
-                                        '\'Barlow\', sans-serif' => 'Barlow (Phù hợp Tech/Auto)',
-                                        '\'Playfair Display\', serif' => 'Playfair Display (Sang trọng)',
-                                        '\'Open Sans\', sans-serif' => 'Open Sans (Dễ đọc)',
+                                        'Inter, sans-serif'                  => 'Inter (Hiện đại, tối giản)',
+                                        "'Be Vietnam Pro', sans-serif"       => 'Be Vietnam Pro (Việt Nam)',
+                                        "'Roboto', sans-serif"               => 'Roboto (Google Standard)',
+                                        "'Outfit', sans-serif"               => 'Outfit (Premium Design)',
+                                        "'Montserrat', sans-serif"           => 'Montserrat (Mạnh mẽ)',
+                                        "'Barlow', sans-serif"               => 'Barlow (Phù hợp Tech/Auto)',
+                                        "'Playfair Display', serif"          => 'Playfair Display (Sang trọng)',
+                                        "'Open Sans', sans-serif"            => 'Open Sans (Dễ đọc)',
                                     ];
                                 @endphp
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -683,6 +737,117 @@
                                 <div class="flex gap-4 p-4 bg-orange-50 rounded-2xl border border-orange-100 mt-6 mt-4">
                                     <i class="fa-solid fa-circle-info text-orange-400 mt-0.5"></i>
                                     <p class="text-[10px] font-bold text-orange-600 leading-relaxed uppercase tracking-widest">Lưu ý: Font Weights chỉ có tác dụng nếu Font bạn chọn (trong tab Fonts) có hỗ trợ các trọng lượng tương ứng.</p>
+                                </div>
+                            </div>
+                        </div>
+                        {{-- LOGO & ICONS --}}
+                    <div x-show="activeTab === 'logo_icons'" x-cloak
+                        x-transition:enter="transition ease-out duration-300 transform"
+                        x-transition:enter-start="opacity-0 translate-y-4"
+                        x-transition:enter-end="opacity-100 translate-y-0">
+                        <h2 class="text-3xl font-black text-slate-800 tracking-tighter mb-8 uppercase">LOGO & HỆ THỐNG ICON</h2>
+                        
+                        <div class="space-y-12">
+                            {{-- Section: Site Logos --}}
+                            <div class="bg-slate-50/50 p-8 rounded-[2.5rem] border border-slate-100">
+                                <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-6 border-b border-slate-200 pb-2 flex items-center gap-2">
+                                    <i class="fa-solid fa-image text-blue-500"></i> LOGO WEBSITE
+                                </h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                                    <div class="space-y-4">
+                                        <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Logo chính (Header)</label>
+                                        <div class="flex gap-2">
+                                            <input type="text" name="settings[site_logo]" id="logo_main" value="{{ $settingsMap['site_logo'] ?? '' }}"
+                                                class="form-input rounded-2xl border-slate-100 py-4 font-mono text-[10px]">
+                                            <button type="button" onclick="openMediaPicker('logo_main')" 
+                                                class="bg-blue-600 text-white px-6 rounded-2xl font-black text-[10px] uppercase flex-shrink-0 shadow-lg shadow-blue-500/20 active:scale-95 transition-all">CHỌN</button>
+                                        </div>
+                                        <div class="p-6 bg-white rounded-3xl border border-slate-100 flex items-center justify-center min-h-[120px]">
+                                            <img src="{{ !empty($settingsMap['site_logo']) ? asset($settingsMap['site_logo']) : asset('theme/images/logo/logo-01.svg') }}" 
+                                                class="max-h-16 object-contain">
+                                        </div>
+                                    </div>
+                                    <div class="space-y-4">
+                                        <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Favicon (32x32px)</label>
+                                        <div class="flex gap-2">
+                                            <input type="text" name="settings[site_favicon]" id="logo_favicon" value="{{ $settingsMap['site_favicon'] ?? '' }}"
+                                                class="form-input rounded-2xl border-slate-100 py-4 font-mono text-[10px]">
+                                            <button type="button" onclick="openMediaPicker('logo_favicon')" 
+                                                class="bg-blue-600 text-white px-6 rounded-2xl font-black text-[10px] uppercase flex-shrink-0 shadow-lg shadow-blue-500/20 active:scale-95 transition-all">CHỌN</button>
+                                        </div>
+                                        <div class="p-6 bg-white rounded-3xl border border-slate-100 flex items-center justify-center min-h-[120px]">
+                                            @if(!empty($settingsMap['site_favicon']))
+                                                <img src="{{ asset($settingsMap['site_favicon']) }}" class="w-10 h-10 object-contain">
+                                            @else
+                                                <div class="text-slate-200"><i class="fa-solid fa-image-slash text-4xl"></i></div>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- Section: Header Action Icons --}}
+                            <div class="bg-slate-50/50 p-8 rounded-[2.5rem] border border-slate-100">
+                                <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-6 border-b border-slate-200 pb-2 flex items-center gap-2">
+                                    <i class="fa-solid fa-shapes text-orange-400"></i> ICON HÀNH ĐỘNG (ACTION ICONS)
+                                </h3>
+                                <p class="text-[10px] font-bold text-slate-400 mb-6 uppercase">Bạn có thể dùng class FontAwesome (ex: fa-light fa-cart-shopping) hoặc Link ảnh SVG</p>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                                    @php
+                                        $actionIcons = [
+                                            'icon_cart' => ['label' => 'Giỏ hàng', 'default' => 'fa-light fa-cart-shopping'],
+                                            'icon_user' => ['label' => 'Tài khoản', 'default' => 'fa-light fa-user'],
+                                            'icon_wishlist' => ['label' => 'Yêu thích', 'default' => 'fa-light fa-heart'],
+                                            'icon_search' => ['label' => 'Tìm kiếm', 'default' => 'fa-light fa-magnifying-glass'],
+                                        ];
+                                    @endphp
+                                    @foreach($actionIcons as $key => $icon)
+                                        <div class="space-y-4">
+                                            <label class="text-[9px] font-black text-slate-500 uppercase tracking-widest">{{ $icon['label'] }}</label>
+                                            <div class="flex gap-1">
+                                                <input type="text" name="settings[{{ $key }}]" id="icon_{{ $key }}" value="{{ $settingsMap[$key] ?? $icon['default'] }}"
+                                                    class="form-input rounded-xl border-slate-100 py-3 text-[11px]">
+                                                <button type="button" onclick="openMediaPicker('icon_{{ $key }}')" 
+                                                    class="bg-slate-200 text-slate-600 px-3 rounded-xl flex-shrink-0 hover:bg-slate-300 transition-all"><i class="fa-solid fa-image"></i></button>
+                                            </div>
+                                            <div class="h-16 bg-white rounded-2xl border border-slate-100 flex items-center justify-center">
+                                                @php $val = $settingsMap[$key] ?? $icon['default']; @endphp
+                                                @if(\Illuminate\Support\Str::contains($val, 'fa-') && !\Illuminate\Support\Str::contains($val, '/'))
+                                                    <i class="{{ $val }} text-2xl text-blue-600"></i>
+                                                @else
+                                                    <img src="{{ asset($val) }}" class="h-8 w-8 object-contain">
+                                                @endif
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+
+                            {{-- Section: Other Theme Icons --}}
+                            <div class="bg-slate-50/50 p-8 rounded-[2.5rem] border border-slate-100">
+                                <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-6 border-b border-slate-200 pb-2 flex items-center gap-2">
+                                    <i class="fa-solid fa-sliders text-teal-400"></i> ICON CHỨC NĂNG KHÁC
+                                </h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div>
+                                        <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 block">Icon Menu Danh mục (Category Bar)</label>
+                                        <div class="flex gap-2">
+                                            <input type="text" name="settings[icon_category_bar]" id="icon_cat_bar" value="{{ $settingsMap['icon_category_bar'] ?? 'fa-solid fa-bars' }}"
+                                                class="form-input rounded-2xl border-slate-100 py-4 font-mono text-xs">
+                                            <button type="button" onclick="openMediaPicker('icon_cat_bar')" 
+                                                class="bg-blue-600 text-white px-6 rounded-2xl font-black text-[10px] uppercase flex-shrink-0 active:scale-95 transition-all">CHỌN</button>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 block">Icon Nút Quay lại đầu trang (Back to top)</label>
+                                        <div class="flex gap-2">
+                                            <input type="text" name="settings[icon_back_to_top]" id="icon_btt" value="{{ $settingsMap['icon_back_to_top'] ?? 'fa-solid fa-arrow-up' }}"
+                                                class="form-input rounded-2xl border-slate-100 py-4 font-mono text-xs">
+                                            <button type="button" onclick="openMediaPicker('icon_btt')" 
+                                                class="bg-blue-600 text-white px-6 rounded-2xl font-black text-[10px] uppercase flex-shrink-0 active:scale-95 transition-all">CHỌN</button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>

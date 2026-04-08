@@ -17,32 +17,53 @@ class Product extends Model
     public array $translatableFields = ['name', 'short_description', 'description', 'additional_info', 'meta_title', 'meta_description'];
 
     protected $fillable = [
-        'name', 'slug', 'short_description', 'description', 'additional_info',
-        'price', 'compare_price', 'cost_price', 'sku',
-        'stock', 'stock_status', 'has_variants', 'weight',
-        'status', 'is_featured', 'is_favorite', 'is_best_seller', 'sort_order',
-        'image', 'images',
+        'name',
+        'slug',
+        'short_description',
+        'description',
+        'additional_info',
+        'price',
+        'compare_price',
+        'cost_price',
+        'sku',
+        'stock',
+        'stock_status',
+        'has_variants',
+        'weight',
+        'status',
+        'is_featured',
+        'is_favorite',
+        'is_best_seller',
+        'sort_order',
+        'image',
+        'images',
         'category_id',
-        'meta_title', 'meta_description', 'meta_keywords', 'canonical_url', 'seo_focus_keyword', 'robots_meta', 'schema_json',
+        'meta_title',
+        'meta_description',
+        'meta_keywords',
+        'canonical_url',
+        'seo_focus_keyword',
+        'robots_meta',
+        'schema_json',
     ];
 
     protected $casts = [
-        'price'         => 'decimal:0',
+        'price' => 'decimal:0',
         'compare_price' => 'decimal:0',
-        'cost_price'    => 'decimal:0',
-        'images'        => 'array',
-        'has_variants'  => 'boolean',
-        'is_featured'   => 'boolean',
-        'is_favorite'   => 'boolean',
+        'cost_price' => 'decimal:0',
+        'images' => 'array',
+        'has_variants' => 'boolean',
+        'is_featured' => 'boolean',
+        'is_favorite' => 'boolean',
         'is_best_seller' => 'boolean',
-        'schema_json'   => 'array',
-        'robots_meta'   => 'array',
+        'schema_json' => 'array',
+        'robots_meta' => 'array',
     ];
 
     protected static function boot()
     {
         parent::boot();
-        
+
         static::creating(function ($product) {
             if (empty($product->slug)) {
                 $product->slug = Str::slug($product->name);
@@ -59,15 +80,15 @@ class Product extends Model
     public function attributes()
     {
         return $this->belongsToMany(Attribute::class, 'product_attributes')
-                    ->withPivot('attribute_value_id')
-                    ->withTimestamps();
+            ->withPivot('attribute_value_id')
+            ->withTimestamps();
     }
 
     public function attributeValues()
     {
         return $this->belongsToMany(AttributeValue::class, 'product_attributes')
-                    ->withPivot('attribute_id')
-                    ->withTimestamps();
+            ->withPivot('attribute_id')
+            ->withTimestamps();
     }
 
     public function productAttributes()
@@ -93,8 +114,8 @@ class Product extends Model
     public function combos()
     {
         return $this->belongsToMany(Product::class, 'product_combos', 'product_id', 'combo_product_id')
-                    ->withPivot('combo_product_variant_id', 'combo_price', 'discount_type', 'discount_value', 'sort_order', 'is_active')
-                    ->withTimestamps();
+            ->withPivot('combo_product_variant_id', 'combo_price', 'discount_type', 'discount_value', 'sort_order', 'is_active')
+            ->withTimestamps();
     }
 
     public function activeCombos()
@@ -125,27 +146,67 @@ class Product extends Model
 
     public function getThumbnailUrlAttribute(): ?string
     {
-        if (!$this->image) return null;
-        if (str_starts_with($this->image, 'http')) return $this->image;
-        if (str_starts_with($this->image, 'media/')) return asset('storage/' . $this->image);
+        if (!$this->image)
+            return null;
+        if (str_starts_with($this->image, 'http'))
+            return $this->image;
+        if (str_starts_with($this->image, 'media/'))
+            return asset('storage/' . $this->image);
         return asset($this->image);
     }
 
     public function getFormattedPriceAttribute()
     {
-        if ($this->price <= 0) {
+        $price = $this->effective_price;
+        if ($price <= 0) {
             return 'Giá liên hệ';
         }
-        return number_format((float)$this->price, 0, ',', '.') . ' ₫';
+        return number_format((float) $price, 0, ',', '.') . ' ₫';
+    }
+
+    public function getOldPriceAttribute(): ?float
+    {
+        // Nếu đang có flash sale, giá cũ là giá thường của sản phẩm
+        if ($this->flash_price !== null) {
+            return (float) $this->price;
+        }
+
+        // Nếu không có flash sale, giá cũ là compare_price (nếu lớn hơn giá hiện tại)
+        if ($this->compare_price && $this->compare_price > $this->price) {
+            return (float) $this->compare_price;
+        }
+
+        return null;
     }
 
     public function getDiscountPercentAttribute(): ?int
     {
-        if ($this->price <= 0) return null;
-        if ($this->compare_price && $this->compare_price > $this->price) {
-            return (int) round((1 - $this->price / $this->compare_price) * 100);
+        $currentPrice = $this->effective_price;
+        $oldPrice = $this->old_price;
+
+        if ($currentPrice <= 0 || !$oldPrice || $oldPrice <= $currentPrice) {
+            return null;
         }
-        return null;
+
+        return (int) round((1 - $currentPrice / $oldPrice) * 100);
+    }
+
+    public function getImagesAttribute($value)
+    {
+        return json_decode($value) ?: [];
+    }
+
+    public function getImagesUrlsAttribute(): array
+    {
+        return array_map(function ($img) {
+            if (!$img)
+                return null;
+            if (str_starts_with($img, 'http'))
+                return $img;
+            if (str_starts_with($img, 'media/'))
+                return asset('storage/' . $img);
+            return asset($img);
+        }, $this->images);
     }
 
     public function getHasContactPriceAttribute(): bool
@@ -160,7 +221,8 @@ class Product extends Model
     public function getFlashPriceAttribute(): ?float
     {
         $item = app(\App\Services\FlashSaleService::class)->getActiveItemForProduct($this);
-        if (!$item) return null;
+        if (!$item)
+            return null;
         return $item->calcFlashPrice((float) $this->price);
     }
 
@@ -178,7 +240,8 @@ class Product extends Model
     public function getFlashDiscountPercentAttribute(): ?int
     {
         $flashPrice = $this->flash_price;
-        if ($flashPrice === null) return null;
+        if ($flashPrice === null)
+            return null;
         return (int) round((1 - $flashPrice / $this->price) * 100);
     }
 

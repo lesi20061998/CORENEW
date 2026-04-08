@@ -17,8 +17,9 @@ class WidgetController extends Controller
         $areas         = $this->widgetService->areas();
         $widgetsByArea = $this->widgetService->widgetsByArea();
         $categories    = \App\Models\Category::where('is_active', true)->orderBy('name')->get(['id','name']);
+        $campaigns     = \App\Models\FlashSaleCampaign::where('status', 'active')->orderBy('starts_at', 'desc')->get(['id', 'name', 'status']);
 
-        return view('admin.widgets.index', compact('types', 'areas', 'widgetsByArea', 'categories'));
+        return view('admin.widgets.index', compact('types', 'areas', 'widgetsByArea', 'categories', 'campaigns'));
     }
 
     public function create(Request $request)

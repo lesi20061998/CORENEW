@@ -31,10 +31,10 @@
                         <a class="shop-now-goshop-btn" href="{{ $item['btn_link'] ?? '#' }}">
                             <span class="text">{{ $item['btn_text'] ?? 'Mua ngay' }}</span>
                             <div class="plus-icon">
-                                <i class="fa-sharp fa-regular fa-plus"></i>
+                                <x-theme-icon name="plus" />
                             </div>
                             <div class="plus-icon">
-                                <i class="fa-sharp fa-regular fa-plus"></i>
+                                <x-theme-icon name="plus" />
                             </div>
                         </a>
                     </div>

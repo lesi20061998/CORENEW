@@ -53,7 +53,7 @@
                 activeCategory: config.initialCategory || '',
                 currentMin: 0,
                 currentMax: 0,
-                sortBy: 'newest',
+                sortBy: 'default',
                 searchQuery: '',
 
                 init() {
@@ -79,9 +79,16 @@
 
                     result = result.filter(p => p.price >= this.currentMin && p.price <= this.currentMax);
 
-                    if (this.sortBy === 'price_asc') result.sort((a, b) => a.price - b.price);
-                    else if (this.sortBy === 'price_desc') result.sort((a, b) => b.price - a.price);
-                    else result.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+                    if (this.sortBy === 'price_asc') {
+                        result.sort((a, b) => (Number(a.price) || 0) - (Number(b.price) || 0));
+                    } else if (this.sortBy === 'price_desc') {
+                        result.sort((a, b) => (Number(b.price) || 0) - (Number(a.price) || 0));
+                    } else if (this.sortBy === 'newest') {
+                        result.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+                    } else {
+                        // Default: sort_order ASC, then created_at DESC
+                        result.sort((a, b) => (Number(a.sort_order) - Number(b.sort_order)) || (new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
+                    }
 
                     this.filteredProducts = result;
                 },
@@ -109,12 +116,12 @@
                     <div class="col-lg-12">
                         <div class="navigator-breadcrumb-wrapper">
                             <a href="{{ route('home') }}">Trang chủ</a>
-                            <i class="fa-regular fa-chevron-right"></i>
+                            <x-theme-icon name="chevron-right" />
                             <a class="current" href="{{ route('shop.index') }}">Cửa hàng</a>
                             <template x-if="activeCategory">
                                 <span class="d-flex align-items-center">
-                                    <i class="fa-regular fa-chevron-right ml--5 mr--5"></i>
-                                    <span class="current" x-text="activeCategory"></span>
+                                    <x-theme-icon name="chevron-right" class="ml--5 mr--5" />
+                                    <span class="current" x-text="activeCategory.charAt(0).toUpperCase() + activeCategory.slice(1).replace(/-/g, ' ')"></span>
                                 </span>
                             </template>
                         </div>
@@ -182,7 +189,7 @@
                                 <div class="filterbox-body">
                                     <div class="search-input-area-menu" style="position: relative;">
                                         <input type="text" x-model="searchQuery" @input.debounce.300ms="applyFilter()" placeholder="Tìm sản phẩm..." style="width: 100%; padding: 10px; border: 1px solid #eee; border-radius: 5px;">
-                                        <i class="fa-light fa-magnifying-glass" style="position: absolute; right: 15px; top: 15px; color: #999;"></i>
+                                        <x-theme-icon name="search" style="position: absolute; right: 15px; top: 15px; color: #999;" />
                                     </div>
                                 </div>
                             </div>
@@ -195,7 +202,11 @@
                             <div class="top-filter">
                                 <span>Hiển thị <strong x-text="filteredProducts.length"></strong> sản phẩm</span>
                                 <div class="right-end">
-                                    <select x-model="sortBy" @change="applyFilter()" class="form-select border-0 bg-transparent font-bold">
+                                    <select 
+                                        x-model="sortBy" 
+                                        x-init="$( $el ).on('change', (e) => { sortBy = e.target.value; applyFilter(); })" 
+                                        class="form-select border-0 bg-transparent font-bold">
+                                        <option value="default">Mặc định (Ưu tiên)</option>
                                         <option value="newest">Mới nhất</option>
                                         <option value="price_asc">Giá: Thấp đến Cao</option>
                                         <option value="price_desc">Giá: Cao đến Thấp</option>
@@ -208,7 +219,7 @@
                             <div class="row g-4">
                                 <template x-if="filteredProducts.length === 0">
                                     <div class="col-12 text-center py--100">
-                                        <i class="fa-light fa-box-open mb--20" style="font-size: 60px; color: #ccc;"></i>
+                                        <x-theme-icon name="box-open" mb--20 style="font-size: 60px; color: #ccc;" />
                                         <h5>Không tìm thấy sản phẩm nào!</h5>
                                         <p>Vui lòng thử lại với bộ lọc khác.</p>
                                     </div>
@@ -219,23 +230,42 @@
                                         <div class="single-shopping-card-one">
                                             <div class="image-and-action-area-wrapper">
                                                 <a :href="product.url" class="thumbnail-preview">
-                                                    <template x-if="product.discount_percent > 0">
-                                                        <div class="badge">
-                                                            <span x-html="product.discount_percent + '% <br> Off'"></span>
-                                                            <i class="fa-solid fa-bookmark"></i>
-                                                        </div>
-                                                    </template>
+                                                    <div class="badge-container" style="position: absolute; left: 10px; top: 10px; z-index: 10; display: flex; flex-direction: column; gap: 40px;">
+                                                        <!-- Discount Badge -->
+                                                        <template x-if="product.discount_percent > 0">
+                                                            <div class="badge" style="position: relative; left: 0; top: 0; margin-bottom: -15px;">
+                                                                <span x-html="product.discount_percent + '% <br> Giảm'"></span>
+                                                                <x-theme-icon name="bookmark" />
+                                                            </div>
+                                                        </template>
+                                                        
+                                                        <!-- Best Seller Badge -->
+                                                        <template x-if="product.is_best_seller">
+                                                            <div class="badge" style="position: relative; left: 0; top: 0; margin-bottom: -15px;">
+                                                                <span style="top: 15px; left: 14px; font-size: 9px; line-height: 1;">BÁN <br> CHẠY</span>
+                                                                <x-theme-icon name="bookmark" style="color: #ff4d4d !important;" />
+                                                            </div>
+                                                        </template>
+
+                                                        <!-- Featured Badge -->
+                                                        <template x-if="product.is_featured">
+                                                            <div class="badge" style="position: relative; left: 0; top: 0;">
+                                                                <span style="top: 15px; left: 14px; font-size: 9px; line-height: 1;">NỔI <br> BẬT</span>
+                                                                <x-theme-icon name="bookmark" style="color: #4d94ff !important;" />
+                                                            </div>
+                                                        </template>
+                                                    </div>
                                                     <img :src="product.thumbnail_url" :alt="product.name">
                                                 </a>
                                                 <div class="action-share-option">
                                                     <div class="single-action" @click="cwAction.addWishlist(product.id, $event.target)">
-                                                        <i class="fa-light fa-heart"></i>
+                                                        <x-theme-icon name="heart" />
                                                     </div>
                                                     <div class="single-action" @click="cwAction.addCompare(product.id, $event.target)">
-                                                        <i class="fa-solid fa-arrows-retweet"></i>
+                                                        <x-theme-icon name="arrows-retweet" />
                                                     </div>
                                                     <div class="single-action cta-quickview" @click="cwAction.quickView(product.id)">
-                                                        <i class="fa-regular fa-eye"></i>
+                                                        <x-theme-icon name="eye" />
                                                     </div>
                                                 </div>
                                             </div>
@@ -247,21 +277,24 @@
                                                 <div class="price-area">
                                                     <span class="current" x-text="product.formatted_price"></span>
                                                     <template x-if="product.old_price > product.price">
-                                                        <div class="previous" x-text="product.formatted_old_price"></div>
+                                                        <div style="display: flex; align-items: center; gap: 5px;">
+                                                            <div class="previous" x-text="product.formatted_old_price"></div>
+                                                            <span style="background: var(--color-danger); color: white; border-radius: 4px; padding: 2px 6px; font-size: 12px; font-weight: 700;" x-text="'-' + product.discount_percent + '%'"></span>
+                                                        </div>
                                                     </template>
                                                 </div>
                                                 <div class="cart-counter-action" x-data="{ qty: 1 }">
                                                     <div class="quantity-edit">
                                                         <input type="text" class="input" x-model="qty" readonly>
                                                         <div class="button-wrapper-action">
-                                                            <button class="button" @click="qty > 1 ? qty-- : 1"><i class="fa-regular fa-chevron-down"></i></button>
-                                                            <button class="button plus" @click="qty++"><i class="fa-regular fa-chevron-up"></i></button>
+                                                            <button class="button" @click="qty > 1 ? qty-- : 1"><x-theme-icon name="chevron-down" /></button>
+                                                            <button class="button plus" @click="qty++"><x-theme-icon name="chevron-up" /></button>
                                                         </div>
                                                     </div>
                                                     <a href="javascript:void(0);" @click="cart.add(product.id, $event.target, qty)" class="rts-btn btn-primary radious-sm with-icon">
                                                         <div class="btn-text">Thêm</div>
-                                                        <div class="arrow-icon"><i class="fa-regular fa-cart-shopping"></i></div>
-                                                        <div class="arrow-icon"><i class="fa-regular fa-cart-shopping"></i></div>
+                                                        <div class="arrow-icon"><x-theme-icon name="cart" /></div>
+                                                        <div class="arrow-icon"><x-theme-icon name="cart" /></div>
                                                     </a>
                                                 </div>
                                             </div>

@@ -155,9 +155,21 @@ function buildField(field, value, prefix) {
     let input = '';
     if (field.type === 'text' || field.type === 'image') {
         const val = escHtml(value ?? '');
-        input = `<input type="text" name="${name}" class="form-input" value="${val}" placeholder="${field.placeholder ?? ''}">`;
+        const fieldId = `field_${name.replace(/[\[\]]/g, '_')}`;
         if (field.type === 'image') {
-            input += `<p class="form-hint">URL ảnh hoặc chọn từ <a href="/admin/media" target="_blank" style="color:#2563eb;">Thư viện</a></p>`;
+            input = `
+                <div style="display:flex;gap:8px;align-items:center;">
+                    <input type="text" id="${fieldId}" name="${name}" class="form-input" value="${val}" placeholder="${field.placeholder ?? 'URL ảnh hoặc chọn từ thư viện'}">
+                    <button type="button" onclick="openMediaPicker('${fieldId}')"
+                        style="flex-shrink:0;padding:0 14px;height:42px;background:#2563eb;color:#fff;border:none;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;">
+                        <i class="fa-solid fa-image"></i> Chọn
+                    </button>
+                </div>
+                <div id="${fieldId}_preview" style="margin-top:6px;">
+                    ${val ? `<img src="${val}" style="height:60px;border-radius:6px;object-fit:cover;border:1px solid #e2e8f0;" onerror="this.style.display='none'">` : ''}
+                </div>`;
+        } else {
+            input = `<input type="text" id="${fieldId}" name="${name}" class="form-input" value="${val}" placeholder="${field.placeholder ?? ''}">`;
         }
     } else if (field.type === 'textarea') {
         input = `<textarea name="${name}" class="form-textarea" rows="3" placeholder="${field.placeholder ?? ''}">${escHtml(value ?? '')}</textarea>`;
@@ -207,6 +219,7 @@ function buildRepeater(field, rows, prefix) {
 function buildRepeaterRow(field, data, name, idx) {
     const subFields = (field.fields ?? []).map(sf => {
         const val = escHtml(data[sf.key] ?? sf.default ?? '');
+        const sfId = `field_${name}_${idx}_${sf.key}`.replace(/[\[\]]/g, '_');
         let inp = '';
         if (sf.type === 'textarea') {
             inp = `<textarea name="${name}[${idx}][${sf.key}]" class="form-textarea" rows="2">${val}</textarea>`;
@@ -215,8 +228,20 @@ function buildRepeaterRow(field, data, name, idx) {
                 `<option value="${k}" ${data[sf.key] == k ? 'selected' : ''}>${v}</option>`
             ).join('');
             inp = `<select name="${name}[${idx}][${sf.key}]" class="form-select">${opts}</select>`;
+        } else if (sf.type === 'image') {
+            inp = `
+                <div style="display:flex;gap:8px;align-items:center;">
+                    <input type="text" id="${sfId}" name="${name}[${idx}][${sf.key}]" class="form-input" value="${val}" placeholder="${sf.label}">
+                    <button type="button" onclick="openMediaPicker('${sfId}')"
+                        style="flex-shrink:0;padding:0 12px;height:42px;background:#2563eb;color:#fff;border:none;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;">
+                        <i class="fa-solid fa-image"></i> Chọn
+                    </button>
+                </div>
+                <div id="${sfId}_preview" style="margin-top:4px;">
+                    ${val ? `<img src="${val}" style="height:50px;border-radius:6px;object-fit:cover;border:1px solid #e2e8f0;" onerror="this.style.display='none'">` : ''}
+                </div>`;
         } else {
-            inp = `<input type="text" name="${name}[${idx}][${sf.key}]" class="form-input" value="${val}" placeholder="${sf.label}">`;
+            inp = `<input type="text" id="${sfId}" name="${name}[${idx}][${sf.key}]" class="form-input" value="${val}" placeholder="${sf.label}">`;
         }
         return `<div style="margin-bottom:8px;"><label class="form-label" style="font-size:11.5px;">${sf.label}</label>${inp}</div>`;
     }).join('');
@@ -263,6 +288,17 @@ function reindexRows(rows, name, field) {
     rows.querySelectorAll('.repeater-row').forEach((row, idx) => {
         row.querySelectorAll('input,textarea,select').forEach(el => {
             el.name = el.name.replace(/\[\d+\]/, `[${idx}]`);
+            // Reindex id too so media picker can find the element
+            if (el.id) {
+                el.id = el.id.replace(/_\d+_/, `_${idx}_`);
+            }
+        });
+        // Reindex preview divs and picker buttons
+        row.querySelectorAll('[id$="_preview"]').forEach(el => {
+            el.id = el.id.replace(/_\d+_/, `_${idx}_`);
+        });
+        row.querySelectorAll('button[onclick^="openMediaPicker"]').forEach(btn => {
+            btn.setAttribute('onclick', btn.getAttribute('onclick').replace(/_\d+_/, `_${idx}_`));
         });
     });
 }

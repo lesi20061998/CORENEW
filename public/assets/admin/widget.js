@@ -160,6 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Accept': 'application/json',
                 'X-CSRF-TOKEN': window.CSRF_TOKEN
             },
             body: JSON.stringify({ items: payload })
@@ -182,9 +183,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
         fetch(window.STORE_URL, {
             method: 'POST',
-            body: fd
+            body: fd,
+            headers: {
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': window.CSRF_TOKEN
+            }
         })
-        .then(res => res.json())
+        .then(async res => {
+            if (!res.ok) {
+                const text = await res.text();
+                throw new Error(`Server Error: ${res.status}. Check console for details.`);
+            }
+            return res.json();
+        })
         .then(data => {
             if (data.success) {
                 location.reload(); // Simplest way to get full UI back for the new widget
@@ -214,7 +225,10 @@ document.addEventListener('DOMContentLoaded', () => {
 window.togglePlacedWidget = (id, btn) => {
     fetch(window.TOGGLE_URL.replace('{id}', id), {
         method: 'POST',
-        headers: { 'X-CSRF-TOKEN': window.CSRF_TOKEN }
+        headers: { 
+            'X-CSRF-TOKEN': window.CSRF_TOKEN,
+            'Accept': 'application/json'
+        }
     })
     .then(r => r.json())
     .then(d => {

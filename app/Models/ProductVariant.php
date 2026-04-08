@@ -7,15 +7,23 @@ use Illuminate\Database\Eloquent\Model;
 class ProductVariant extends Model
 {
     protected $fillable = [
-        'product_id','sku','price','compare_price','cost_price',
-        'stock','image','description','is_active','sort_order'
+        'product_id',
+        'sku',
+        'price',
+        'compare_price',
+        'cost_price',
+        'stock',
+        'image',
+        'description',
+        'is_active',
+        'sort_order'
     ];
 
     protected $casts = [
-        'price'         => 'decimal:0',
+        'price' => 'decimal:0',
         'compare_price' => 'decimal:0',
-        'cost_price'    => 'decimal:0',
-        'is_active'     => 'boolean',
+        'cost_price' => 'decimal:0',
+        'is_active' => 'boolean',
     ];
 
     public function product()
@@ -31,7 +39,7 @@ class ProductVariant extends Model
     public function attributeValues()
     {
         return $this->belongsToMany(AttributeValue::class, 'product_variant_attributes', 'variant_id', 'attribute_value_id')
-                    ->withPivot('attribute_id');
+            ->withPivot('attribute_id');
     }
 
     /** "Size: M / Màu: Đỏ" */

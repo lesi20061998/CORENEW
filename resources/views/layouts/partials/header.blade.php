@@ -57,12 +57,7 @@
                                         <li><a href="#" class="menu-item"><span>English</span></a></li>
                                     </ul>
                                 </li>
-                                <li class="category-hover-header language-hover">
-                                    <a href="#">VND</a>
-                                    <ul class="category-sub-menu">
-                                        <li><a href="#" class="menu-item"><span>USD</span></a></li>
-                                    </ul>
-                                </li>
+                                
                                 <li><a href="{{ route('order.track') }}">Track Order</a></li>
                             </ul>
                         </div>
@@ -77,73 +72,207 @@
                 <div class="col-lg-12">
                     <div class="logo-search-category-wrapper">
                         <a href="{{ route('home') }}" class="logo-area">
-                            @if(setting('site_logo'))
-                                <img src="{{ asset(setting('site_logo')) }}" alt="{{ setting('site_name', 'VietTinMart') }}"
-                                    class="logo" style="max-height: {{ setting('logo_height', '45') }}px; width: auto;">
-                            @else
-                                <img src="{{ asset('theme/images/logo/logo-01.svg') }}" alt="logo-main" class="logo">
-                            @endif
+                            <x-theme-image name="logo" :default="setting('site_logo')" :alt="setting('site_name', 'VietTinMart')" class="logo" style="max-height: {{ setting('logo_height', '45') }}px; width: auto;" />
                         </a>
                         <div class="category-search-wrapper">
                             <div class="category-btn category-hover-header">
-                                <img class="parent" src="{{ asset('theme/images/icons/bar-1.svg') }}" alt="icons">
+                                <x-theme-icon name="category" :default="setting('icon_category_bar')" class="parent" />
                                 <span>Categories</span>
-                                <ul class="category-sub-menu" id="category-active-four">
+                                <ul class="category-sub-menu" id="category-active-four" style="max-height: 450px; overflow-y: auto;">
                                     @foreach(\App\Models\Category::where('is_active', true)->where('type', 'product')->orderBy('sort_order')->limit(20)->get() as $cat)
                                         <li>
                                             <a href="{{ route('shop.category', ['category_slug' => $cat->slug]) }}"
                                                 class="menu-item">
-                                                @if($cat->icon)
-                                                    <img src="{{ asset($cat->icon) }}" alt="icons">
-                                                @else
-                                                    <img src="{{ asset('theme/images/icons/01.svg') }}" alt="icons">
-                                                @endif
+                                                <x-theme-icon :name="$cat->icon ?: 'placeholder'" default="theme/images/icons/01.svg" />
                                                 <span>{{ $cat->name }}</span>
                                             </a>
                                         </li>
                                     @endforeach
                                 </ul>
                             </div>
-                            <form action="{{ route('shop.index') }}" class="search-header">
-                                <input name="q" type="text" placeholder="Search for products, categories or brands"
-                                    required>
+                            <form action="{{ route('shop.index') }}" class="search-header" id="header-search-form" style="position: relative;">
+                                <input name="q" type="text" id="header-search-input" placeholder="{{ setting('search_placeholder', 'Bạn muốn mua gì?') }}"
+                                    required autocomplete="off">
                                 <button type="submit" class="rts-btn btn-primary radious-sm with-icon">
-                                    <div class="btn-text">Search</div>
+                                    <div class="btn-text">Tìm kiếm</div>
                                     <div class="arrow-icon"><i class="fa-light fa-magnifying-glass"></i></div>
                                     <div class="arrow-icon"><i class="fa-light fa-magnifying-glass"></i></div>
                                 </button>
+                                <div id="search-results-dropdown" class="search-results-dropdown" style="display: none;">
+                                    {{-- Results will be injected here --}}
+                                </div>
                             </form>
+
+                            <style>
+                                .search-results-dropdown {
+                                    position: absolute;
+                                    top: 100%;
+                                    left: 0;
+                                    right: 0;
+                                    background: #fff;
+                                    border-radius: 0 0 10px 10px;
+                                    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+                                    z-index: 1000;
+                                    max-height: 500px;
+                                    overflow-y: auto;
+                                    border: 1px solid #eee;
+                                    margin-top: 5px;
+                                }
+                                .search-result-item {
+                                    display: flex;
+                                    align-items: center;
+                                    padding: 12px 15px;
+                                    border-bottom: 1px solid #f5f5f5;
+                                    transition: all 0.2s;
+                                    text-decoration: none !important;
+                                }
+                                .search-result-item:last-child {
+                                    border-bottom: none;
+                                }
+                                .search-result-item:hover {
+                                    background: #f9f9f9;
+                                }
+                                .search-result-image {
+                                    width: 50px;
+                                    height: 50px;
+                                    object-fit: contain;
+                                    margin-left: 15px;
+                                    order: 2;
+                                    border: 1px solid #eee;
+                                    border-radius: 4px;
+                                }
+                                .search-result-info {
+                                    flex: 1;
+                                    order: 1;
+                                }
+                                .search-result-name {
+                                    display: block;
+                                    font-size: 14px;
+                                    font-weight: 600;
+                                    color: #333;
+                                    margin-bottom: 4px;
+                                    white-space: nowrap;
+                                    overflow: hidden;
+                                    text-overflow: ellipsis;
+                                }
+                                .search-result-price {
+                                    display: flex;
+                                    align-items: center;
+                                    gap: 10px;
+                                }
+                                .search-result-current-price {
+                                    font-size: 14px;
+                                    font-weight: 700;
+                                    color: var(--color-primary);
+                                }
+                                .search-result-old-price {
+                                    font-size: 12px;
+                                    color: #999;
+                                    text-decoration: line-through;
+                                }
+                                .search-result-category {
+                                    display: block;
+                                    font-size: 11px;
+                                    color: #999;
+                                    text-transform: uppercase;
+                                    letter-spacing: 0.5px;
+                                    margin-bottom: 2px;
+                                }
+                                .search-result-badge {
+                                    font-size: 11px;
+                                    background: #ff4d4d;
+                                    color: #fff;
+                                    padding: 1px 6px;
+                                    border-radius: 4px;
+                                    font-weight: 700;
+                                    margin-left: 5px;
+                                }
+                            </style>
+
+                            <script>
+                                document.addEventListener('DOMContentLoaded', function() {
+                                    const searchInput = document.getElementById('header-search-input');
+                                    const resultsDropdown = document.getElementById('search-results-dropdown');
+                                    let timeout = null;
+
+                                    if (searchInput) {
+                                        searchInput.addEventListener('input', function() {
+                                            clearTimeout(timeout);
+                                            const query = this.value.trim();
+
+                                            if (query.length < 2) {
+                                                resultsDropdown.style.display = 'none';
+                                                return;
+                                            }
+
+                                            timeout = setTimeout(() => {
+                                                fetch(`{{ route('shop.suggest') }}?q=${encodeURIComponent(query)}`)
+                                                    .then(response => response.json())
+                                                    .then(data => {
+                                                        if (data.length > 0) {
+                                                            let html = '';
+                                                            data.forEach(product => {
+                                                                html += `
+                                                                     <a href="${product.url}" class="search-result-item">
+                                                                         <div class="search-result-info">
+                                                                             ${product.category ? `<span class="search-result-category">${product.category}</span>` : ''}
+                                                                             <span class="search-result-name">${product.name}</span>
+                                                                             <div class="search-result-price">
+                                                                                 <span class="search-result-current-price">${product.formatted_price}</span>
+                                                                                 ${product.has_discount ? `<span class="search-result-old-price">${product.formatted_old_price}</span>` : ''}
+                                                                                 ${product.discount_percent ? `<span class="search-result-badge">-${product.discount_percent}%</span>` : ''}
+                                                                             </div>
+                                                                         </div>
+                                                                         <img src="${product.thumbnail_url}" class="search-result-image" alt="${product.name}">
+                                                                     </a>
+                                                                `;
+                                                            });
+                                                            resultsDropdown.innerHTML = html;
+                                                            resultsDropdown.style.display = 'block';
+                                                        } else {
+                                                            resultsDropdown.style.display = 'none';
+                                                        }
+                                                    });
+                                            }, 300);
+                                        });
+
+                                        // Close dropdown when clicking outside
+                                        document.addEventListener('click', function(e) {
+                                            if (!searchInput.contains(e.target) && !resultsDropdown.contains(e.target)) {
+                                                resultsDropdown.style.display = 'none';
+                                            }
+                                        });
+
+                                        // Focus shows dropdown if has value
+                                        searchInput.addEventListener('focus', function() {
+                                            if (this.value.trim().length >= 2 && resultsDropdown.children.length > 0) {
+                                                resultsDropdown.style.display = 'block';
+                                            }
+                                        });
+                                    }
+                                });
+                            </script>
                         </div>
                         <div class="actions-area">
                             <div class="search-btn" id="searchs">
-                                <svg width="17" height="16" viewBox="0 0 17 16" fill="none"
-                                    xmlns="http://www.w3.org/2000/svg">
-                                    <path
-                                        d="M15.75 14.7188L11.5625 10.5312C12.4688 9.4375 12.9688 8.03125 12.9688 6.5C12.9688 2.9375 10.0312 0 6.46875 0C2.875 0 0 2.9375 0 6.5C0 10.0938 2.90625 13 6.46875 13C7.96875 13 9.375 12.5 10.5 11.5938L14.6875 15.7812C14.8438 15.9375 15.0312 16 15.25 16C15.4375 16 15.625 15.9375 15.75 15.7812C16.0625 15.5 16.0625 15.0312 15.75 14.7188ZM1.5 6.5C1.5 3.75 3.71875 1.5 6.5 1.5C9.25 1.5 11.5 3.75 11.5 6.5C11.5 9.28125 9.25 11.5 6.5 11.5C3.71875 11.5 1.5 9.28125 1.5 6.5Z"
-                                        fill="#1F1F25"></path>
-                                </svg>
+                                <x-theme-icon name="search" :default="setting('icon_search')" />
                             </div>
                             <div class="menu-btn" id="menu-btn">
-                                <svg width="20" height="16" viewBox="0 0 20 16" fill="none"
-                                    xmlns="http://www.w3.org/2000/svg">
-                                    <rect y="14" width="20" height="2" fill="#1F1F25"></rect>
-                                    <rect y="7" width="20" height="2" fill="#1F1F25"></rect>
-                                    <rect width="20" height="2" fill="#1F1F25"></rect>
-                                </svg>
+                                <x-theme-icon name="category" :default="setting('icon_category_bar')" />
                             </div>
                         </div>
                         <div class="accont-wishlist-cart-area-header">
                             <a href="{{ route('profile') }}" class="btn-border-only account">
-                                <i class="fa-light fa-user"></i>
+                                <x-theme-icon name="user" :default="setting('icon_user')" />
                                 <span>{{ Auth::check() ? Auth::user()->name : 'Tài khoản' }}</span>
                             </a>
                             <a href="{{ route('wishlist') }}" class="btn-border-only wishlist">
-                                <i class="fa-regular fa-heart"></i>
+                                <x-theme-icon name="wishlist" :default="setting('icon_wishlist')" />
                                 <span class="text">Wishlist</span>
                                 <span class="number">{{ count(session()->get('wishlist', [])) }}</span>
                             </a>
                             <div class="btn-border-only cart category-hover-header">
-                                <i class="fa-sharp fa-regular fa-cart-shopping"></i>
+                                <x-theme-icon name="cart" :default="setting('icon_cart')" />
                                 <span class="text">My Cart</span>
                                 <span class="number">{{ count(session()->get('cart', [])) }}</span>
                                 <div class="cart-dropdown-container">
@@ -243,12 +372,12 @@
             </div>
             <div class="tab-pane fade" id="nav-profile" role="tabpanel">
                 <div class="category-btn category-hover-header mobile-menu-category-wrapper mt--30">
-                    <ul class="category-sub-menu" id="category-active-four-mobile">
+                    <ul class="category-sub-menu" id="category-active-four-mobile" style="max-height: 400px; overflow-y: auto;">
                         @foreach(\App\Models\Category::where('is_active', true)->where('type', 'product')->get() as $cat)
                             <li>
                                 <a href="{{ route('shop.category', ['category_slug' => $cat->slug]) }}" class="menu-item">
                                     @if($cat->icon)
-                                        <img src="{{ asset($cat->icon) }}" alt="icons">
+                                        <img src="{{ $cat->icon_url }}" alt="icons">
                                     @else
                                         <img src="{{ asset('theme/images/icons/01.svg') }}" alt="icons">
                                     @endif

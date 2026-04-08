@@ -306,6 +306,7 @@
         $areasJson = [];
         foreach($widgetsByArea as $k => $v) $areasJson[$k] = $v['area']['label'];
         $categoriesJson = isset($categories) ? $categories->map(fn($c) => ['id' => $c->id, 'name' => $c->name])->values() : [];
+        $campaignsJson = isset($campaigns) ? $campaigns->map(fn($c) => ['id' => $c->id, 'name' => $c->name, 'status' => $c->status])->values() : [];
     @endphp
 
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
@@ -320,6 +321,7 @@
         const TYPES = @json($types);
         const AREAS = @json($areasJson);
         const CATEGORIES = @json($categoriesJson);
+        const CAMPAIGNS = @json($campaignsJson);
 
         // Modal Global Vars
         let modalMode = null;
@@ -434,10 +436,36 @@
             });
         }
 
+        function openMediaPicker(btn) {
+            const input = btn.previousElementSibling;
+            const preview = btn.closest('.flex.gap-4').querySelector('img') || btn.closest('.flex.gap-4').querySelector('i');
+            
+            // Simple Prompt for demo, in real life we use a popup manager
+            window.open('{{ route('admin.media.index') }}?picker=1', 'MediaPicker', 'width=1000,height=700');
+            
+            // Listen for selection from the popup
+            window.onMediaSelected = (url) => {
+                input.value = url;
+                if (preview.tagName === 'IMG') preview.src = url;
+                else {
+                    const img = document.createElement('img');
+                    img.src = url;
+                    img.className = 'w-full h-full object-cover';
+                    preview.replaceWith(img);
+                }
+            };
+        }
+
         function buildField(field, value, prefix) {
             const wrap = document.createElement('div');
-            wrap.className = 'bg-white p-6 rounded-2xl border border-slate-150 shadow-sm transition-all hover:shadow-md';
+            wrap.className = field.type === 'repeater' ? 'col-span-12' : 'bg-white p-6 rounded-2xl border border-slate-150 shadow-sm transition-all hover:shadow-md';
             const name = `${prefix}[${field.key}]`;
+
+            if (field.type === 'repeater') {
+                wrap.innerHTML = buildRepeater(field, value ?? [], prefix);
+                initRepeater(wrap, field, prefix);
+                return wrap;
+            }
 
             let input = '';
             if (field.type === 'text' || field.type === 'image') {
@@ -448,7 +476,7 @@
                                 ${value ? `<img src="${value}" class="w-full h-full object-cover">` : `<i class="fa-solid fa-image text-slate-200 text-xl"></i>`}
                             </div>
                             <div class="flex-1 space-y-2">
-                                 <input type="text" name="${name}" class="w-full bg-slate-50 border border-slate-150 rounded-lg px-3 py-2.5 text-xs font-bold text-slate-700 outline-none focus:bg-white transition-all" value="${escHtml(value ?? '')}" placeholder="URL ảnh hoặc chọn...">
+                                 <input type="text" name="${name}" class="w-full bg-slate-50 border border-slate-150 rounded-lg px-3 py-2.5 text-xs font-bold text-slate-700 outline-none focus:bg-white transition-all config-field" value="${escHtml(value ?? '')}" placeholder="URL ảnh hoặc chọn...">
                                  <button type="button" class="text-[10px] font-black text-blue-600 uppercase tracking-widest hover:text-blue-800" onclick="openMediaPicker(this)">
                                      <i class="fa-solid fa-photo-film me-1"></i> Mở thư viện Media
                                  </button>
@@ -456,49 +484,64 @@
                         </div>
                     `;
                 } else {
-                    input = `<input type="text" name="${name}" class="w-full bg-slate-50 border border-slate-150 rounded-lg px-4 py-3 text-sm font-bold text-slate-900 border-none outline-none focus:bg-white transition-all" value="${escHtml(value ?? '')}" placeholder="${field.placeholder ?? ''}">`;
+                    input = `<input type="text" name="${name}" class="w-full bg-slate-50 border border-slate-150 rounded-lg px-4 py-3 text-sm font-bold text-slate-900 border-none outline-none focus:bg-white transition-all config-field" value="${escHtml(value ?? '')}" placeholder="${field.placeholder ?? ''}">`;
                 }
+            } else if (field.type === 'textarea' || field.type === 'html') {
+                input = `<textarea name="${name}" class="w-full bg-slate-50 border-none outline-none font-bold text-sm p-4 rounded-xl focus:bg-white transition-all config-field" rows="${field.type === 'html' ? 10 : 4}" style="${field.type === 'html' ? 'font-family:monospace;' : ''}">${escHtml(value ?? '')}</textarea>`;
             } else if (field.type === 'number') {
-                input = `<input type="number" name="${name}" class="w-full bg-slate-50 border border-slate-150 rounded-lg px-4 py-2 text-sm font-black text-slate-900 outline-none focus:bg-white transition-all" value="${value ?? ''}">`;
+                input = `<input type="number" name="${name}" class="w-full bg-slate-50 border border-slate-150 rounded-lg px-4 py-2 text-sm font-black text-slate-900 outline-none focus:bg-white transition-all config-field" value="${value ?? ''}">`;
+            } else if (field.type === 'toggle') {
+                const checked = value ? 'checked' : '';
+                input = `<label class="flex items-center gap-4 cursor-pointer group">
+                    <input type="hidden" name="${name}" value="0">
+                    <input type="checkbox" name="${name}" value="1" ${checked} class="w-6 h-6 rounded-lg text-blue-600 border-slate-200 config-field">
+                    <span class="text-xs font-black text-slate-500 uppercase tracking-widest group-hover:text-blue-600 transition-colors">${field.label}</span>
+                </label>`;
+                wrap.innerHTML = input;
+                return wrap;
             } else if (field.type === 'color') {
                 input = `<div class="flex items-center gap-3">
-                    <input type="color" name="${name}" class="w-10 h-10 rounded-lg border-none p-0 cursor-pointer" value="${value ?? '#ffffff'}">
+                    <input type="color" name="${name}" class="w-10 h-10 rounded-lg border-none p-0 cursor-pointer config-field" value="${value ?? '#ffffff'}">
                     <input type="text" class="flex-1 bg-slate-50 rounded-lg px-3 py-2 text-xs font-black text-slate-700 uppercase" value="${value ?? '#ffffff'}" oninput="this.previousElementSibling.value=this.value">
                 </div>`;
             } else if (field.type === 'select') {
                 const os = Object.entries(field.options ?? {}).map(([k, v]) => `<option value="${k}" ${value == k ? 'selected' : ''}>${v}</option>`).join('');
-                input = `<select name="${name}" class="w-full bg-slate-50 border-none outline-none font-bold text-xs p-3 rounded-lg">${os}</select>`;
+                input = `<select name="${name}" class="w-full bg-slate-50 border-none outline-none font-bold text-xs p-3 rounded-lg config-field">${os}</select>`;
             } else if (field.type === 'category_select') {
                 const categories = CATEGORIES || [];
                 if (field.multiple === false || field.single === true) {
                     const os = categories.map(c => `<option value="${c.id}" ${value == c.id ? 'selected' : ''}>${escHtml(c.name)}</option>`).join('');
-                    input = `<select name="${name}" class="w-full bg-slate-50 border-none outline-none font-bold text-xs p-3 rounded-lg"><option value="">Tất cả danh mục</option>${os}</select>`;
+                    input = `<select name="${name}" class="w-full bg-slate-50 border-none outline-none font-bold text-xs p-3 rounded-lg config-field"><option value="">Tất cả danh mục</option>${os}</select>`;
                 } else {
                     const selectedIds = Array.isArray(value) ? value.map(String) : (value ? [String(value)] : []);
                     input = `<div class="p-4 bg-slate-50 rounded-xl space-y-2 max-h-48 overflow-y-auto custom-scroll">
                         ${categories.map(c => `
                             <label class="flex items-center gap-3 cursor-pointer group">
-                                <input type="checkbox" name="${name}[]" value="${c.id}" ${selectedIds.includes(String(c.id)) ? 'checked' : ''} class="w-4 h-4 rounded text-blue-600 border-slate-200">
+                                <input type="checkbox" name="${name}[]" value="${c.id}" ${selectedIds.includes(String(c.id)) ? 'checked' : ''} class="w-4 h-4 rounded text-blue-600 border-slate-200 config-field">
                                 <span class="text-xs font-bold text-slate-700 group-hover:text-blue-600 transition-colors uppercase tracking-tight">${escHtml(c.name)}</span>
                             </label>
                         `).join('')}
                     </div>`;
                 }
+            } else if (field.type === 'campaign_select') {
+                const campaigns = CAMPAIGNS || [];
+                const os = campaigns.map(c => `<option value="${c.id}" ${value == c.id ? 'selected' : ''}>${escHtml(c.name)} (${c.status})</option>`).join('');
+                input = `<select name="${name}" class="w-full bg-slate-50 border-none outline-none font-bold text-xs p-3 rounded-lg config-field"><option value="">Tự động lấy chiến dịch mới nhất</option>${os}</select>`;
             } else if (field.type === 'box_model') {
                 const m = value ?? {};
                 input = `<div class="grid grid-cols-2 gap-4">
                     <div class="space-y-2">
                         <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-1">Margin TB/LR</label>
                         <div class="flex gap-2">
-                            <input type="number" name="${name}[margin_top]" class="w-full bg-slate-50 rounded-lg p-2 text-xs font-black" value="${m.margin_top ?? 0}" title="Top">
-                            <input type="number" name="${name}[margin_bottom]" class="w-full bg-slate-50 rounded-lg p-2 text-xs font-black" value="${m.margin_bottom ?? 0}" title="Bottom">
+                            <input type="number" name="${name}[margin_top]" class="w-full bg-slate-50 rounded-lg p-2 text-xs font-black config-field" value="${m.margin_top ?? 0}" title="Top">
+                            <input type="number" name="${name}[margin_bottom]" class="w-full bg-slate-50 rounded-lg p-2 text-xs font-black config-field" value="${m.margin_bottom ?? 0}" title="Bottom">
                         </div>
                     </div>
                     <div class="space-y-2">
                         <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-1">Padding TB/LR</label>
                         <div class="flex gap-2">
-                            <input type="number" name="${name}[padding_top]" class="w-full bg-slate-50 rounded-lg p-2 text-xs font-black" value="${m.padding_top ?? 0}" title="Top">
-                            <input type="number" name="${name}[padding_bottom]" class="w-full bg-slate-50 rounded-lg p-2 text-xs font-black" value="${m.padding_bottom ?? 0}" title="Bottom">
+                            <input type="number" name="${name}[padding_top]" class="w-full bg-slate-50 rounded-lg p-2 text-xs font-black config-field" value="${m.padding_top ?? 0}" title="Top">
+                            <input type="number" name="${name}[padding_bottom]" class="w-full bg-slate-50 rounded-lg p-2 text-xs font-black config-field" value="${m.padding_bottom ?? 0}" title="Bottom">
                         </div>
                     </div>
                 </div>`;
@@ -508,21 +551,105 @@
             return wrap;
         }
 
+        function buildRepeater(field, rows, prefix) {
+            const name = `${prefix}[${field.key}]`;
+            return `
+            <div class="repeater-wrap" data-field='${JSON.stringify(field)}' data-prefix="${prefix}">
+                <div class="flex items-center justify-between mb-6">
+                    <label class="text-[11px] font-black text-slate-400 uppercase tracking-widest pl-1">${field.label}</label>
+                    <button type="button" class="px-4 py-2 rounded-xl bg-slate-100 text-slate-600 font-bold text-[10px] uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-all repeater-add">
+                        <i class="fa-solid fa-plus me-1"></i> Thêm mục mới
+                    </button>
+                </div>
+                <div class="repeater-rows space-y-4">
+                    ${(rows ?? []).map((row, i) => buildRepeaterRow(field, row, name, i)).join('')}
+                </div>
+            </div>`;
+        }
+
+        function buildRepeaterRow(field, data, name, idx) {
+            const subFields = (field.fields ?? []).map(sf => {
+                const val = data[sf.key] ?? sf.default ?? '';
+                const subPrefix = `${name}[${idx}]`;
+                const subName = `${subPrefix}[${sf.key}]`;
+                
+                let inp = '';
+                if (sf.type === 'image') {
+                    inp = `
+                        <div class="flex gap-3">
+                            <div class="w-12 h-12 rounded-lg bg-white border border-slate-150 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-sm">
+                                ${val ? `<img src="${val}" class="w-full h-full object-cover">` : `<i class="fa-solid fa-image text-slate-200"></i>`}
+                            </div>
+                            <div class="flex-1 space-y-1">
+                                <input type="text" name="${subName}" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-[11px] font-bold text-slate-700 outline-none config-field" value="${escHtml(val)}" placeholder="URL">
+                                <button type="button" class="text-[9px] font-black text-blue-600 uppercase tracking-widest" onclick="openMediaPicker(this)">Chọn Media</button>
+                            </div>
+                        </div>
+                    `;
+                } else if (sf.type === 'select') {
+                    const opts = Object.entries(sf.options ?? {}).map(([k, v]) => `<option value="${k}" ${data[sf.key] == k ? 'selected' : ''}>${v}</option>`).join('');
+                    inp = `<select name="${subName}" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-bold text-slate-700 outline-none config-field">${opts}</select>`;
+                } else if (sf.type === 'category_select') {
+                    const categories = CATEGORIES || [];
+                    const os = categories.map(c => `<option value="${c.id}" ${data[sf.key] == c.id ? 'selected' : ''}>${escHtml(c.name)}</option>`).join('');
+                    inp = `<select name="${subName}" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-bold text-slate-700 outline-none config-field"><option value="">Chọn danh mục</option>${os}</select>`;
+                } else {
+                    inp = `<input type="text" name="${subName}" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-bold text-slate-700 outline-none config-field" value="${escHtml(val)}" placeholder="${sf.label}">`;
+                }
+                return `<div class="space-y-1"><label class="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">${sf.label}</label>${inp}</div>`;
+            }).join('');
+
+            return `<div class="repeater-row bg-slate-50/50 p-6 rounded-2xl border border-slate-150 relative group/row">
+                <button type="button" class="repeater-remove w-8 h-8 rounded-lg bg-rose-50 text-rose-500 absolute -top-2 -right-2 shadow-sm border border-rose-100 flex items-center justify-center text-sm opacity-0 group-hover/row:opacity-100 transition-all hover:bg-rose-600 hover:text-white">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    ${subFields}
+                </div>
+            </div>`;
+        }
+
+        function initRepeater(wrap, field, prefix) {
+            const name = `${prefix}[${field.key}]`;
+            wrap.querySelector('.repeater-add').onclick = () => {
+                const rows = wrap.querySelector('.repeater-rows');
+                const idx = rows.querySelectorAll('.repeater-row').length;
+                const div = document.createElement('div');
+                div.innerHTML = buildRepeaterRow(field, {}, name, idx);
+                rows.appendChild(div.firstElementChild);
+                bindRemove(rows, name, field);
+            };
+            bindRemove(wrap.querySelector('.repeater-rows'), name, field);
+        }
+
+        function bindRemove(rows, name, field) {
+            rows.querySelectorAll('.repeater-remove').forEach(btn => {
+                btn.onclick = () => {
+                    btn.closest('.repeater-row').remove();
+                    reindexRepeater(rows, name);
+                };
+            });
+        }
+
+        function reindexRepeater(rows, name) {
+            rows.querySelectorAll('.repeater-row').forEach((row, idx) => {
+                row.querySelectorAll('.config-field').forEach(el => {
+                    el.name = el.name.replace(/\[\d+\]/, `[${idx}]`);
+                });
+            });
+        }
+
         function submitModal() {
             const fd = new FormData();
             fd.append('_token', window.CSRF_TOKEN);
-
             fd.append('name', document.getElementById('wm-name')?.value || 'Unnamed');
-            fd.append('is_active', document.getElementById('wm-active')?.checked ? 1 : 0);
             fd.append('area', document.getElementById('wm-area')?.value || modalWidgetArea);
 
-            if (modalMode === 'create') {
-                fd.append('type', document.getElementById('wm-type')?.value);
-            }
+            if (modalMode === 'edit') fd.append('_method', 'PUT');
 
-            document.querySelectorAll('[name^="config"]').forEach(el => {
+            document.querySelectorAll('.config-field').forEach(el => {
                 if (el.type === 'checkbox') {
-                    fd.append(el.name, el.checked ? 1 : 0);
+                    if (el.checked) fd.append(el.name, el.value);
                 } else if (el.type === 'radio') {
                     if (el.checked) fd.append(el.name, el.value);
                 } else {
@@ -531,11 +658,8 @@
             });
 
             const url = modalMode === 'create' ? window.STORE_URL : '{{ url("/admin/widgets") }}/' + modalWidgetId;
-            if (modalMode === 'edit') fd.append('_method', 'PUT');
-
             const btn = document.getElementById('wm-save');
             btn.disabled = true;
-            const originalHtml = btn.innerHTML;
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i> Đang lưu...';
 
             fetch(url, {
@@ -543,18 +667,16 @@
                 body: fd,
                 headers: { 'Accept': 'application/json' }
             })
-                .then(r => r.json())
-                .then(data => {
-                    if (data.success) location.reload();
-                    else alert('Lỗi: ' + (data.message || 'Không thể lưu.'));
-                })
-                .catch(err => {
-                    alert('Lỗi kết nối: ' + err.message);
-                })
-                .finally(() => {
-                    btn.disabled = false;
-                    btn.innerHTML = originalHtml;
-                });
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) location.reload();
+                else alert('Lỗi: ' + (data.message || 'Không thể lưu.'));
+            })
+            .catch(err => alert('Lỗi kết nối: ' + err.message))
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-circle-check me-2"></i> Lưu thay đổi';
+            });
         }
 
         function deleteFromModal() {
@@ -563,8 +685,7 @@
                 method: 'POST',
                 headers: { 'X-CSRF-TOKEN': window.CSRF_TOKEN },
                 body: (() => { const fd = new FormData(); fd.append('_method', 'DELETE'); return fd; })()
-            })
-                .then(() => location.reload());
+            }).then(() => location.reload());
         }
     </script>
 @endpush

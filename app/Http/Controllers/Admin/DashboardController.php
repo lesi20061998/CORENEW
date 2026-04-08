@@ -44,7 +44,14 @@ class DashboardController extends Controller
                 ->groupBy('order_items.product_id', 'order_items.product_name', 'order_items.image')
                 ->orderBy('total_qty', 'desc')
                 ->take(5)
-                ->get(),
+                ->get()
+                ->map(function ($item) {
+                    $img = $item->image;
+                    $item->image_url = $img
+                        ? (str_starts_with($img, 'http') ? $img : (str_starts_with($img, 'media/') ? asset('storage/' . $img) : asset($img)))
+                        : asset('theme/images/no-image.png');
+                    return $item;
+                }),
 
             'low_selling' => Product::whereDoesntHave('orderItems')
                 ->take(5)

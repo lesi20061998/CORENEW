@@ -38,7 +38,7 @@
                                 <td class="tbl-td">
                                     <div class="flex items-center gap-3">
                                         @if($item->image)
-                                            <img src="{{ asset($item->image) }}"
+                                            <img src="{{ $item->image_url }}"
                                                 class="w-10 h-10 rounded-lg object-cover border border-gray-200 flex-shrink-0">
                                         @else
                                             <div

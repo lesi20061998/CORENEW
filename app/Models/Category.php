@@ -62,4 +62,20 @@ class Category extends Model
     {
         return $query->whereNull('parent_id');
     }
+
+    public function getImageUrlAttribute(): ?string
+    {
+        if (!$this->image) return null;
+        if (str_starts_with($this->image, 'http')) return $this->image;
+        if (str_starts_with($this->image, 'media/')) return asset('storage/' . $this->image);
+        return asset($this->image);
+    }
+
+    public function getIconUrlAttribute(): ?string
+    {
+        if (!$this->icon) return null;
+        if (str_starts_with($this->icon, 'http')) return $this->icon;
+        if (str_starts_with($this->icon, 'media/')) return asset('storage/' . $this->icon);
+        return asset($this->icon);
+    }
 }

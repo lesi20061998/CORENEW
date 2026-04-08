@@ -115,6 +115,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/media/bulk-delete', [MediaController::class, 'bulkDelete'])->name('media.bulk-delete');
         Route::get('/media/picker', [MediaController::class, 'picker'])->name('media.picker');
         Route::post('/media/folder', [MediaController::class, 'createFolder'])->name('media.create-folder');
+        Route::post('/media/folder/{id}/rename', [MediaController::class, 'renameFolder'])->name('media.rename-folder');
+        Route::post('/media/file/{id}/rename', [MediaController::class, 'renameFile'])->name('media.rename-file');
         Route::delete('/media/folder/{id}', [MediaController::class, 'deleteFolder'])->name('media.delete-folder');
         Route::get('/media/folder/{id}/parent', [MediaController::class, 'getFolderParent'])->name('media.folder-parent');
         Route::delete('/media/{id}', [MediaController::class, 'destroy'])->name('media.destroy');

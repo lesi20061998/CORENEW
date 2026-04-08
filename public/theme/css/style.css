@@ -16851,6 +16851,7 @@ li.with-megamenu:hover .rts-megamenu {
   pointer-events: visible;
   z-index: 999;
   top: 0;
+  display: none !important;
 }
 
 #anywhere-home {
@@ -25850,15 +25851,6 @@ header.header-three .sub-dropdown .submenu.third-lvl.base {
   transition: opacity 500ms ease-in-out;
   pointer-events: none;
   z-index: 50;
-}
-
-#anywhere-home.bgshow {
-  background: #0e1013;
-  opacity: 70%;
-  visibility: visible;
-  pointer-events: visible;
-  z-index: 999;
-  top: 0;
 }
 
 .quickview-modal .modal-dialog {

@@ -19,7 +19,7 @@
                         <div class="rts-btn-wrapper">
                             <a href="{{ $config['btn_link'] ?? '/blog' }}" class="rts-btn btn-primary radious-sm with-icon">
                                 <div class="btn-text">{{ $config['btn_text'] ?? 'Xem tất cả' }}</div>
-                                <div class="arrow-icon"><i class="fa-light fa-arrow-right"></i></div>
+                                <div class="arrow-icon"><x-theme-icon name="arrow-right" /></div>
                             </a>
                         </div>
                     @endif
@@ -53,17 +53,17 @@
                                 $thumbUrl = asset('storage/' . ltrim($thumb, '/'));
                             }
                         @endphp
-                        <img src="{{ $thumbUrl }}" alt="{{ $post->title }}" loading="lazy" style="width:100%;height:200px;object-fit:cover;">
+                        <x-theme-image :name="$thumbUrl" :alt="$post->title" class="post-thumbnail" style="width:100%;height:200px;object-fit:cover;" />
                     </a>
                     <div class="blog-body">
                         <div class="top-area">
                             <div class="single-meta">
-                                <i class="fa-light fa-clock"></i>
+                                <x-theme-icon name="clock" />
                                 <span>{{ $post->published_at ? $post->published_at->format('d M, Y') : $post->created_at->format('d M, Y') }}</span>
                             </div>
                             @if($post->category)
                                 <div class="single-meta">
-                                    <i class="fa-regular fa-folder"></i>
+                                    <x-theme-icon name="folder" />
                                     <span>{{ $post->category->name }}</span>
                                 </div>
                             @endif

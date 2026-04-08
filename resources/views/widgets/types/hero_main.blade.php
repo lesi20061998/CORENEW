@@ -54,10 +54,10 @@
                                                 {{ $slide['btn_text'] ?? 'Shop Now' }}
                                             </div>
                                             <div class="arrow-icon">
-                                                <i class="fa-light fa-arrow-right"></i>
+                                                <x-theme-icon name="arrow-right" />
                                             </div>
                                             <div class="arrow-icon">
-                                                <i class="fa-light fa-arrow-right"></i>
+                                                <x-theme-icon name="arrow-right" />
                                             </div>
                                         </a>
                                     </div>
@@ -66,8 +66,8 @@
                             @endforeach
                         </div>
 
-                        <button class="swiper-button-next"><i class="fa-regular fa-arrow-right"></i></button>
-                        <button class="swiper-button-prev"><i class="fa-regular fa-arrow-left"></i></button>
+                        <button class="swiper-button-next"><x-theme-icon name="arrow-right" /></button>
+                        <button class="swiper-button-prev"><x-theme-icon name="arrow-left" /></button>
                     </div>
                 </div>
             </div>
